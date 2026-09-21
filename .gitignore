@@ -1,0 +1,89 @@
+# ============================================================
+# Miscellaneous
+# ============================================================
+
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history/
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+
+# ============================================================
+# IntelliJ / Android Studio
+# ============================================================
+
+*.iml
+*.ipr
+*.iws
+.idea/
+
+
+# ============================================================
+# VS Code
+# ============================================================
+
+# Uncomment if you don't want VS Code settings committed
+# .vscode/
+
+
+# ============================================================
+# Frontend - Flutter / Dart
+# ============================================================
+
+/frontend/.dart_tool/
+/frontend/.flutter-plugins-dependencies
+/frontend/.pub-cache/
+/frontend/.pub/
+/frontend/build/
+/frontend/coverage/
+
+/frontend/**/doc/api/
+/frontend/ios/Flutter/.last_build_id
+
+# Flutter symbolication
+/frontend/app.*.symbols
+
+# Flutter obfuscation
+/frontend/app.*.map.json
+
+# Android build artifacts
+/frontend/android/app/debug/
+/frontend/android/app/profile/
+/frontend/android/app/release/
+
+# Widget Preview
+/frontend/.widget_preview/
+
+
+# ============================================================
+# Backend
+# ============================================================
+
+/backend/node_modules/
+/backend/dist/
+/backend/build/
+/backend/coverage/
+
+# Environment files
+/backend/.env
+/backend/.env.*
+!/backend/.env.example
+
+# Logs
+/backend/npm-debug.log*
+/backend/yarn-debug.log*
+/backend/yarn-error.log*
+/backend/pnpm-debug.log*
+
+# Runtime data
+/backend/*.pid
+/backend/*.seed
+/backend/*.pid.lock
