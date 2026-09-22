@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tictac_duel/lib.dart';
 
@@ -30,19 +29,18 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return NeonBackgroundWidget(
+      needScroll: false,
 
-      body: NeonBackgroundWidget(
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildAppBar(),
+      child: SafeArea(
+        child: Column(
+          children: [
+            _buildAppBar(),
 
-              Expanded(
-                child: Stack(children: [_buildContent(), _buildJoinButton()]),
-              ),
-            ],
-          ),
+            Expanded(
+              child: Stack(children: [_buildContent(), _buildJoinButton()]),
+            ),
+          ],
         ),
       ),
     );
@@ -80,7 +78,7 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
 
   Widget _buildContent() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(24, 18, 24, 100),
+      padding: Dimens.defaultPadding,
       child: Column(
         spacing: 28,
         crossAxisAlignment: CrossAxisAlignment.stretch,
