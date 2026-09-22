@@ -6,15 +6,13 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return NeonBackgroundWidget(
+      needScroll: false,
       child: Column(
         children: [
           Expanded(
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 28,
-                  vertical: 32,
-                ),
+                padding: Dimens.defaultPadding,
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 460),
                   child: Column(
@@ -39,9 +37,7 @@ class HomeScreen extends StatelessWidget {
                       Text(
                         'YOUR MOVE. YOUR GLORY.',
                         style: TextStyle(
-                          color: Themes.textSecondary.withValues(
-                            alpha: 0.85,
-                          ),
+                          color: Themes.textSecondary.withValues(alpha: 0.85),
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
                           letterSpacing: 3.5,
@@ -102,6 +98,5 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
     );
-
   }
 }

@@ -7,28 +7,28 @@ class HelpScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return NeonBackgroundWidget(
       title: 'HELP',
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+      child: Column(
+        spacing: 32,
+        children: [
+          Column(
+            spacing: 28,
+            children: [
+              const HeaderSectionWidget(
+                title: 'NEED A HAND?',
+                subtitle: 'Everything you need to dominate the board.',
+                icon: Icons.help_outline_rounded,
+              ),
 
-        child: Column(
-          spacing: 32,
-          children: [
-            Column(
-              spacing: 28,
-              children: [
-                HelpHeaderWidget(),
+              HowToPlayWidget(),
 
-                HowToPlayWidget(),
+              OnlineDuelsWidget(),
 
-                OnlineDuelsWidget(),
+              QuickTipsWidget(),
+            ],
+          ),
 
-                QuickTipsWidget(),
-              ],
-            ),
-
-            FooterCardWidget(),
-          ],
-        ),
+          FooterCardWidget(),
+        ],
       ),
     );
   }
