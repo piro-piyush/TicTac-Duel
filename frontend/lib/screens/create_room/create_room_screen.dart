@@ -15,6 +15,17 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
   PlayerSymbol _selectedSymbol = PlayerSymbol.x;
   RoomTheme _selectedTheme = RoomTheme.classic;
 
+
+  @override
+  void initState() {
+    super.initState();
+    _playerNameFocusNode.requestFocus();
+    RoomSocketService.instance.onRoomCreated((room){
+      LoggerUtils.info('Room created: $room');
+      Routes.replaceGame(room);
+    });
+  }
+
   @override
   void dispose() {
     _playerNameController.dispose();
@@ -235,10 +246,10 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
         playerName: playerName,
         symbol: _selectedSymbol,
         theme: _selectedTheme,
-        onRoomCreated: (room) {
-          LoggerUtils.info('Room created: $room');
-          // Routes.replaceWaitingRoom(room);
-        },
+        // onRoomCreated: (room) {
+        //   LoggerUtils.info('Room created: $room');
+        //   Routes.replaceGame(room);
+        // },
       );
     } catch (e) {
       LoggerUtils.error('Error creating room: $e');
