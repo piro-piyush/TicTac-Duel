@@ -283,6 +283,9 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
     final playerName = _playerNameController.text.trim();
     final roomCode = _roomCodeController.text.trim().toUpperCase();
 
-    // Join room...
+    RoomSocketService.instance.joinRoom(
+      playerName: playerName,
+      roomCode: roomCode,
+    );
   }
 }

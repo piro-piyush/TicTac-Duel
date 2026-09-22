@@ -1,4 +1,3 @@
-
 import 'package:tictac_duel/lib.dart';
 
 enum RoomTheme {
@@ -40,33 +39,24 @@ enum RoomTheme {
 
   static RoomTheme fromValue(String value) {
     return RoomTheme.values.firstWhere(
-          (theme) => theme.value == value,
+      (theme) => theme.value == value,
       orElse: () => RoomTheme.classic,
     );
   }
 }
 
 enum PlayerSymbol {
-  x(
-    name: 'Cross',
-    value: 'x',
-  ),
-  o(
-    name: 'Circle',
-    value: 'o',
-  );
+  x(name: 'Cross', value: 'x'),
+  o(name: 'Circle', value: 'o');
 
-  const PlayerSymbol({
-    required this.name,
-    required this.value,
-  });
+  const PlayerSymbol({required this.name, required this.value});
 
   final String name;
   final String value;
 
   static PlayerSymbol fromValue(String value) {
     return PlayerSymbol.values.firstWhere(
-          (symbol) => symbol.value == value.toLowerCase(),
+      (symbol) => symbol.value == value.toLowerCase(),
       orElse: () => PlayerSymbol.x,
     );
   }
@@ -82,7 +72,7 @@ enum GameMode {
 
   static GameMode fromValue(String value) {
     return GameMode.values.firstWhere(
-          (mode) => mode.value == value,
+      (mode) => mode.value == value,
       orElse: () => GameMode.classic,
     );
   }

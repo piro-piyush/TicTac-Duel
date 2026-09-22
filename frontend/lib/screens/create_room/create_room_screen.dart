@@ -1,5 +1,4 @@
 import 'package:tictac_duel/lib.dart';
-import 'package:tictac_duel/services/room_socket_service.dart';
 
 class CreateRoomScreen extends StatefulWidget {
   const CreateRoomScreen({super.key});
@@ -224,26 +223,25 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
   }
 
   void _createRoom() {
-    if (!_formKey.currentState!.validate()) {
-      _playerNameFocusNode.requestFocus();
-      return;
+    try {
+      if (!_formKey.currentState!.validate()) {
+        _playerNameFocusNode.requestFocus();
+        return;
+      }
+
+      final playerName = _playerNameController.text.trim();
+
+      RoomSocketService.instance.createRoom(
+        playerName: playerName,
+        symbol: _selectedSymbol,
+        theme: _selectedTheme,
+        onRoomCreated: (room) {
+          LoggerUtils.info('Room created: $room');
+          // Routes.replaceWaitingRoom(room);
+        },
+      );
+    } catch (e) {
+      LoggerUtils.error('Error creating room: $e');
     }
-
-    final playerName = _playerNameController.text.trim();
-
-    // ScaffoldMessenger.of(context).showSnackBar(
-    //   SnackBar(
-    //     content: Text(
-    //       'Creating ${_selectedTheme.name} room as '
-    //       '$playerName (${_selectedSymbol.name})...',
-    //     ),
-    //     behavior: SnackBarBehavior.floating,
-    //   ),
-    // );
-    RoomSocketService.instance.createRoom(
-      playerName: playerName,
-      symbol: _selectedSymbol,
-      theme: _selectedTheme,
-    );
   }
 }
