@@ -1,6 +1,5 @@
 import 'package:go_router/go_router.dart';
 import 'package:tictac_duel/lib.dart';
-import 'package:tictac_duel/models/room_model.dart';
 
 abstract final class Routes {
   Routes._();
