@@ -11,19 +11,18 @@ class JoinRoomScreen extends StatefulWidget {
 class _JoinRoomScreenState extends State<JoinRoomScreen> {
   final _roomCodeController = TextEditingController();
   final _focusNode = FocusNode();
-
-  String? get _roomCodeError {
-    return ValidatorUtils.roomCode(_roomCodeController.text);
-  }
-
-  bool get _canJoin {
-    return _roomCodeError == null;
-  }
+  final _playerNameController = TextEditingController();
+  final _playerNameFocusNode = FocusNode();
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void dispose() {
     _roomCodeController.dispose();
+    _playerNameController.dispose();
+
     _focusNode.dispose();
+    _playerNameFocusNode.dispose();
+
     super.dispose();
   }
 
@@ -74,6 +73,20 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
     );
   }
 
+  void _generateRandomName() {
+    _playerNameController.text = GameNameUtils.random();
+
+    _playerNameController.selection = TextSelection.collapsed(
+      offset: _playerNameController.text.length,
+    );
+
+    _playerNameFocusNode.requestFocus();
+
+    _formKey.currentState?.validate();
+
+    setState(() {});
+  }
+
   Widget _buildContent() {
     return SingleChildScrollView(
       padding: Dimens.defaultPadding,
@@ -82,7 +95,13 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           JoinRoomHeaderWidget(),
-          _buildRoomCodeCard(),
+          Form(
+            key: _formKey,
+            child: Column(
+              spacing: 20,
+              children: [_buildPlayerNameField(), _buildRoomCodeField()],
+            ),
+          ),
           JoinRoomHintWidget(),
           _buildDivider(),
           _buildCreateRoomButton(),
@@ -91,103 +110,106 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
     );
   }
 
-  Widget _buildRoomCodeCard() {
-    final isValid = _canJoin;
-    final hasText = _roomCodeController.text.isNotEmpty;
-
-    final borderColor = isValid
-        ? Themes.neonCyan.withValues(alpha: 0.7)
-        : hasText
-        ? Themes.neonPink.withValues(alpha: 0.5)
-        : Themes.border;
-
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 180),
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Themes.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: borderColor, width: isValid ? 1.4 : 1),
-        boxShadow: isValid
-            ? [
-                BoxShadow(
-                  color: Themes.neonCyan.withValues(alpha: 0.08),
-                  blurRadius: 24,
-                ),
-              ]
-            : null,
+  Widget _buildPlayerNameField() {
+    return TextFormField(
+      controller: _playerNameController,
+      focusNode: _playerNameFocusNode,
+      textCapitalization: TextCapitalization.words,
+      textInputAction: TextInputAction.next,
+      maxLength: 20,
+      validator: ValidatorUtils.gameName,
+      onFieldSubmitted: (_) {
+        _focusNode.requestFocus();
+      },
+      style: const TextStyle(
+        color: Themes.textPrimary,
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
       ),
-      child: Column(
-        spacing: 12,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'ROOM CODE',
-            style: TextStyle(
-              color: Themes.textSecondary,
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 2,
-            ),
+      decoration: _buildInputDecoration(
+        hintText: 'ENTER YOUR NAME',
+        focusedColor: Themes.neonPurple,
+        suffixIcon: IconButton(
+          onPressed: _generateRandomName,
+          tooltip: 'Random name',
+          icon: const Icon(
+            Icons.casino_outlined,
+            color: Themes.neonPurple,
+            size: 20,
           ),
-
-          TextField(
-            controller: _roomCodeController,
-            focusNode: _focusNode,
-            autofocus: true,
-            textCapitalization: TextCapitalization.characters,
-            textInputAction: TextInputAction.done,
-            keyboardType: TextInputType.text,
-            maxLength: 8,
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')),
-            ],
-            style: const TextStyle(
-              color: Themes.textPrimary,
-              fontSize: 23,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 5,
-            ),
-            decoration: InputDecoration(
-              counterText: '',
-              hintText: 'ENTER CODE',
-              hintStyle: TextStyle(
-                color: Themes.textSecondary.withValues(alpha: 0.4),
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 2.5,
-              ),
-              suffixIcon: IconButton(
-                onPressed: _pasteCode,
-                tooltip: 'Paste room code',
-                icon: const Icon(
-                  Icons.content_paste_rounded,
-                  color: Themes.neonCyan,
-                  size: 20,
-                ),
-              ),
-              filled: true,
-              fillColor: Themes.card,
-              border: _buildInputBorder(),
-              enabledBorder: _buildInputBorder(),
-              focusedBorder: _buildInputBorder(
-                color: Themes.neonCyan,
-                width: 1.5,
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 18,
-                vertical: 17,
-              ),
-            ),
-            onChanged: _onRoomCodeChanged,
-            onSubmitted: (_) {
-              if (_canJoin) {
-                _joinRoom();
-              }
-            },
-          ),
-        ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildRoomCodeField() {
+    return TextFormField(
+      controller: _roomCodeController,
+      focusNode: _focusNode,
+      autofocus: true,
+      textCapitalization: TextCapitalization.characters,
+      textInputAction: TextInputAction.done,
+      keyboardType: TextInputType.text,
+      maxLength: 8,
+      validator: ValidatorUtils.roomCode,
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')),
+      ],
+      onChanged: (value) {
+        final formatted = value.toUpperCase();
+
+        if (formatted != value) {
+          _roomCodeController.value = _roomCodeController.value.copyWith(
+            text: formatted,
+            selection: TextSelection.collapsed(offset: formatted.length),
+          );
+        }
+      },
+      onFieldSubmitted: (_) => _joinRoom(),
+      style: const TextStyle(
+        color: Themes.textPrimary,
+        fontSize: 23,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 5,
+      ),
+      decoration: _buildInputDecoration(
+        hintText: 'ENTER CODE',
+        focusedColor: Themes.neonCyan,
+        suffixIcon: IconButton(
+          onPressed: _pasteCode,
+          icon: const Icon(
+            Icons.content_paste_rounded,
+            color: Themes.neonCyan,
+            size: 20,
+          ),
+        ),
+      ),
+    );
+  }
+
+  InputDecoration _buildInputDecoration({
+    required String hintText,
+    required Color focusedColor,
+    Widget? suffixIcon,
+  }) {
+    return InputDecoration(
+      counterText: '',
+      hintText: hintText,
+      hintStyle: TextStyle(
+        color: Themes.textSecondary.withValues(alpha: 0.4),
+        fontSize: 13,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 1.5,
+      ),
+      suffixIcon: suffixIcon,
+      filled: true,
+      fillColor: Themes.card,
+      border: _buildInputBorder(),
+      enabledBorder: _buildInputBorder(),
+      focusedBorder: _buildInputBorder(color: focusedColor, width: 1.5),
+      errorBorder: _buildInputBorder(color: Themes.neonPink),
+      focusedErrorBorder: _buildInputBorder(color: Themes.neonPink, width: 1.5),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
     );
   }
 
@@ -234,22 +256,9 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
       child: NeonElevatedButton(
         label: 'JOIN DUEL',
         icon: Icons.sports_esports_rounded,
-        onPressed: _canJoin ? _joinRoom : null,
+        onPressed: _joinRoom,
       ),
     );
-  }
-
-  void _onRoomCodeChanged(String value) {
-    final formatted = value.toUpperCase();
-
-    if (formatted != value) {
-      _roomCodeController.value = _roomCodeController.value.copyWith(
-        text: formatted,
-        selection: TextSelection.collapsed(offset: formatted.length),
-      );
-    }
-
-    setState(() {});
   }
 
   Future<void> _pasteCode() async {
@@ -267,17 +276,13 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
   }
 
   void _joinRoom() {
-    final roomCode = _roomCodeController.text.trim().toUpperCase();
-
-    if (ValidatorUtils.roomCode(roomCode) != null) {
+    if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Joining room $roomCode...'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    final playerName = _playerNameController.text.trim();
+    final roomCode = _roomCodeController.text.trim().toUpperCase();
+
+    // Join room...
   }
 }

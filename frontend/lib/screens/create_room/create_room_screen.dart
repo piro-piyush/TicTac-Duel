@@ -8,8 +8,19 @@ class CreateRoomScreen extends StatefulWidget {
 }
 
 class _CreateRoomScreenState extends State<CreateRoomScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _playerNameController = TextEditingController();
+  final _playerNameFocusNode = FocusNode();
+
   PlayerSymbol _selectedSymbol = PlayerSymbol.x;
   RoomTheme _selectedTheme = RoomTheme.classic;
+
+  @override
+  void dispose() {
+    _playerNameController.dispose();
+    _playerNameFocusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,31 +34,125 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
   Widget _buildContent() {
     return SingleChildScrollView(
       padding: Dimens.defaultPadding,
-      child: Column(
-        spacing: 28,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const CreateRoomHeaderWidget(),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          spacing: 28,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const CreateRoomHeaderWidget(),
 
-          ChooseYourSymbolWidget(
-            selectedSymbol: _selectedSymbol,
-            onSymbolChanged: (symbol) {
-              setState(() => _selectedSymbol = symbol);
-            },
-          ),
+            _buildPlayerNameField(),
 
-          SelectRoomThemeWidget(
-            selectedTheme: _selectedTheme,
-            onThemeChanged: (theme) {
-              setState(() => _selectedTheme = theme);
-            },
-          ),
+            ChooseYourSymbolWidget(
+              selectedSymbol: _selectedSymbol,
+              onSymbolChanged: (symbol) {
+                setState(() => _selectedSymbol = symbol);
+              },
+            ),
 
-          _buildRoomInfo(),
-          SizedBox(height: 20),
-        ],
+            SelectRoomThemeWidget(
+              selectedTheme: _selectedTheme,
+              onThemeChanged: (theme) {
+                setState(() => _selectedTheme = theme);
+              },
+            ),
+
+            _buildRoomInfo(),
+
+            const SizedBox(height: 20),
+          ],
+        ),
       ),
     );
+  }
+
+  Widget _buildPlayerNameField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'YOUR NAME',
+          style: TextStyle(
+            color: Themes.textSecondary,
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 2,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _playerNameController,
+          focusNode: _playerNameFocusNode,
+          textCapitalization: TextCapitalization.words,
+          textInputAction: TextInputAction.done,
+          maxLength: 20,
+          validator: ValidatorUtils.gameName,
+          style: const TextStyle(
+            color: Themes.textPrimary,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+          decoration: InputDecoration(
+            counterText: '',
+            hintText: 'ENTER YOUR NAME',
+            hintStyle: TextStyle(
+              color: Themes.textSecondary.withValues(alpha: 0.4),
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 1,
+            ),
+            suffixIcon: IconButton(
+              onPressed: _generateRandomName,
+              tooltip: 'Random name',
+              icon: const Icon(
+                Icons.casino_outlined,
+                color: Themes.neonPurple,
+                size: 20,
+              ),
+            ),
+            filled: true,
+            fillColor: Themes.card,
+            border: _buildInputBorder(),
+            enabledBorder: _buildInputBorder(),
+            focusedBorder: _buildInputBorder(
+              color: Themes.neonPurple,
+              width: 1.5,
+            ),
+            errorBorder: _buildInputBorder(color: Themes.neonPink),
+            focusedErrorBorder: _buildInputBorder(
+              color: Themes.neonPink,
+              width: 1.5,
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 18,
+              vertical: 16,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  OutlineInputBorder _buildInputBorder({Color? color, double width = 1}) {
+    return OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: BorderSide(color: color ?? Themes.border, width: width),
+    );
+  }
+
+  void _generateRandomName() {
+    _playerNameController.text = GameNameUtils.random();
+
+    _playerNameController.selection = TextSelection.collapsed(
+      offset: _playerNameController.text.length,
+    );
+
+    _playerNameFocusNode.requestFocus();
+
+    _formKey.currentState?.validate();
+
+    setState(() {});
   }
 
   Widget _buildRoomInfo() {
@@ -118,11 +223,18 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
   }
 
   void _createRoom() {
+    if (!_formKey.currentState!.validate()) {
+      _playerNameFocusNode.requestFocus();
+      return;
+    }
+
+    final playerName = _playerNameController.text.trim();
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
           'Creating ${_selectedTheme.name} room as '
-          '${_selectedSymbol.name}...',
+          '$playerName (${_selectedSymbol.name})...',
         ),
         behavior: SnackBarBehavior.floating,
       ),
