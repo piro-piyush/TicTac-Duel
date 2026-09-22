@@ -22,6 +22,5 @@ class JoinRoomHintWidget extends StatelessWidget {
           ),
         ),
       ],
-    );;
-  }
+    );}
 }
