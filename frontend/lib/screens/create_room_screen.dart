@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:tictac_duel/lib.dart';
 
 class CreateRoomScreen extends StatefulWidget {
@@ -14,49 +13,9 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: NeonBackgroundWidget(
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildAppBar(),
-              Expanded(
-                child: Stack(children: [_buildContent(), _buildCreateButton()]),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAppBar() {
-    return SizedBox(
-      height: kToolbarHeight,
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(
-              Icons.arrow_back_rounded,
-              color: Themes.textPrimary,
-            ),
-          ),
-          const Expanded(
-            child: Text(
-              'CREATE ROOM',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Themes.textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 3,
-              ),
-            ),
-          ),
-          const SizedBox(width: 48),
-        ],
-      ),
+    return NeonBackgroundWidget(
+      title: 'Create Room',
+      child: Stack(children: [_buildContent(), _buildCreateButton()]),
     );
   }
 
