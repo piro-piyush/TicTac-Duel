@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:tictac_duel/lib.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -23,84 +22,86 @@ class _SettingsScreenState extends State<SettingsScreen> {
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
         ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-        children: [
-          const _SettingsHeader(),
-
-          const SizedBox(height: 28),
-
-          _sectionTitle('Audio & Feedback'),
-
-          const SizedBox(height: 10),
-
-          _SettingsGroup(
-            children: [
-              _SwitchTile(
-                icon: Icons.music_note_rounded,
-                title: 'Background Music',
-                subtitle: 'Play music while you play',
-                value: _musicEnabled,
-                color: Themes.neonPurple,
-                onChanged: (value) {
-                  setState(() => _musicEnabled = value);
-                },
-              ),
-              const _Divider(),
-              _SwitchTile(
-                icon: Icons.volume_up_rounded,
-                title: 'Sound Effects',
-                subtitle: 'Play sounds during the game',
-                value: _soundEnabled,
-                color: Themes.neonCyan,
-                onChanged: (value) {
-                  setState(() => _soundEnabled = value);
-                },
-              ),
-              const _Divider(),
-              _SwitchTile(
-                icon: Icons.vibration_rounded,
-                title: 'Vibration',
-                subtitle: 'Vibrate when making a move',
-                value: _vibrationEnabled,
-                color: Themes.neonPink,
-                onChanged: (value) {
-                  setState(() => _vibrationEnabled = value);
-                },
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 28),
-
-          _sectionTitle('About'),
-
-          const SizedBox(height: 10),
-
-          _SettingsGroup(
-            children: [
-              _ActionTile(
-                icon: Icons.info_outline_rounded,
-                title: 'About',
-                subtitle: 'Tic Tac Duel • Version 1.0.0',
-                color: Themes.neonCyan,
-                onTap: _showAbout,
-              ),
-              const _Divider(),
-              _ActionTile(
-                icon: Icons.privacy_tip_outlined,
-                title: 'Privacy Policy',
-                subtitle: 'How your data is handled',
-                color: Themes.textSecondary,
-                onTap: () {},
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 40),
-
-          const FooterCardWidget(),
-        ],
+      body: NeonBackgroundWidget(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+          children: [
+            const _SettingsHeader(),
+        
+            const SizedBox(height: 28),
+        
+            _sectionTitle('Audio & Feedback'),
+        
+            const SizedBox(height: 10),
+        
+            _SettingsGroup(
+              children: [
+                _SwitchTile(
+                  icon: Icons.music_note_rounded,
+                  title: 'Background Music',
+                  subtitle: 'Play music while you play',
+                  value: _musicEnabled,
+                  color: Themes.neonPurple,
+                  onChanged: (value) {
+                    setState(() => _musicEnabled = value);
+                  },
+                ),
+                const _Divider(),
+                _SwitchTile(
+                  icon: Icons.volume_up_rounded,
+                  title: 'Sound Effects',
+                  subtitle: 'Play sounds during the game',
+                  value: _soundEnabled,
+                  color: Themes.neonCyan,
+                  onChanged: (value) {
+                    setState(() => _soundEnabled = value);
+                  },
+                ),
+                const _Divider(),
+                _SwitchTile(
+                  icon: Icons.vibration_rounded,
+                  title: 'Vibration',
+                  subtitle: 'Vibrate when making a move',
+                  value: _vibrationEnabled,
+                  color: Themes.neonPink,
+                  onChanged: (value) {
+                    setState(() => _vibrationEnabled = value);
+                  },
+                ),
+              ],
+            ),
+        
+            const SizedBox(height: 28),
+        
+            _sectionTitle('About'),
+        
+            const SizedBox(height: 10),
+        
+            _SettingsGroup(
+              children: [
+                _ActionTile(
+                  icon: Icons.info_outline_rounded,
+                  title: 'About',
+                  subtitle: 'Tic Tac Duel • Version 1.0.0',
+                  color: Themes.neonCyan,
+                  onTap: _showAbout,
+                ),
+                const _Divider(),
+                _ActionTile(
+                  icon: Icons.privacy_tip_outlined,
+                  title: 'Privacy Policy',
+                  subtitle: 'How your data is handled',
+                  color: Themes.textSecondary,
+                  onTap: () {},
+                ),
+              ],
+            ),
+        
+            const SizedBox(height: 40),
+        
+            const FooterCardWidget(),
+          ],
+        ),
       ),
     );
   }
