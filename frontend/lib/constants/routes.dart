@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:go_router/go_router.dart';
 import 'package:tictac_duel/lib.dart';
 
@@ -34,6 +36,7 @@ abstract final class Routes {
   static final GoRouter router = GoRouter(
     debugLogDiagnostics: true,
     initialLocation: home,
+    extraCodec: const JsonCodec(),
     routes: [
       GoRoute(
         path: home,
@@ -54,13 +57,9 @@ abstract final class Routes {
       ),
 
       GoRoute(
-        path: '$game/:roomId',
+        path: game,
         name: gameName,
-        builder: (context, state) {
-          // final roomId = state.pathParameters['roomId']!;
-
-          return const GameScreen();
-        },
+        builder: (context, state) => GameScreen(room: state.extra as RoomModel),
       ),
       GoRoute(
         path: settings,
@@ -104,6 +103,9 @@ abstract final class Routes {
 
   static void replaceWaitingRoom(RoomModel room) =>
       router.replaceNamed(waitingRoomName, extra: room);
+
+  static void replaceGame(RoomModel room) =>
+      router.replaceNamed(gameName, extra: room);
 
   static void pushJoinRoom() => router.pushNamed(joinRoomName);
 

@@ -11,33 +11,20 @@ class RoomSocketService {
     required String playerName,
     required PlayerSymbol symbol,
     required RoomTheme theme,
-    required void Function(RoomModel room) onRoomCreated,
   }) {
-    _socket.off('room_created');
+    _socket.off(RoomSocketEvents.roomCreated);
 
-    _socket.on('room_created', (response) {
-      if (response is! Map) {
+    _socket.on(RoomSocketEvents.roomCreated, (response) {
+      final room = _parseRoom(response);
+
+      if (room == null) {
         return;
       }
 
-      if (response['success'] != true) {
-        return;
-      }
-
-      final data = response['room'];
-
-      if (data is! Map) {
-        return;
-      }
-
-      final room = RoomModel.fromJson(Map<String, dynamic>.from(data));
-
-      onRoomCreated(room);
-
-      _socket.off('room_created');
+      _socket.off(RoomSocketEvents.roomCreated);
     });
 
-    _socket.emit('create_room', {
+    _socket.emit(RoomSocketEvents.createRoom, {
       'playerName': playerName,
       'symbol': symbol.value,
       'theme': theme.value,
@@ -45,43 +32,104 @@ class RoomSocketService {
   }
 
   void joinRoom({required String roomCode, required String playerName}) {
-    _socket.emit('join_room', {'roomCode': roomCode, 'playerName': playerName});
+    _socket.emit(RoomSocketEvents.joinRoom, {
+      'roomCode': roomCode,
+      'playerName': playerName,
+    });
   }
 
   void leaveRoom({required String roomCode}) {
-    _socket.emit('leave_room', {'roomCode': roomCode});
+    _socket.emit(RoomSocketEvents.leaveRoom, {'roomCode': roomCode});
   }
 
-  void onRoomCreated(void Function(dynamic data) callback) {
-    _socket.on('room_created', callback);
+  void onRoomCreated(void Function(RoomModel room) callback) {
+    _socket.on(RoomSocketEvents.roomCreated, (response) {
+      final room = _parseRoom(response);
+      if (room != null) {
+        callback(room);
+      }
+    });
   }
 
-  void onRoomJoined(void Function(dynamic data) callback) {
-    _socket.on('room_joined', callback);
+  void onRoomJoined(void Function(RoomModel room) callback) {
+    _socket.on(RoomSocketEvents.roomJoined, (response) {
+      final room = _parseRoom(response);
+
+      if (room != null) {
+        callback(room);
+      }
+    });
   }
 
-  void onRoomUpdated(void Function(dynamic data) callback) {
-    _socket.on('room_updated', callback);
+  void onRoomUpdated(void Function(RoomModel room) callback) {
+    _socket.on(RoomSocketEvents.roomUpdated, (response) {
+      final room = _parseRoom(response);
+
+      if (room != null) {
+        callback(room);
+      }
+    });
   }
 
-  void onPlayerJoined(void Function(dynamic data) callback) {
-    _socket.on('player_joined', callback);
+  void onPlayerJoined(void Function(RoomModel room) callback) {
+    _socket.on(RoomSocketEvents.playerJoined, (response) {
+      final room = _parseRoom(response);
+
+      if (room != null) {
+        callback(room);
+      }
+    });
   }
 
-  void onPlayerLeft(void Function(dynamic data) callback) {
-    _socket.on('player_left', callback);
+  void onPlayerLeft(void Function(RoomModel room) callback) {
+    _socket.on(RoomSocketEvents.playerLeft, (response) {
+      final room = _parseRoom(response);
+
+      if (room != null) {
+        callback(room);
+      }
+    });
   }
 
-  void onRoomError(void Function(dynamic data) callback) {
-    _socket.on('room_error', callback);
+  void onRoomError(void Function(String message) callback) {
+    _socket.on(RoomSocketEvents.roomError, (response) {
+      if (response is! Map) {
+        callback('Something went wrong.');
+        return;
+      }
+
+      callback(response['message']?.toString() ?? 'Something went wrong.');
+    });
+  }
+
+  RoomModel? _parseRoom(dynamic response) {
+    if (response is! Map) {
+      return null;
+    }
+
+    if (response['success'] != true) {
+      return null;
+    }
+
+    final data = response['room'];
+
+    if (data is! Map) {
+      return null;
+    }
+
+    try {
+      return RoomModel.fromJson(Map<String, dynamic>.from(data));
+    } catch (_) {
+      return null;
+    }
   }
 
   void dispose() {
-    _socket.off('room_created');
-    _socket.off('room_joined');
-    _socket.off('room_updated');
-    _socket.off('player_joined');
-    _socket.off('player_left');
-    _socket.off('room_error');
+    _socket.off(RoomSocketEvents.roomCreated);
+    _socket.off(RoomSocketEvents.roomJoined);
+    _socket.off(RoomSocketEvents.roomUpdated);
+    _socket.off(RoomSocketEvents.playerJoined);
+    _socket.off(RoomSocketEvents.playerLeft);
+    _socket.off(RoomSocketEvents.roomError);
   }
 }
