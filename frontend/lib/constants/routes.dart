@@ -1,7 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tictac_duel/lib.dart';
-import 'package:tictac_duel/screens/settings/settings_screen.dart';
 
 abstract final class Routes {
   Routes._();
@@ -57,7 +55,7 @@ abstract final class Routes {
         path: '$game/:roomId',
         name: gameName,
         builder: (context, state) {
-          final roomId = state.pathParameters['roomId']!;
+          // final roomId = state.pathParameters['roomId']!;
 
           return const GameScreen();
         },
