@@ -1,3 +1,7 @@
+const {
+  NODE_ENV,
+} = require('../../config/env');
+
 class Logger {
   static info(message, data) {
     this._log('INFO', message, data);
@@ -16,14 +20,13 @@ class Logger {
   }
 
   static debug(message, data) {
-    if (process.env.NODE_ENV === 'development') {
+    if (NODE_ENV === 'development') {
       this._log('DEBUG', message, data);
     }
   }
 
   static _log(level, message, data) {
     const timestamp = new Date().toISOString();
-
     const prefix = `[${timestamp}] [${level}]`;
 
     if (data !== undefined) {
