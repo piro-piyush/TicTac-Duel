@@ -14,6 +14,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
   @override
   Widget build(BuildContext context) {
     return NeonBackgroundWidget(
+      needScroll: false,
       title: 'Create Room',
       child: Stack(children: [_buildContent(), _buildCreateButton()]),
     );
@@ -21,7 +22,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
 
   Widget _buildContent() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(24, 18, 24, 100),
+      padding: Dimens.defaultPadding,
       child: Column(
         spacing: 28,
         crossAxisAlignment: CrossAxisAlignment.start,
