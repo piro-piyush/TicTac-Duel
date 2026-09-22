@@ -6,8 +6,9 @@
 
 ## 📱 App Icon
 
-![Tic Tac Duel App Icon](frontend/assets/app/logo.png)
-
+<p align="center">
+  <img src="frontend/assets/app/logo.png" alt="Tic Tac Duel App Icon" width="180"/>
+</p>
 ## ℹ️ Project Info
 
 Tic Tac Duel is a futuristic neon-themed Tic Tac Toe game focused on a clean, competitive multiplayer experience with real-time gameplay.
