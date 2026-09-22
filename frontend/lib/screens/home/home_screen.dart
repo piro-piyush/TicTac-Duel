@@ -1,7 +1,19 @@
 import 'package:tictac_duel/lib.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    SocketService.instance.connect();
+  }
 
   @override
   Widget build(BuildContext context) {
