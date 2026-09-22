@@ -1,98 +1,133 @@
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
 import 'package:tictac_duel/lib.dart';
 
 class NeonBackgroundWidget extends StatelessWidget {
   const NeonBackgroundWidget({
     super.key,
     required this.child,
+    this.title,
     this.showGrid = true,
     this.showParticles = true,
   });
 
   final Widget child;
+  final String? title;
   final bool showGrid;
   final bool showParticles;
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        const ColoredBox(
-          color: Themes.background,
-        ),
+    return Scaffold(
+      backgroundColor: Themes.background,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Base background
+          const ColoredBox(color: Themes.background),
 
-        // Ambient neon glow.
-        const Positioned(
-          top: -140,
-          right: -100,
-          child: _NeonGlow(
-            color: Themes.neonPurple,
-            size: 300,
+          // Ambient neon glows
+          const Positioned(
+            top: -140,
+            right: -100,
+            child: _NeonGlow(color: Themes.neonPurple, size: 300),
           ),
-        ),
 
-        const Positioned(
-          bottom: -150,
-          left: -120,
-          child: _NeonGlow(
-            color: Themes.neonCyan,
-            size: 320,
+          const Positioned(
+            bottom: -150,
+            left: -120,
+            child: _NeonGlow(color: Themes.neonCyan, size: 320),
           ),
-        ),
 
-        const Positioned(
-          top: 260,
-          left: -180,
-          child: _NeonGlow(
-            color: Themes.neonPink,
-            size: 260,
-            opacity: 0.025,
+          const Positioned(
+            top: 260,
+            left: -180,
+            child: _NeonGlow(color: Themes.neonPink, size: 260, opacity: 0.025),
           ),
-        ),
 
-        if (showGrid)
-          const Positioned.fill(
-            child: IgnorePointer(
-              child: CustomPaint(
-                painter: _NeonGridPainter(),
+          // Neon grid
+          if (showGrid)
+            const Positioned.fill(
+              child: IgnorePointer(
+                child: CustomPaint(painter: _NeonGridPainter()),
               ),
             ),
-          ),
 
-        if (showParticles)
-          const Positioned.fill(
-            child: IgnorePointer(
-              child: CustomPaint(
-                painter: _NeonParticlePainter(),
+          // Background particles
+          if (showParticles)
+            const Positioned.fill(
+              child: IgnorePointer(
+                child: CustomPaint(painter: _NeonParticlePainter()),
               ),
             ),
-          ),
 
-        // Vignette keeps the edges darker.
-        const Positioned.fill(
-          child: IgnorePointer(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  center: Alignment.center,
-                  radius: 0.85,
-                  colors: [
-                    Colors.transparent,
-                    Color(0x22000000),
-                    Color(0x66000000),
-                  ],
-                  stops: [0.45, 0.78, 1.0],
+          // Dark vignette overlay
+          const Positioned.fill(
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: Alignment.center,
+                    radius: 0.85,
+                    colors: [
+                      Colors.transparent,
+                      Color(0x22000000),
+                      Color(0x66000000),
+                    ],
+                    stops: [0.45, 0.78, 1.0],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
 
-        child,
-      ],
+          // Foreground content
+          Positioned.fill(
+            child: Responsive(
+              child: SafeArea(
+                child: Column(
+                  children: [
+                    ?_buildAppBar(context),
+
+                    // Screen content gets remaining height
+                    Expanded(child: child),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget? _buildAppBar(BuildContext context) {
+    if (title == null) return null;
+
+    return SizedBox(
+      height: kToolbarHeight,
+      child: Row(
+        children: [
+          ?title != null ? BackButton() : null,
+
+          Expanded(
+            child: Text(
+              title!,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Themes.textPrimary,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 3,
+              ),
+            ),
+          ),
+
+          const SizedBox(width: 48),
+        ],
+      ),
     );
   }
 }
@@ -142,19 +177,11 @@ class _NeonGridPainter extends CustomPainter {
     const spacing = 42.0;
 
     for (double x = 0; x <= size.width; x += spacing) {
-      canvas.drawLine(
-        Offset(x, 0),
-        Offset(x, size.height),
-        paint,
-      );
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
     }
 
     for (double y = 0; y <= size.height; y += spacing) {
-      canvas.drawLine(
-        Offset(0, y),
-        Offset(size.width, y),
-        paint,
-      );
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
     }
   }
 
@@ -169,11 +196,7 @@ class _NeonParticlePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final random = math.Random(42);
 
-    final colors = [
-      Themes.neonCyan,
-      Themes.neonPurple,
-      Themes.neonPink,
-    ];
+    final colors = [Themes.neonCyan, Themes.neonPurple, Themes.neonPink];
 
     for (var i = 0; i < 35; i++) {
       final x = random.nextDouble() * size.width;
@@ -182,15 +205,9 @@ class _NeonParticlePainter extends CustomPainter {
       final color = colors[i % colors.length];
 
       final paint = Paint()
-        ..color = color.withValues(
-          alpha: 0.08 + random.nextDouble() * 0.12,
-        );
+        ..color = color.withValues(alpha: 0.08 + random.nextDouble() * 0.12);
 
-      canvas.drawCircle(
-        Offset(x, y),
-        radius,
-        paint,
-      );
+      canvas.drawCircle(Offset(x, y), radius, paint);
     }
   }
 
