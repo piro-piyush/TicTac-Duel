@@ -10,11 +10,16 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'Flutter Demo',
-      theme: Themes.darkTheme,
-      routerConfig: Routes.router,
-      debugShowCheckedModeBanner: false,
+    return ScreenUtilInit(
+      designSize: const Size(360, 690),
+      minTextAdapt: true,
+      splitScreenMode: true,
+      child: MaterialApp.router(
+        title: 'Flutter Demo',
+        theme: Themes.darkTheme,
+        routerConfig: Routes.router,
+        debugShowCheckedModeBanner: false,
+      ),
     );
   }
 }

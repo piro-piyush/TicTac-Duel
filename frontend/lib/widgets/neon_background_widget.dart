@@ -9,11 +9,13 @@ class NeonBackgroundWidget extends StatefulWidget {
     this.title,
     this.showGrid = true,
     this.showParticles = true,
+    this.needScroll = true,
   });
 
   final Widget child;
   final String? title;
   final bool showGrid;
+  final bool needScroll;
   final bool showParticles;
 
   @override
@@ -160,7 +162,14 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
                     children: [
                       if (widget.title != null) _buildAppBar(context),
 
-                      Expanded(child: widget.child),
+                      Expanded(
+                        child: widget.needScroll
+                            ? SingleChildScrollView(
+                          padding: Dimens.defaultPadding,
+                                child: widget.child,
+                              )
+                            : widget.child,
+                      ),
                     ],
                   ),
                 ),
