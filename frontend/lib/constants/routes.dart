@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tictac_duel/lib.dart';
-import 'package:tictac_duel/screens/settings_screen.dart';
+import 'package:tictac_duel/screens/settings/settings_screen.dart';
 
 abstract final class Routes {
   Routes._();
@@ -10,7 +10,7 @@ abstract final class Routes {
   // Paths
   // ---------------------------------------------------------------------------
 
-  static const String mainMenu = '/';
+  static const String home = '/';
   static const String createRoom = '/create-room';
   static const String joinRoom = '/join-room';
   static const String game = '/game';
@@ -20,7 +20,7 @@ abstract final class Routes {
   // ---------------------------------------------------------------------------
   // Names
   // ---------------------------------------------------------------------------
-  static const String mainMenuName = 'mainMenu';
+  static const String homeName = 'home';
   static const String createRoomName = 'createRoom';
   static const String joinRoomName = 'joinRoom';
   static const String gameName = 'game';
@@ -33,12 +33,12 @@ abstract final class Routes {
 
   static final GoRouter router = GoRouter(
     debugLogDiagnostics: true,
-    initialLocation: mainMenu,
+    initialLocation: home,
     routes: [
       GoRoute(
-        path: mainMenu,
-        name: mainMenuName,
-        builder: (context, state) => const MainMenuScreen(),
+        path: home,
+        name: homeName,
+        builder: (context, state) => const HomeScreen(),
       ),
 
       GoRoute(
@@ -89,7 +89,7 @@ abstract final class Routes {
   // Navigation
   // ---------------------------------------------------------------------------
 
-  static void goMainMenu() => router.goNamed(mainMenuName);
+  static void goHome() => router.goNamed(home);
 
   static void pushSettings() => router.pushNamed(settingsName);
   static void pushHelp() => router.pushNamed(helpName);
