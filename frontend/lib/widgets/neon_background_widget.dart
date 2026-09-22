@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:tictac_duel/lib.dart';
 
-class NeonBackgroundWidget extends StatelessWidget {
+class NeonBackgroundWidget extends StatefulWidget {
   const NeonBackgroundWidget({
     super.key,
     required this.child,
@@ -17,102 +17,174 @@ class NeonBackgroundWidget extends StatelessWidget {
   final bool showParticles;
 
   @override
+  State<NeonBackgroundWidget> createState() => _NeonBackgroundWidgetState();
+}
+
+class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
+    with TickerProviderStateMixin {
+  final List<_TapEffect> _tapEffects = [];
+
+  void _handleTap(PointerDownEvent event) {
+    final controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 650),
+    );
+
+    final effect = _TapEffect(
+      position: event.localPosition,
+      color: _randomNeonColor(),
+      controller: controller,
+    );
+
+    setState(() {
+      _tapEffects.add(effect);
+    });
+
+    controller.forward().whenCompleteOrCancel(() {
+      if (!mounted) {
+        controller.dispose();
+        return;
+      }
+
+      setState(() {
+        _tapEffects.remove(effect);
+      });
+
+      controller.dispose();
+    });
+  }
+
+  Color _randomNeonColor() {
+    final colors = [Themes.neonCyan, Themes.neonPink, Themes.neonPurple];
+
+    return colors[math.Random().nextInt(colors.length)];
+  }
+
+  @override
+  void dispose() {
+    for (final effect in _tapEffects) {
+      effect.controller.dispose();
+    }
+
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Themes.background,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          // Base background
-          const ColoredBox(color: Themes.background),
+      body: Listener(
+        onPointerDown: _handleTap,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Base background
+            const ColoredBox(color: Themes.background),
 
-          // Ambient neon glows
-          const Positioned(
-            top: -140,
-            right: -100,
-            child: _NeonGlow(color: Themes.neonPurple, size: 300),
-          ),
+            // Ambient neon glows
+            const Positioned(
+              top: -140,
+              right: -100,
+              child: _NeonGlow(color: Themes.neonPurple, size: 300),
+            ),
 
-          const Positioned(
-            bottom: -150,
-            left: -120,
-            child: _NeonGlow(color: Themes.neonCyan, size: 320),
-          ),
+            const Positioned(
+              bottom: -150,
+              left: -120,
+              child: _NeonGlow(color: Themes.neonCyan, size: 320),
+            ),
 
-          const Positioned(
-            top: 260,
-            left: -180,
-            child: _NeonGlow(color: Themes.neonPink, size: 260, opacity: 0.025),
-          ),
-
-          // Neon grid
-          if (showGrid)
-            const Positioned.fill(
-              child: IgnorePointer(
-                child: CustomPaint(painter: _NeonGridPainter()),
+            const Positioned(
+              top: 260,
+              left: -180,
+              child: _NeonGlow(
+                color: Themes.neonPink,
+                size: 260,
+                opacity: 0.025,
               ),
             ),
 
-          // Background particles
-          if (showParticles)
-            const Positioned.fill(
-              child: IgnorePointer(
-                child: CustomPaint(painter: _NeonParticlePainter()),
-              ),
-            ),
-
-          // Dark vignette overlay
-          const Positioned.fill(
-            child: IgnorePointer(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: RadialGradient(
-                    center: Alignment.center,
-                    radius: 0.85,
-                    colors: [
-                      Colors.transparent,
-                      Color(0x22000000),
-                      Color(0x66000000),
-                    ],
-                    stops: [0.45, 0.78, 1.0],
-                  ),
+            // Grid
+            if (widget.showGrid)
+              const Positioned.fill(
+                child: IgnorePointer(
+                  child: CustomPaint(painter: _NeonGridPainter()),
                 ),
               ),
-            ),
-          ),
 
-          // Foreground content
-          Positioned.fill(
-            child: Responsive(
-              child: SafeArea(
-                child: Column(
+            // Particles
+            if (widget.showParticles)
+              const Positioned.fill(
+                child: IgnorePointer(
+                  child: CustomPaint(painter: _NeonParticlePainter()),
+                ),
+              ),
+
+            // Tap effects
+            Positioned.fill(
+              child: IgnorePointer(
+                child: Stack(
                   children: [
-                    ?_buildAppBar(context),
-
-                    // Screen content gets remaining height
-                    Expanded(child: child),
+                    for (final effect in _tapEffects)
+                      _TapEffectWidget(effect: effect),
                   ],
                 ),
               ),
             ),
-          ),
-        ],
+
+            // Vignette
+            const Positioned.fill(
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: RadialGradient(
+                      center: Alignment.center,
+                      radius: 0.85,
+                      colors: [
+                        Colors.transparent,
+                        Color(0x22000000),
+                        Color(0x66000000),
+                      ],
+                      stops: [0.45, 0.78, 1.0],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Foreground
+            Positioned.fill(
+              child: Responsive(
+                child: SafeArea(
+                  child: Column(
+                    children: [
+                      if (widget.title != null) _buildAppBar(context),
+
+                      Expanded(child: widget.child),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget? _buildAppBar(BuildContext context) {
-    if (title == null) return null;
-
+  Widget _buildAppBar(BuildContext context) {
     return SizedBox(
       height: kToolbarHeight,
       child: Row(
         children: [
-          ?title != null ? BackButton() : null,
+          const SizedBox(
+            width: 48,
+            child: BackButton(color: Themes.textPrimary),
+          ),
 
           Expanded(
             child: Text(
-              title!,
+              widget.title!,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
@@ -128,6 +200,63 @@ class NeonBackgroundWidget extends StatelessWidget {
           const SizedBox(width: 48),
         ],
       ),
+    );
+  }
+}
+
+class _TapEffect {
+  _TapEffect({
+    required this.position,
+    required this.color,
+    required this.controller,
+  });
+
+  final Offset position;
+  final Color color;
+  final AnimationController controller;
+}
+
+class _TapEffectWidget extends StatelessWidget {
+  const _TapEffectWidget({required this.effect});
+
+  final _TapEffect effect;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: effect.controller,
+      builder: (context, child) {
+        final progress = Curves.easeOutCubic.transform(effect.controller.value);
+
+        final radius = 8.0 + (progress * 55.0);
+
+        final opacity = (1.0 - progress).clamp(0.0, 1.0);
+
+        return Positioned(
+          left: effect.position.dx - radius,
+          top: effect.position.dy - radius,
+          child: IgnorePointer(
+            child: Container(
+              width: radius * 2,
+              height: radius * 2,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: effect.color.withValues(alpha: opacity * 0.65),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: effect.color.withValues(alpha: opacity * 0.35),
+                    blurRadius: 18,
+                    spreadRadius: 3,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
