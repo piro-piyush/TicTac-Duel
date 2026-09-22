@@ -11,7 +11,32 @@ class RoomSocketService {
     required String playerName,
     required PlayerSymbol symbol,
     required RoomTheme theme,
+    required void Function(RoomModel room) onRoomCreated,
   }) {
+    _socket.off('room_created');
+
+    _socket.on('room_created', (response) {
+      if (response is! Map) {
+        return;
+      }
+
+      if (response['success'] != true) {
+        return;
+      }
+
+      final data = response['room'];
+
+      if (data is! Map) {
+        return;
+      }
+
+      final room = RoomModel.fromJson(Map<String, dynamic>.from(data));
+
+      onRoomCreated(room);
+
+      _socket.off('room_created');
+    });
+
     _socket.emit('create_room', {
       'playerName': playerName,
       'symbol': symbol.value,
