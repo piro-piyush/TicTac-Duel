@@ -1,9 +1,10 @@
 import 'package:tictac_duel/lib.dart';
 
-void main() {
+void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
 
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  await dotenv.load();
 
   runApp(const MyApp());
 }
