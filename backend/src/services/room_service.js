@@ -19,6 +19,7 @@ class RoomService {
       players: [
         player,
       ],
+
       isPlaying: false,
       turn: player,
       turnIndex: 0,
