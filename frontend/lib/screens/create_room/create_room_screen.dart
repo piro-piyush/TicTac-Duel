@@ -44,6 +44,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
           ),
 
           _buildRoomInfo(),
+          SizedBox(height: 20),
         ],
       ),
     );

@@ -51,7 +51,7 @@ class HomeScreen extends StatelessWidget {
                         subtitle: 'Start a new duel',
                         icon: Icons.add_rounded,
                         color: Themes.neonCyan,
-                        secondaryColor: Themes.neonPurple,
+                        // secondaryColor: Themes.neonPurple,
                         onTap: Routes.pushCreateRoom,
                       ),
 
@@ -62,7 +62,7 @@ class HomeScreen extends StatelessWidget {
                         subtitle: 'Challenge someone to play',
                         icon: Icons.person_add_alt_1_rounded,
                         color: Themes.neonPurple,
-                        secondaryColor: Themes.neonPink,
+                        // secondaryColor: Themes.neonPink,
                         onTap: Routes.pushJoinRoom,
                       ),
 

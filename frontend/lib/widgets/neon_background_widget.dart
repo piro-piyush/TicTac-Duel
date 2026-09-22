@@ -178,6 +178,7 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
           ],
         ),
       ),
+
     );
   }
 

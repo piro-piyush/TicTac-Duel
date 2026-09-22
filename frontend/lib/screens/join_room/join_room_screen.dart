@@ -31,12 +31,10 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
   Widget build(BuildContext context) {
     return NeonBackgroundWidget(
       needScroll: false,
-
       child: SafeArea(
         child: Column(
           children: [
             _buildAppBar(),
-
             Expanded(
               child: Stack(children: [_buildContent(), _buildJoinButton()]),
             ),
@@ -83,72 +81,12 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
         spacing: 28,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _buildHeader(),
+          JoinRoomHeaderWidget(),
           _buildRoomCodeCard(),
-          _buildHint(),
+          JoinRoomHintWidget(),
           _buildDivider(),
           _buildCreateRoomButton(),
         ],
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Column(
-      spacing: 12,
-      children: [
-        _buildHeaderIcon(),
-
-        const Text(
-          'FIND YOUR',
-          style: TextStyle(
-            color: Themes.textSecondary,
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 4,
-          ),
-        ),
-
-        const Text(
-          'DUEL',
-          style: TextStyle(
-            color: Themes.textPrimary,
-            fontSize: 34,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 2,
-            height: 0.9,
-          ),
-        ),
-
-        const Text(
-          'Enter the room code shared by your friend.',
-          textAlign: TextAlign.center,
-          style: TextStyle(color: Themes.textSecondary, fontSize: 12),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildHeaderIcon() {
-    return Container(
-      width: 76,
-      height: 76,
-      decoration: BoxDecoration(
-        color: Themes.neonPurple.withValues(alpha: 0.07),
-        shape: BoxShape.circle,
-        border: Border.all(color: Themes.neonPurple.withValues(alpha: 0.3)),
-        boxShadow: [
-          BoxShadow(
-            color: Themes.neonPurple.withValues(alpha: 0.10),
-            blurRadius: 28,
-            spreadRadius: 2,
-          ),
-        ],
-      ),
-      child: const Icon(
-        Icons.login_rounded,
-        color: Themes.neonPurple,
-        size: 34,
       ),
     );
   }
@@ -257,27 +195,6 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
     return OutlineInputBorder(
       borderRadius: BorderRadius.circular(14),
       borderSide: BorderSide(color: color ?? Themes.border, width: width),
-    );
-  }
-
-  Widget _buildHint() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      spacing: 8,
-      children: [
-        const Icon(
-          Icons.info_outline_rounded,
-          color: Themes.textSecondary,
-          size: 15,
-        ),
-        Text(
-          'Use the 6–8 character code from your friend',
-          style: TextStyle(
-            color: Themes.textSecondary.withValues(alpha: 0.8),
-            fontSize: 10,
-          ),
-        ),
-      ],
     );
   }
 

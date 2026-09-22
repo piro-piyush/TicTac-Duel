@@ -1,15 +1,16 @@
-import 'package:tictac_duel/lib.dart';
+import 'package:flutter/material.dart';
 
 class Responsive extends StatelessWidget {
-  final Widget child;
+  const Responsive({super.key, required this.child, this.maxWidth = 600});
 
-  const Responsive({super.key, required this.child});
+  final Widget child;
+  final double maxWidth;
 
   @override
   Widget build(BuildContext context) {
     return Center(
       child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: 600),
+        constraints: BoxConstraints(maxWidth: maxWidth),
         child: child,
       ),
     );
