@@ -15,30 +15,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return NeonBackgroundWidget(
-      title: 'Settings',
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+      title: 'SETTINGS',
+      child: Column(
+        spacing: 32,
         children: [
-          const SettingsHeaderWidget(),
-          const SizedBox(height: 28),
+          Column(
+            spacing: 28,
+            children: [
+              const HeaderSectionWidget(
+                title: 'Game Settings',
+                subtitle: 'Customize your duel experience.',
+                icon: Icons.settings_rounded,
+              ),
 
-          SettingsAudioSectionWidget(
-            soundEnabled: _soundEnabled,
-            musicEnabled: _musicEnabled,
-            vibrationEnabled: _vibrationEnabled,
-            onSoundChanged: (value) => setState(() => _soundEnabled = value),
-            onMusicChanged: (value) => setState(() => _musicEnabled = value),
-            onVibrationChanged: (value) =>
-                setState(() => _vibrationEnabled = value),
+              SettingsAudioSectionWidget(
+                soundEnabled: _soundEnabled,
+                musicEnabled: _musicEnabled,
+                vibrationEnabled: _vibrationEnabled,
+                onSoundChanged: (value) =>
+                    setState(() => _soundEnabled = value),
+                onMusicChanged: (value) =>
+                    setState(() => _musicEnabled = value),
+                onVibrationChanged: (value) =>
+                    setState(() => _vibrationEnabled = value),
+              ),
+
+              SettingsAboutSectionWidget(),
+            ],
           ),
 
-          const SizedBox(height: 28),
-
-          SettingsAboutSectionWidget(),
-
-          const SizedBox(height: 40),
-
-          const FooterCardWidget(),
+          FooterCardWidget(),
         ],
       ),
     );
