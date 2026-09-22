@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:tictac_duel/lib.dart';
+import 'package:tictac_duel/models/room_model.dart';
 
 abstract final class Routes {
   Routes._();
@@ -10,6 +11,7 @@ abstract final class Routes {
 
   static const String home = '/';
   static const String createRoom = '/create-room';
+  static const String waitingRoom = '/waiting-room';
   static const String joinRoom = '/join-room';
   static const String game = '/game';
   static const String settings = '/settings';
@@ -20,6 +22,7 @@ abstract final class Routes {
   // ---------------------------------------------------------------------------
   static const String homeName = 'home';
   static const String createRoomName = 'createRoom';
+  static const String waitingRoomName = 'waitingRoom';
   static const String joinRoomName = 'joinRoom';
   static const String gameName = 'game';
   static const String settingsName = 'settings';
@@ -64,7 +67,8 @@ abstract final class Routes {
         path: settings,
         name: settingsName,
         builder: (context, state) => const SettingsScreen(),
-      ),GoRoute(
+      ),
+      GoRoute(
         path: help,
         name: helpName,
         builder: (context, state) => const HelpScreen(),
@@ -90,11 +94,18 @@ abstract final class Routes {
   static void goHome() => router.goNamed(home);
 
   static void pushSettings() => router.pushNamed(settingsName);
+
   static void pushHelp() => router.pushNamed(helpName);
 
   static void pushCreateRoom() => router.pushNamed(createRoomName);
+
   static void replaceJoinRoom() => router.replaceNamed(joinRoomName);
+
   static void replaceCreateRoom() => router.replaceNamed(createRoomName);
+
+  static void replaceWaitingRoom(RoomModel room) =>
+      router.replaceNamed(waitingRoomName, extra: room);
+
   static void pushJoinRoom() => router.pushNamed(joinRoomName);
 
   static void pushGame(String roomId) =>
