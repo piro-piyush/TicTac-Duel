@@ -36,7 +36,8 @@ function registerRoomSocket(io, socket) {
           theme: room.theme,
           isPlaying: room.isPlaying,
           turnIndex: room.turnIndex,
-
+          turn: room.turn,
+          players: room.players
         },
       );
 
@@ -83,9 +84,14 @@ function registerRoomSocket(io, socket) {
         {
           id: room._id,
           code: room.code,
+          occupancy: room.occupancy,
+          maxRounds: room.maxRounds,
+          currentRound: room.currentRound,
           theme: room.theme,
-          host: room.host,
-          guest: room.guest,
+          isPlaying: room.isPlaying,
+          turnIndex: room.turnIndex,
+          turn: room.turn,
+          players: room.players
         },
       );
       // Tell joining player.

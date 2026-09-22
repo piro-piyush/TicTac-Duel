@@ -8,20 +8,19 @@ class RoomService {
     socket,
   }) {
     const roomCode = await this._generateUniqueRoomCode();
-
+    let player = {
+      name: playerName,
+      symbol,
+      socketId: socket.id,
+    };
     const room = await Room.create({
       code: roomCode,
       theme,
       players: [
-        {
-          name: playerName,
-          symbol,
-          socketId: socket.id,
-        },
+        player,
       ],
-
       isPlaying: false,
-      turn: null,
+      turn: player,
       turnIndex: 0,
     });
 
