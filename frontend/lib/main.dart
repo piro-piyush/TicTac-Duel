@@ -33,11 +33,16 @@ class _MyAppState extends State<MyApp> {
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {
-        return MaterialApp.router(
-          title: 'Tic Tac Duel',
-          theme: Themes.darkTheme,
-          routerConfig: Routes.router,
-          debugShowCheckedModeBanner: false,
+        return MultiProvider(
+          providers: [
+            ChangeNotifierProvider(create: (_) => RoomDataProvider()),
+          ],
+          child: MaterialApp.router(
+            title: 'Tic Tac Duel',
+            theme: Themes.darkTheme,
+            routerConfig: Routes.router,
+            debugShowCheckedModeBanner: false,
+          ),
         );
       },
     );

@@ -6,6 +6,8 @@ export 'responsive/responsive.dart';
 export 'package:flutter_screenutil/flutter_screenutil.dart';
 export 'package:flutter_native_splash/flutter_native_splash.dart';
 export 'package:flutter_dotenv/flutter_dotenv.dart';
+export 'package:provider/provider.dart';
 export 'utils/utils.dart';
+export 'providers/providers.dart';
 export 'services/services.dart';
 export 'models/models.dart';
