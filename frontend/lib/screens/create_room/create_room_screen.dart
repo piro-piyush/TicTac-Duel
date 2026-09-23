@@ -19,10 +19,13 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
   void initState() {
     super.initState();
     _playerNameFocusNode.requestFocus();
-    RoomSocketService.instance.onRoomCreated((room) {
-      LoggerUtils.info('Room created: $room');
+    RoomSocketService.instance.onRoomCreated((room) async {
+      SnackbarUtils.showSuccess(context, 'Room created');
       Provider.of<RoomDataProvider>(context, listen: false).setRoom(room);
-      Routes.replaceGame();
+       Routes.replaceGame();
+    });
+    RoomSocketService.instance.onRoomError((room) {
+      SnackbarUtils.showError(context, 'Room error: $room');
     });
   }
 
@@ -246,7 +249,6 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
         playerName: playerName,
         symbol: _selectedSymbol,
         theme: _selectedTheme,
-
       );
     } catch (e) {
       LoggerUtils.error('Error creating room: $e');

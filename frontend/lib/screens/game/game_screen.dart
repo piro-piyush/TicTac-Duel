@@ -1,7 +1,81 @@
+import 'package:flutter/services.dart';
 import 'package:tictac_duel/lib.dart';
 
-class GameScreen extends StatelessWidget {
+class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
+
+  @override
+  State<GameScreen> createState() => _GameScreenState();
+}
+
+class _GameScreenState extends State<GameScreen> {
+
+
+  @override
+  void initState() {
+    super.initState();
+
+    final roomSocket = RoomSocketService.instance;
+
+    // Another player joined the room.
+    roomSocket.onPlayerJoined((room) {
+      if (!mounted) {
+        return;
+      }
+
+      Provider.of<RoomDataProvider>(
+        context,
+        listen: false,
+      ).setRoom(room);
+
+      SnackbarUtils.showSuccess(
+        context,
+        'Player joined the game',
+      );
+    });
+
+    // Room state changed.
+    roomSocket.onRoomUpdated((room) {
+      if (!mounted) {
+        return;
+      }
+
+      Provider.of<RoomDataProvider>(
+        context,
+        listen: false,
+      ).setRoom(room);
+    });
+
+    // Player left the room.
+    roomSocket.onPlayerLeft((room) {
+      if (!mounted) {
+        return;
+      }
+
+      Provider.of<RoomDataProvider>(
+        context,
+        listen: false,
+      ).setRoom(room);
+
+      SnackbarUtils.showWarning(
+        context,
+        'Player left the game',
+      );
+    });
+
+    // Room/game error.
+    roomSocket.onRoomError((message) {
+      if (!mounted) {
+        return;
+      }
+
+      SnackbarUtils.showError(
+        context,
+        message,
+      );
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -14,6 +88,20 @@ class GameScreen extends StatelessWidget {
     return NeonBackgroundWidget(
       needScroll: false,
       title: 'Tic Tac Duel',
+      actions: [
+        IconButton(
+          onPressed: () {
+            // Copy
+            Clipboard.setData(ClipboardData(text: room.code));
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Room code copied to clipboard')),
+            );
+          },
+          icon: const Icon(Icons.copy),
+          tooltip: 'Copy Code',
+          color: Themes.textPrimary,
+        ),
+      ],
       child: Column(
         children: [
           _buildPlayers(room),
