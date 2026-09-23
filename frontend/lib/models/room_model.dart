@@ -12,6 +12,7 @@ class RoomModel {
     required this.isPlaying,
     required this.turn,
     required this.turnIndex,
+    required this.boardSize,
   });
 
   final String id;
@@ -24,6 +25,7 @@ class RoomModel {
   final bool isPlaying;
   final PlayerModel? turn;
   final int turnIndex;
+  final int boardSize;
 
   factory RoomModel.fromJson(Map<String, dynamic> json) {
     return RoomModel(
@@ -46,6 +48,7 @@ class RoomModel {
               Map<String, dynamic>.from(json['turn'] as Map),
             ),
       turnIndex: json['turnIndex'] as int,
+      boardSize: json['boardSize'] as int,
     );
   }
 }
