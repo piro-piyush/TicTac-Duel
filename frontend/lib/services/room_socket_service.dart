@@ -7,23 +7,15 @@ class RoomSocketService {
 
   final SocketService _socket = SocketService.instance;
 
+  // ---------------------------------------------------------------------------
+  // Requests
+  // ---------------------------------------------------------------------------
+
   void createRoom({
     required String playerName,
     required PlayerSymbol symbol,
     required RoomTheme theme,
   }) {
-    _socket.off(RoomSocketEvents.roomCreated);
-
-    _socket.on(RoomSocketEvents.roomCreated, (response) {
-      final room = _parseRoom(response);
-
-      if (room == null) {
-        return;
-      }
-
-      _socket.off(RoomSocketEvents.roomCreated);
-    });
-
     _socket.emit(RoomSocketEvents.createRoom, {
       'playerName': playerName,
       'symbol': symbol.value,
@@ -42,63 +34,71 @@ class RoomSocketService {
     _socket.emit(RoomSocketEvents.leaveRoom, {'roomCode': roomCode});
   }
 
+  // ---------------------------------------------------------------------------
+  // Room Events
+  // ---------------------------------------------------------------------------
+
   void onRoomCreated(void Function(RoomModel room) callback) {
-    _socket.on(RoomSocketEvents.roomCreated, (response) {
-      final room = _parseRoom(response);
-      if (room != null) {
-        callback(room);
-      }
-    });
+    _listenToRoomEvent(RoomSocketEvents.roomCreated, callback);
   }
 
   void onRoomJoined(void Function(RoomModel room) callback) {
-    _socket.on(RoomSocketEvents.roomJoined, (response) {
-      final room = _parseRoom(response);
-
-      if (room != null) {
-        callback(room);
-      }
-    });
+    _listenToRoomEvent(RoomSocketEvents.roomJoined, callback);
   }
 
   void onRoomUpdated(void Function(RoomModel room) callback) {
-    _socket.on(RoomSocketEvents.roomUpdated, (response) {
-      final room = _parseRoom(response);
-
-      if (room != null) {
-        callback(room);
-      }
-    });
+    _listenToRoomEvent(RoomSocketEvents.roomUpdated, callback);
   }
 
-  void onPlayerJoined(void Function(RoomModel room) callback) {
-    _socket.on(RoomSocketEvents.playerJoined, (response) {
-      final room = _parseRoom(response);
+  // ---------------------------------------------------------------------------
+  // Player Events
+  // ---------------------------------------------------------------------------
 
-      if (room != null) {
-        callback(room);
-      }
-    });
+  void onPlayerJoined(void Function(RoomModel room) callback) {
+    _listenToRoomEvent(RoomSocketEvents.playerJoined, callback);
   }
 
   void onPlayerLeft(void Function(RoomModel room) callback) {
-    _socket.on(RoomSocketEvents.playerLeft, (response) {
-      final room = _parseRoom(response);
-
-      if (room != null) {
-        callback(room);
-      }
-    });
+    _listenToRoomEvent(RoomSocketEvents.playerLeft, callback);
   }
 
+  // ---------------------------------------------------------------------------
+  // Error Events
+  // ---------------------------------------------------------------------------
+
   void onRoomError(void Function(String message) callback) {
+    _socket.off(RoomSocketEvents.roomError);
+
     _socket.on(RoomSocketEvents.roomError, (response) {
       if (response is! Map) {
         callback('Something went wrong.');
         return;
       }
 
-      callback(response['message']?.toString() ?? 'Something went wrong.');
+      final message = response['message']?.toString();
+
+      callback(
+        message == null || message.isEmpty ? 'Something went wrong.' : message,
+      );
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Helpers
+  // ---------------------------------------------------------------------------
+
+  void _listenToRoomEvent(
+    String event,
+    void Function(RoomModel room) callback,
+  ) {
+    _socket.off(event);
+
+    _socket.on(event, (response) {
+      final room = _parseRoom(response);
+
+      if (room != null) {
+        callback(room);
+      }
     });
   }
 
@@ -111,7 +111,7 @@ class RoomSocketService {
       return null;
     }
 
-    final data = response['room'];
+    final data = response['data'];
 
     if (data is! Map) {
       return null;
@@ -123,6 +123,10 @@ class RoomSocketService {
       return null;
     }
   }
+
+  // ---------------------------------------------------------------------------
+  // Dispose
+  // ---------------------------------------------------------------------------
 
   void dispose() {
     _socket.off(RoomSocketEvents.roomCreated);

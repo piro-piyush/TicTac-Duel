@@ -44,14 +44,14 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
 
     controller.forward().whenCompleteOrCancel(() {
       if (!mounted) {
-        controller.dispose();
         return;
       }
-
+      if (!_tapEffects.contains(effect)) {
+        return;
+      }
       setState(() {
         _tapEffects.remove(effect);
       });
-
       controller.dispose();
     });
   }
@@ -64,10 +64,10 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
 
   @override
   void dispose() {
-    for (final effect in _tapEffects) {
+    for (final effect in List<_TapEffect>.from(_tapEffects)) {
       effect.controller.dispose();
     }
-
+    _tapEffects.clear();
     super.dispose();
   }
 
@@ -165,7 +165,7 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
                       Expanded(
                         child: widget.needScroll
                             ? SingleChildScrollView(
-                          padding: Dimens.defaultPadding,
+                                padding: Dimens.defaultPadding,
                                 child: widget.child,
                               )
                             : widget.child,
@@ -178,7 +178,6 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
           ],
         ),
       ),
-
     );
   }
 
