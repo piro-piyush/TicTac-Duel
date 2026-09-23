@@ -15,4 +15,13 @@ class RoomSocketEvents {
   // Player events
   static const playerJoined = 'player_joined';
   static const playerLeft = 'player_left';
+
+  // Game events
+  static const gameStarted = 'game_started';
+  static const gameEnded = 'game_ended';
+  static const gameError = 'game_error';
+
+  // Move events
+  static const makeMove = 'make_move';
+  static const moveMade = 'move_made';
 }

@@ -35,17 +35,16 @@ class RoomModel {
       theme: RoomTheme.fromValue(json['theme'] as String),
       players: (json['players'] as List)
           .map(
-            (player) => PlayerModel.fromJson(
-          Map<String, dynamic>.from(player as Map),
-        ),
-      )
+            (player) =>
+                PlayerModel.fromJson(Map<String, dynamic>.from(player as Map)),
+          )
           .toList(),
       isPlaying: json['isPlaying'] as bool,
       turn: json['turn'] == null
           ? null
           : PlayerModel.fromJson(
-        Map<String, dynamic>.from(json['turn'] as Map),
-      ),
+              Map<String, dynamic>.from(json['turn'] as Map),
+            ),
       turnIndex: json['turnIndex'] as int,
     );
   }
@@ -72,4 +71,7 @@ class PlayerModel {
       points: json['points'] as int? ?? 0,
     );
   }
+
+  String get imageUrl =>
+      'https://api.dicebear.com/10.x/pixelbot/svg?seed=$socketId';
 }
