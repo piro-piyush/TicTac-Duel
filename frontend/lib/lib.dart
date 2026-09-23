@@ -5,6 +5,7 @@ export 'package:flutter/material.dart';
 export 'responsive/responsive.dart';
 export 'package:flutter_screenutil/flutter_screenutil.dart';
 export 'package:flutter_native_splash/flutter_native_splash.dart';
+export 'package:flutter_svg/flutter_svg.dart';
 export 'package:flutter_dotenv/flutter_dotenv.dart';
 export 'package:provider/provider.dart';
 export 'utils/utils.dart';
