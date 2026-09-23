@@ -15,14 +15,14 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
   PlayerSymbol _selectedSymbol = PlayerSymbol.x;
   RoomTheme _selectedTheme = RoomTheme.classic;
 
-
   @override
   void initState() {
     super.initState();
     _playerNameFocusNode.requestFocus();
-    RoomSocketService.instance.onRoomCreated((room){
+    RoomSocketService.instance.onRoomCreated((room) {
       LoggerUtils.info('Room created: $room');
-      Routes.replaceGame(room);
+      Provider.of<RoomDataProvider>(context, listen: false).setRoom(room);
+      Routes.replaceGame();
     });
   }
 

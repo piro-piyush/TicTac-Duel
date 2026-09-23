@@ -1,27 +1,28 @@
 import 'package:tictac_duel/lib.dart';
 
 class GameScreen extends StatelessWidget {
-  const GameScreen({super.key, required this.room});
+  const GameScreen({super.key, });
 
-  final RoomModel room;
+
 
   @override
   Widget build(BuildContext context) {
+    final  room = Provider.of<RoomModel>(context);
     return NeonBackgroundWidget(
       needScroll: false,
       title: 'Tic Tac Duel',
       child: Column(
         children: [
-          _buildPlayers(),
+          _buildPlayers(room),
           const SizedBox(height: 20),
           Expanded(child: _buildBoardPlaceholder()),
-          _buildRoomInfo(),
+          _buildRoomInfo(room),
         ],
       ),
     );
   }
 
-  Widget _buildPlayers() {
+  Widget _buildPlayers(RoomModel room) {
     return Row(
       spacing: 12,
       children: [
@@ -155,7 +156,7 @@ class GameScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildRoomInfo() {
+  Widget _buildRoomInfo(RoomModel room) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(

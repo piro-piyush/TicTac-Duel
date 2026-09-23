@@ -59,7 +59,7 @@ abstract final class Routes {
       GoRoute(
         path: game,
         name: gameName,
-        builder: (context, state) => GameScreen(room: state.extra as RoomModel),
+        builder: (context, state) => GameScreen(),
       ),
       GoRoute(
         path: settings,
@@ -104,8 +104,8 @@ abstract final class Routes {
   static void replaceWaitingRoom(RoomModel room) =>
       router.replaceNamed(waitingRoomName, extra: room);
 
-  static void replaceGame(RoomModel room) =>
-      router.replaceNamed(gameName, extra: room);
+  static void replaceGame() =>
+      router.replaceNamed(gameName);
 
   static void pushJoinRoom() => router.pushNamed(joinRoomName);
 
