@@ -7,6 +7,7 @@ class NeonBackgroundWidget extends StatefulWidget {
     super.key,
     required this.child,
     this.title,
+    this.actions,
     this.showGrid = true,
     this.showParticles = true,
     this.needScroll = true,
@@ -17,6 +18,7 @@ class NeonBackgroundWidget extends StatefulWidget {
   final bool showGrid;
   final bool needScroll;
   final bool showParticles;
+  final List<Widget>? actions;
 
   @override
   State<NeonBackgroundWidget> createState() => _NeonBackgroundWidgetState();
@@ -188,7 +190,9 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
         children: [
           const SizedBox(
             width: 48,
-            child: BackButton(color: Themes.textPrimary),
+            child: BackButton(
+              color: Themes.textPrimary,
+            ),
           ),
 
           Expanded(
@@ -206,7 +210,10 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
             ),
           ),
 
-          const SizedBox(width: 48),
+          if (widget.actions != null)
+            ...widget.actions!
+          else
+            const SizedBox(width: 48),
         ],
       ),
     );

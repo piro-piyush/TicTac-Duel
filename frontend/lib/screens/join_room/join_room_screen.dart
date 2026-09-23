@@ -27,6 +27,20 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _playerNameFocusNode.requestFocus();
+    RoomSocketService.instance.onRoomJoined((room) {
+      SnackbarUtils.showSuccess(context, 'Room joined');
+      Provider.of<RoomDataProvider>(context, listen: false).setRoom(room);
+      Routes.replaceGame();
+    });
+    RoomSocketService.instance.onRoomError((room) {
+      SnackbarUtils.showError(context, 'Room error: $room');
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return NeonBackgroundWidget(
       needScroll: false,
