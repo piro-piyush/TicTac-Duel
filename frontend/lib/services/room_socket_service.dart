@@ -166,10 +166,9 @@ class RoomSocketService {
         }
 
         final index = data['index'];
+        final symbolValue = data['symbol'];
 
-        final symbolValue = data['symbol']?.toString();
-
-        if (index is! int || symbolValue == null) {
+        if (index is! int || symbolValue is! String) {
           return;
         }
 
