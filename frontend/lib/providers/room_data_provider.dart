@@ -16,6 +16,11 @@ class RoomDataProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void updateRoom(RoomModel room) {
+    _room = room;
+    notifyListeners();
+  }
+
   void setBoardValue(int index, PlayerSymbol symbol) {
     if (index < 0 || index >= _board.length) {
       return;

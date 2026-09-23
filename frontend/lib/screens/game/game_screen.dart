@@ -44,11 +44,16 @@ class _GameScreenState extends State<GameScreen> {
       SnackbarUtils.showWarning(context, 'Player left the game');
     });
 
-    roomSocket.onMoveMade(({required int index, required PlayerSymbol symbol}) {
+    roomSocket.onMoveMade(({
+      required RoomModel room,
+      required int index,
+      required PlayerSymbol symbol,
+    }) {
       if (!mounted) {
         return;
       }
 
+      context.read<RoomDataProvider>().updateRoom(room);
       context.read<RoomDataProvider>().setBoardValue(index, symbol);
 
       // Server confirmed the move.
@@ -79,7 +84,8 @@ class _GameScreenState extends State<GameScreen> {
   @override
   Widget build(BuildContext context) {
     final room = context.watch<RoomDataProvider>().room;
-
+    final board = context.watch<RoomDataProvider>().board;
+    final myWebsocketId = SocketService.instance.socketId;
     if (room == null) {
       return const Scaffold(
         backgroundColor: Themes.background,
@@ -97,11 +103,15 @@ class _GameScreenState extends State<GameScreen> {
       title: 'Tic Tac Duel',
       child: !room.isPlaying
           ? WaitingForPlayersWidget(room: room)
-          : _buildGame(room),
+          : _buildGame(room, myWebsocketId, board),
     );
   }
 
-  Widget _buildGame(RoomModel room) {
+  Widget _buildGame(
+    RoomModel room,
+    String? myWebsocketId,
+    List<PlayerSymbol?> board,
+  ) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
@@ -122,9 +132,9 @@ class _GameScreenState extends State<GameScreen> {
             children: [
               _buildRoundIndicator(room, compact: isCompact),
               SizedBox(height: sectionSpacing),
-              _buildPlayers(room, compact: isCompact),
+              _buildPlayers(room, myWebsocketId, compact: isCompact),
               SizedBox(height: sectionSpacing),
-              _buildBoard(room, isWide: isWide),
+              _buildBoard(room, board, isWide: isWide,isMyTurn: room.turn?.socketId==myWebsocketId),
               SizedBox(height: sectionSpacing),
               _buildGameStatus(room, compact: isCompact),
             ],
@@ -183,7 +193,11 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  Widget _buildPlayers(RoomModel room, {required bool compact}) {
+  Widget _buildPlayers(
+    RoomModel room,
+    String? myWebsocketId, {
+    required bool compact,
+  }) {
     return Row(
       spacing: compact ? 6 : 10,
       children: [
@@ -193,6 +207,7 @@ class _GameScreenState extends State<GameScreen> {
             isTurn: room.turnIndex == 0,
             theme: room.theme,
             compact: compact,
+            isMe: myWebsocketId == room.players[0].socketId,
           ),
         ),
         _buildVersus(compact: compact),
@@ -202,6 +217,7 @@ class _GameScreenState extends State<GameScreen> {
             isTurn: room.turnIndex == 1,
             theme: room.theme,
             compact: compact,
+            isMe: myWebsocketId == room.players[1].socketId,
           ),
         ),
       ],
@@ -210,6 +226,7 @@ class _GameScreenState extends State<GameScreen> {
 
   Widget _buildPlayerCard({
     required PlayerModel player,
+    required bool isMe,
     required bool isTurn,
     required RoomTheme theme,
     required bool compact,
@@ -246,7 +263,12 @@ class _GameScreenState extends State<GameScreen> {
       child: Row(
         spacing: compact ? 6 : 9,
         children: [
-          PlayerAvatarWidget(player: player, isTurn: isTurn, size: avatarSize),
+          PlayerAvatarWidget(
+            player: player,
+            isMe: isMe,
+            isTurn: isTurn,
+            size: avatarSize,
+          ),
           Expanded(
             child: Column(
               spacing: 3,
@@ -321,7 +343,12 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  Widget _buildBoard(RoomModel room, {required bool isWide}) {
+  Widget _buildBoard(
+    RoomModel room,
+    List<PlayerSymbol?> values, {
+    required bool isWide,
+    required bool isMyTurn,
+  }) {
     return Align(
       alignment: Alignment.center,
       child: ConstrainedBox(
@@ -329,6 +356,8 @@ class _GameScreenState extends State<GameScreen> {
         child: GameBoardWidget(
           roomTheme: room.theme,
           onCellTap: (index) => _handleCellTap(index, room),
+          values: values,
+          isMyTurn: isMyTurn,
         ),
       ),
     );
