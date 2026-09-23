@@ -20,20 +20,17 @@ class RoomService {
       const room = await Room.create({
         code: roomCode,
         theme,
-        players: [
-          player,
-        ],
-        isPlaying: false,
+        players: [player],
+
         turn: player,
         turnIndex: 0,
       });
 
-      // Join Socket.IO room.
       socket.join(room.code);
 
       return room;
     } catch (error) {
-
+      Logger.error(error);
       throw error;
     }
   }
@@ -45,10 +42,7 @@ class RoomService {
   }) {
     try {
       const code = roomCode.trim().toUpperCase();
-
-      const room = await Room.findOne({
-        code,
-      });
+      const room = await this.getRoom(code);
 
       if (!room) {
         throw new Error('Room not found');
@@ -64,9 +58,8 @@ class RoomService {
 
       const hostSymbol = room.players[0].symbol;
 
-      const guestSymbol = hostSymbol === 'x'
-        ? 'o'
-        : 'x';
+      const guestSymbol =
+        hostSymbol === 'x' ? 'o' : 'x';
 
       room.players.push({
         name: playerName,
@@ -82,11 +75,11 @@ class RoomService {
 
       await room.save();
 
-      // Join Socket.IO room.
       socket.join(room.code);
 
       return room;
     } catch (error) {
+      Logger.error(error);
       throw error;
     }
   }
@@ -96,59 +89,60 @@ class RoomService {
     index,
     socket,
   }) {
-    const code = roomCode.trim().toUpperCase();
+    try {
+      const code = roomCode.trim().toUpperCase();
+      const room = await this.getRoom(code);
 
-    const room = await Room.findOne({
-      code,
-    });
+      if (!room) {
+        throw new Error('Room not found');
+      }
 
-    if (!room) {
-      throw new Error('Room not found');
+      if (!room.isPlaying) {
+        throw new Error("Game hasn't started");
+      }
+
+      if (
+        !Number.isInteger(index) ||
+        index < 0 ||
+        index >= room.boardSize
+      ) {
+        throw new Error('Invalid board position');
+      }
+
+      const playerIndex = room.players.findIndex(
+        (player) => player.socketId === socket.id,
+      );
+
+      if (playerIndex === -1) {
+        throw new Error('Player is not part of this room');
+      }
+
+      if (room.turnIndex !== playerIndex) {
+        throw new Error('Not your turn');
+      }
+
+      const player = room.players[playerIndex];
+
+      const move = {
+        index,
+        symbol: player.symbol,
+      };
+
+      room.turnIndex =
+        room.turnIndex === 0 ? 1 : 0;
+
+      room.turn = room.players[room.turnIndex];
+
+      await room.save();
+
+      return {
+        room,
+        move,
+      };
+    } catch (error) {
+      Logger.error(error);
+      throw error;
     }
-
-    if (!room.isPlaying) {
-      throw new Error("Game hasn't started");
-    }
-
-    // Validate board index.
-    if (index < 0 || index >= room.boardSize) {
-      throw new Error('Invalid board position');
-    }
-
-    // Find the player making the move.
-    const playerIndex = room.players.findIndex(
-      (player) => player.socketId === socket.id,
-    );
-
-    if (playerIndex === -1) {
-      throw new Error('Player is not part of this room');
-    }
-
-    // Check whether it is this player's turn.
-    if (room.turnIndex !== playerIndex) {
-      throw new Error('Not your turn');
-    }
-
-    // Get the player who made the move.
-    const player = room.players[playerIndex];
-
-    // Prepare move data first.
-    const move = {
-      index,
-      symbol: player.symbol,
-      player
-    };
-
-    // Switch turn.
-    room.turnIndex = room.turnIndex === 0 ? 1 : 0;
-    room.turn = room.players[room.turnIndex];
-
-    await room.save();
-
-    return {
-      room,
-      move,
-    };
   }
 
   async getRoom(roomCode) {
@@ -157,7 +151,7 @@ class RoomService {
         code: roomCode.trim().toUpperCase(),
       });
     } catch (error) {
-
+      Logger.error(error);
       throw error;
     }
   }
@@ -186,7 +180,7 @@ class RoomService {
         'Unable to generate a unique room code. Please try again.',
       );
     } catch (error) {
-
+      Logger.error(error);
       throw error;
     }
   }

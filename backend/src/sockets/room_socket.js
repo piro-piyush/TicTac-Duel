@@ -1,5 +1,6 @@
 const Logger = require('../core/utils/logger');
 const RoomService = require('../services/room_service');
+const SocketResponse = require('../core/utils/socket_response');
 
 function registerRoomSocket(io, socket) {
   // ---------------------------------------------------------------------------
@@ -46,20 +47,20 @@ function registerRoomSocket(io, socket) {
         },
       );
 
-      socket.emit('room_created', {
-        success: true,
-        data: room,
-      });
+      socket.emit(
+        'room_created',
+        SocketResponse.success(room),
+      );
     } catch (error) {
       Logger.error(
         'Failed to create room',
         error,
       );
 
-      socket.emit('room_error', {
-        success: false,
-        message: error.message,
-      });
+      socket.emit(
+        'room_error',
+        SocketResponse.error(error.message),
+      );
     }
   });
 
@@ -106,34 +107,33 @@ function registerRoomSocket(io, socket) {
       );
 
       // Tell the joining player.
-      socket.emit('room_joined', {
-        success: true,
-        data: room,
-      });
+      socket.emit(
+        'room_joined',
+        SocketResponse.success(room),
+      );
 
       // Tell the existing player.
-      socket.to(room.code).emit('player_joined', {
-        success: true,
-        data: room,
-      });
+      socket.to(room.code).emit(
+        'player_joined',
+        SocketResponse.success(room),
+      );
     } catch (error) {
       Logger.error(
         'Failed to join room',
         error,
       );
 
-      socket.emit('room_error', {
-        success: false,
-        message: error.message,
-      });
+      socket.emit(
+        'room_error',
+        SocketResponse.error(error.message),
+      );
     }
   });
-
-
 
   // ---------------------------------------------------------------------------
   // Make Move
   // ---------------------------------------------------------------------------
+
   socket.on('make_move', async (data) => {
     try {
       Logger.info(
@@ -146,51 +146,38 @@ function registerRoomSocket(io, socket) {
         index,
       } = data;
 
-      const room = await RoomService.makeMove({
+      const result = await RoomService.makeMove({
         roomCode,
         index,
         socket,
       });
 
       Logger.success(
-        `Move made in room: ${room.code}`,
+        `Move made in room: ${result.room.code}`
       );
 
       Logger.info(
-        'Room details',
-        {
-          id: room._id,
-          code: room.code,
-          occupancy: room.occupancy,
-          maxRounds: room.maxRounds,
-          currentRound: room.currentRound,
-          theme: room.theme,
-          isPlaying: room.isPlaying,
-          turnIndex: room.turnIndex,
-          turn: room.turn,
-          players: room.players,
-        },
+        'Move details',
+        result,
       );
 
       // Notify both players that the move was made.
-      io.to(room.code).emit('onMoveMade', {
-        success: true,
-        data: room,
-      });
+      io.to(result.room.code).emit(
+        'move_made',
+        SocketResponse.success(result),
+      );
     } catch (error) {
       Logger.error(
         'Failed to make move',
         error,
       );
 
-      socket.emit('room_error', {
-        success: false,
-        message: error.message,
-      });
+      socket.emit(
+        'room_error',
+        SocketResponse.error(error.message),
+      );
     }
   });
-
 }
-
 
 module.exports = registerRoomSocket;
