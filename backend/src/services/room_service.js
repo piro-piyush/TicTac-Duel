@@ -91,6 +91,66 @@ class RoomService {
     }
   }
 
+  async makeMove({
+    roomCode,
+    index,
+    socket,
+  }) {
+    const code = roomCode.trim().toUpperCase();
+
+    const room = await Room.findOne({
+      code,
+    });
+
+    if (!room) {
+      throw new Error('Room not found');
+    }
+
+    if (!room.isPlaying) {
+      throw new Error("Game hasn't started");
+    }
+
+    // Validate board index.
+    if (index < 0 || index >= room.boardSize) {
+      throw new Error('Invalid board position');
+    }
+
+    // Find the player making the move.
+    const playerIndex = room.players.findIndex(
+      (player) => player.socketId === socket.id,
+    );
+
+    if (playerIndex === -1) {
+      throw new Error('Player is not part of this room');
+    }
+
+    // Check whether it is this player's turn.
+    if (room.turnIndex !== playerIndex) {
+      throw new Error('Not your turn');
+    }
+
+    // Get the player who made the move.
+    const player = room.players[playerIndex];
+
+    // Prepare move data first.
+    const move = {
+      index,
+      symbol: player.symbol,
+      player
+    };
+
+    // Switch turn.
+    room.turnIndex = room.turnIndex === 0 ? 1 : 0;
+    room.turn = room.players[room.turnIndex];
+
+    await room.save();
+
+    return {
+      room,
+      move,
+    };
+  }
+
   async getRoom(roomCode) {
     try {
       return await Room.findOne({

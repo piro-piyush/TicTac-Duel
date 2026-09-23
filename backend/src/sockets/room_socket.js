@@ -128,6 +128,69 @@ function registerRoomSocket(io, socket) {
       });
     }
   });
+
+
+
+  // ---------------------------------------------------------------------------
+  // Make Move
+  // ---------------------------------------------------------------------------
+  socket.on('make_move', async (data) => {
+    try {
+      Logger.info(
+        'Make Move request received',
+        data,
+      );
+
+      const {
+        roomCode,
+        index,
+      } = data;
+
+      const room = await RoomService.makeMove({
+        roomCode,
+        index,
+        socket,
+      });
+
+      Logger.success(
+        `Move made in room: ${room.code}`,
+      );
+
+      Logger.info(
+        'Room details',
+        {
+          id: room._id,
+          code: room.code,
+          occupancy: room.occupancy,
+          maxRounds: room.maxRounds,
+          currentRound: room.currentRound,
+          theme: room.theme,
+          isPlaying: room.isPlaying,
+          turnIndex: room.turnIndex,
+          turn: room.turn,
+          players: room.players,
+        },
+      );
+
+      // Notify both players that the move was made.
+      io.to(room.code).emit('onMoveMade', {
+        success: true,
+        data: room,
+      });
+    } catch (error) {
+      Logger.error(
+        'Failed to make move',
+        error,
+      );
+
+      socket.emit('room_error', {
+        success: false,
+        message: error.message,
+      });
+    }
+  });
+
 }
+
 
 module.exports = registerRoomSocket;

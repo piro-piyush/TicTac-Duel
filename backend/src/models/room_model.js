@@ -85,6 +85,10 @@ const roomSchema = new mongoose.Schema(
             min: 0,
             max: 1,
         },
+        boardSize: {
+            type: Number,
+            default: 9,
+        },
     },
     {
         timestamps: true,
