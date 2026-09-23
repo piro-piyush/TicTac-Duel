@@ -2,6 +2,10 @@ const Logger = require('../core/utils/logger');
 const RoomService = require('../services/room_service');
 
 function registerRoomSocket(io, socket) {
+  // ---------------------------------------------------------------------------
+  // Create Room
+  // ---------------------------------------------------------------------------
+
   socket.on('create_room', async (data) => {
     try {
       Logger.info(
@@ -21,6 +25,7 @@ function registerRoomSocket(io, socket) {
         theme,
         socket,
       });
+
       Logger.success(
         `Room created: ${room.code}`,
       );
@@ -37,15 +42,14 @@ function registerRoomSocket(io, socket) {
           isPlaying: room.isPlaying,
           turnIndex: room.turnIndex,
           turn: room.turn,
-          players: room.players
+          players: room.players,
         },
       );
 
       socket.emit('room_created', {
         success: true,
-        room,
+        data: room,
       });
-
     } catch (error) {
       Logger.error(
         'Failed to create room',
@@ -53,10 +57,15 @@ function registerRoomSocket(io, socket) {
       );
 
       socket.emit('room_error', {
+        success: false,
         message: error.message,
       });
     }
   });
+
+  // ---------------------------------------------------------------------------
+  // Join Room
+  // ---------------------------------------------------------------------------
 
   socket.on('join_room', async (data) => {
     try {
@@ -75,6 +84,7 @@ function registerRoomSocket(io, socket) {
         playerName,
         socket,
       });
+
       Logger.success(
         `Player "${playerName}" joined room: ${room.code}`,
       );
@@ -91,21 +101,21 @@ function registerRoomSocket(io, socket) {
           isPlaying: room.isPlaying,
           turnIndex: room.turnIndex,
           turn: room.turn,
-          players: room.players
+          players: room.players,
         },
       );
-      // Tell joining player.
+
+      // Tell the joining player.
       socket.emit('room_joined', {
         success: true,
-        room,
+        data: room,
       });
 
-      // Tell everyone else in the room.
-      socket.to(room.roomCode).emit('player_joined', {
-        playerName,
-        room,
+      // Tell the existing player.
+      socket.to(room.code).emit('player_joined', {
+        success: true,
+        data: room,
       });
-
     } catch (error) {
       Logger.error(
         'Failed to join room',
@@ -113,6 +123,7 @@ function registerRoomSocket(io, socket) {
       );
 
       socket.emit('room_error', {
+        success: false,
         message: error.message,
       });
     }
