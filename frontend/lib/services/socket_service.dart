@@ -12,6 +12,8 @@ class SocketService {
 
   bool get isConnected => _socket?.connected ?? false;
 
+  String? get socketId => _socket?.id;
+
   Future<void> connect() async {
     if (isConnected) {
       return;

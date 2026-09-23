@@ -10,3 +10,4 @@ export 'section_title_and_options_widget.dart';
 export 'section_title_widget.dart';
 export 'player_avatar_widget.dart';
 export 'game_board_widget.dart';
+export 'game_board_cell_widget.dart';
