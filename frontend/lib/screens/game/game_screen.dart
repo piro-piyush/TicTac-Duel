@@ -134,9 +134,14 @@ class _GameScreenState extends State<GameScreen> {
               SizedBox(height: sectionSpacing),
               _buildPlayers(room, myWebsocketId, compact: isCompact),
               SizedBox(height: sectionSpacing),
-              _buildBoard(room, board, isWide: isWide,isMyTurn: room.turn?.socketId==myWebsocketId),
+              _buildBoard(
+                room,
+                board,
+                isWide: isWide,
+                isMyTurn: room.turn?.socketId == myWebsocketId,
+              ),
               SizedBox(height: sectionSpacing),
-              _buildGameStatus(room, compact: isCompact),
+              _buildGameStatus(room, myWebsocketId, compact: isCompact),
             ],
           ),
         );
@@ -203,6 +208,7 @@ class _GameScreenState extends State<GameScreen> {
       children: [
         Expanded(
           child: _buildPlayerCard(
+            webSocketId: myWebsocketId,
             player: room.players[0],
             isTurn: room.turnIndex == 0,
             theme: room.theme,
@@ -213,6 +219,7 @@ class _GameScreenState extends State<GameScreen> {
         _buildVersus(compact: compact),
         Expanded(
           child: _buildPlayerCard(
+            webSocketId: myWebsocketId,
             player: room.players[1],
             isTurn: room.turnIndex == 1,
             theme: room.theme,
@@ -226,6 +233,7 @@ class _GameScreenState extends State<GameScreen> {
 
   Widget _buildPlayerCard({
     required PlayerModel player,
+    required String? webSocketId,
     required bool isMe,
     required bool isTurn,
     required RoomTheme theme,
@@ -274,15 +282,48 @@ class _GameScreenState extends State<GameScreen> {
               spacing: 3,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  player.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: Themes.textPrimary,
-                    fontSize: compact ? 10 : 12,
-                    fontWeight: FontWeight.w700,
-                  ),
+                Row(
+                  spacing: 5,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        player.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Themes.textPrimary,
+                          fontSize: compact ? 10 : 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: compact ? 4 : 5,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isMe
+                            ? color.withValues(alpha: 0.12)
+                            : Themes.card,
+                        borderRadius: BorderRadius.circular(5),
+                        border: Border.all(
+                          color: isMe
+                              ? color.withValues(alpha: 0.25)
+                              : Themes.border,
+                        ),
+                      ),
+                      child: Text(
+                        isMe ? 'YOU' : 'OPPONENT',
+                        style: TextStyle(
+                          color: isMe ? color : Themes.textSecondary,
+                          fontSize: compact ? 6 : 7,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.7,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 Row(
                   spacing: 5,
@@ -363,17 +404,20 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  Widget _buildGameStatus(RoomModel room, {required bool compact}) {
+  Widget _buildGameStatus(
+    RoomModel room,
+    String? webSocketId, {
+    required bool compact,
+  }) {
     final player = room.turn;
-
     if (player == null) {
       return const SizedBox.shrink();
     }
-
+    final isMyTurn = player.socketId == webSocketId;
     final color = player.symbol == PlayerSymbol.x
         ? room.theme.primary
         : room.theme.secondary;
-
+    final text = isMyTurn ? 'Your turn' : '${player.name}\'s turn';
     return Container(
       constraints: const BoxConstraints(maxWidth: 420),
       padding: EdgeInsets.symmetric(
@@ -402,7 +446,7 @@ class _GameScreenState extends State<GameScreen> {
           const SizedBox(width: 7),
           Flexible(
             child: Text(
-              '${player.name}\'s turn',
+              text,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: color,

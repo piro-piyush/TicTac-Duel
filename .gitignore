@@ -87,3 +87,4 @@ migrate_working_dir/
 /backend/*.pid
 /backend/*.seed
 /backend/*.pid.lock
+/backend/.vscode/launch.json
