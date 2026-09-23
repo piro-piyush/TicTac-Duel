@@ -1,13 +1,16 @@
 import 'package:tictac_duel/lib.dart';
 
 class GameScreen extends StatelessWidget {
-  const GameScreen({super.key, });
-
-
+  const GameScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final  room = Provider.of<RoomModel>(context);
+    final room = context.watch<RoomDataProvider>().room;
+
+    if (room == null) {
+      return const Scaffold(body: Center(child: Text('Room not found')));
+    }
+
     return NeonBackgroundWidget(
       needScroll: false,
       title: 'Tic Tac Duel',

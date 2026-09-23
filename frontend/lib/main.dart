@@ -37,12 +37,14 @@ class _MyAppState extends State<MyApp> {
           providers: [
             ChangeNotifierProvider(create: (_) => RoomDataProvider()),
           ],
-          child: MaterialApp.router(
-            title: 'Tic Tac Duel',
-            theme: Themes.darkTheme,
-            routerConfig: Routes.router,
-            debugShowCheckedModeBanner: false,
-          ),
+          builder: (context, child) {
+            return MaterialApp.router(
+              title: 'Tic Tac Duel',
+              theme: Themes.darkTheme,
+              routerConfig: Routes.router,
+              debugShowCheckedModeBanner: false,
+            );
+          },
         );
       },
     );

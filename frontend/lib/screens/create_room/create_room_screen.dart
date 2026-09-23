@@ -246,10 +246,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
         playerName: playerName,
         symbol: _selectedSymbol,
         theme: _selectedTheme,
-        // onRoomCreated: (room) {
-        //   LoggerUtils.info('Room created: $room');
-        //   Routes.replaceGame(room);
-        // },
+
       );
     } catch (e) {
       LoggerUtils.error('Error creating room: $e');
