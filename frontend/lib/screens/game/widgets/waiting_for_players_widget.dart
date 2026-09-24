@@ -2,9 +2,14 @@ import 'package:flutter/services.dart';
 import 'package:tictac_duel/lib.dart';
 
 class WaitingForPlayersWidget extends StatefulWidget {
-  const WaitingForPlayersWidget({super.key, required this.room});
+  const WaitingForPlayersWidget({
+    super.key,
+    required this.room,
+    required this.waitingForNextRound,
+  });
 
   final RoomModel room;
+  final bool waitingForNextRound;
 
   @override
   State<WaitingForPlayersWidget> createState() =>
@@ -34,8 +39,12 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
   @override
   Widget build(BuildContext context) {
     final player = widget.room.players.first;
+
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 20,
+        vertical: 24,
+      ),
       child: ConstrainedBox(
         constraints: BoxConstraints(
           minHeight: MediaQuery.sizeOf(context).height - 120,
@@ -43,7 +52,11 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            PlayerAvatarWidget(player: player, isMe: true, isTurn: false),
+            PlayerAvatarWidget(
+              player: player,
+              isMe: true,
+              isTurn: false,
+            ),
             const SizedBox(height: 16),
             _buildPlayerName(player),
             const SizedBox(height: 36),
@@ -104,38 +117,114 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
             child: child,
           );
         },
-        child: const Center(
-          child: Icon(
-            Icons.people_outline_rounded,
-            color: Themes.neonPurple,
-            size: 21,
-          ),
+        child: Icon(
+          _waitingIcon,
+          color: Themes.neonPurple,
+          size: 21,
         ),
       ),
     );
   }
 
+  IconData get _waitingIcon {
+    if (widget.waitingForNextRound) {
+      return Icons.replay_rounded;
+    }
+
+    if (widget.room.players.length < 2) {
+      return Icons.people_outline_rounded;
+    }
+
+    final readyPlayers = widget.room.players
+        .where((player) => player.isReady)
+        .length;
+
+    if (readyPlayers == 2) {
+      return Icons.play_arrow_rounded;
+    }
+
+    if (readyPlayers == 1) {
+      return Icons.person_outline_rounded;
+    }
+
+    return Icons.sports_esports_outlined;
+  }
+
   Widget _buildWaitingInfo() {
-    return const Column(
+    final title = _waitingTitle;
+    final subtitle = _waitingSubtitle;
+
+    return Column(
       children: [
         Text(
-          'WAITING FOR PLAYER',
+          title,
           textAlign: TextAlign.center,
-          style: TextStyle(
+          style: const TextStyle(
             color: Themes.textPrimary,
             fontSize: 13,
             fontWeight: FontWeight.w800,
             letterSpacing: 1.6,
           ),
         ),
-        SizedBox(height: 6),
+        const SizedBox(height: 6),
         Text(
-          'Share your room code to invite a player',
+          subtitle,
           textAlign: TextAlign.center,
-          style: TextStyle(color: Themes.textSecondary, fontSize: 11),
+          style: const TextStyle(
+            color: Themes.textSecondary,
+            fontSize: 11,
+          ),
         ),
       ],
     );
+  }
+
+  String get _waitingTitle {
+    if (widget.waitingForNextRound) {
+      return 'WAITING FOR NEXT ROUND';
+    }
+
+    if (widget.room.players.length < 2) {
+      return 'WAITING FOR PLAYER';
+    }
+
+    final readyPlayers = widget.room.players
+        .where((player) => player.isReady)
+        .length;
+
+    if (readyPlayers == 2) {
+      return 'STARTING ROUND';
+    }
+
+    if (readyPlayers == 1) {
+      return 'WAITING FOR PLAYER TO READY';
+    }
+
+    return 'READY UP TO START';
+  }
+
+  String get _waitingSubtitle {
+    if (widget.waitingForNextRound) {
+      return 'Both players need to ready up for the next round';
+    }
+
+    if (widget.room.players.length < 2) {
+      return 'Share your room code to invite a player';
+    }
+
+    final readyPlayers = widget.room.players
+        .where((player) => player.isReady)
+        .length;
+
+    if (readyPlayers == 2) {
+      return 'Both players are ready';
+    }
+
+    if (readyPlayers == 1) {
+      return 'Waiting for the other player to ready up';
+    }
+
+    return 'Both players must ready up to begin';
   }
 
   Widget _buildRoomCode() {
@@ -154,11 +243,16 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
         TextButton.icon(
           style: TextButton.styleFrom(
             iconAlignment: IconAlignment.end,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 10,
+            ),
             backgroundColor: Themes.surface,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
-              side: const BorderSide(color: Themes.border),
+              side: const BorderSide(
+                color: Themes.border,
+              ),
             ),
           ),
           onPressed: _copyRoomCode,
@@ -182,19 +276,30 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
   }
 
   void _copyRoomCode() {
-    Clipboard.setData(ClipboardData(text: widget.room.code));
-    SnackbarUtils.showSuccess(context, 'Room code copied');
+    Clipboard.setData(
+      ClipboardData(text: widget.room.code),
+    );
+
+    SnackbarUtils.showSuccess(
+      context,
+      'Room code copied',
+    );
   }
 }
 
 class _WaitingIndicatorPainter extends CustomPainter {
-  const _WaitingIndicatorPainter({required this.progress});
+  const _WaitingIndicatorPainter({
+    required this.progress,
+  });
 
   final double progress;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
+    final center = Offset(
+      size.width / 2,
+      size.height / 2,
+    );
 
     final radius = size.width / 2 - 3;
 
@@ -203,7 +308,11 @@ class _WaitingIndicatorPainter extends CustomPainter {
       ..strokeWidth = 1
       ..color = Themes.border;
 
-    canvas.drawCircle(center, radius, backgroundPaint);
+    canvas.drawCircle(
+      center,
+      radius,
+      backgroundPaint,
+    );
 
     final progressPaint = Paint()
       ..style = PaintingStyle.stroke
@@ -212,7 +321,10 @@ class _WaitingIndicatorPainter extends CustomPainter {
       ..color = Themes.neonPurple;
 
     canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
+      Rect.fromCircle(
+        center: center,
+        radius: radius,
+      ),
       progress * 2 * 3.14159265359,
       4.2,
       false,
@@ -221,7 +333,9 @@ class _WaitingIndicatorPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _WaitingIndicatorPainter oldDelegate) {
+  bool shouldRepaint(
+      covariant _WaitingIndicatorPainter oldDelegate,
+      ) {
     return oldDelegate.progress != progress;
   }
 }

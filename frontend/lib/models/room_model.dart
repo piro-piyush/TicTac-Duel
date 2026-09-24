@@ -10,7 +10,7 @@ class RoomModel {
     required this.roundStatus,
     required this.theme,
     required this.players,
-    required this.isPlaying,
+    // required this.isPlaying,
     required this.turn,
     required this.turnIndex,
     required this.boardSize,
@@ -23,7 +23,7 @@ class RoomModel {
   final int currentRound;
   final RoomTheme theme;
   final List<PlayerModel> players;
-  final bool isPlaying;
+  // final bool isPlaying;
   final PlayerModel? turn;
   final RoundStatus roundStatus;
   final int turnIndex;
@@ -46,7 +46,7 @@ class RoomModel {
               ),
             )
             .toList(),
-        isPlaying: json['isPlaying'] as bool,
+        // isPlaying: json['isPlaying'] as bool,
         turn: json['turn'] == null
             ? null
             : PlayerModel.fromJson(

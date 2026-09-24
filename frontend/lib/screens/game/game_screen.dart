@@ -44,7 +44,6 @@ class _GameScreenState extends State<GameScreen> {
       SnackbarUtils.showWarning(context, 'Player left the game');
     });
 
-
     // Ready status updated.
     roomSocket.onReadyUpdated((room) {
       if (!mounted) {
@@ -61,11 +60,12 @@ class _GameScreenState extends State<GameScreen> {
           .where((player) => player.socketId == mySocketId)
           .firstOrNull;
 
-      final allReady = room.players.length == 2 &&
+      final allReady =
+          room.players.length == 2 &&
           room.players.every((player) => player.isReady);
 
-      // Both players are ready and the next round has started.
-      if (room.isPlaying) {
+      // Both players are ready and the round has started.
+      if (room.roundStatus == RoundStatus.playing) {
         MusicAndFeedbackService.instance.mediumVibration();
 
         SnackbarUtils.showSuccess(
@@ -232,9 +232,24 @@ class _GameScreenState extends State<GameScreen> {
     return NeonBackgroundWidget(
       needScroll: true,
       title: 'Tic Tac Duel',
-      child: !room.isPlaying
-          ? WaitingForPlayersWidget(room: room)
-          : _buildGame(room, myWebsocketId, board, winningIndexes),
+      child: switch (room.roundStatus) {
+        RoundStatus.waiting => WaitingForPlayersWidget(
+          room: room,
+          waitingForNextRound: false,
+        ),
+
+        RoundStatus.playing => _buildGame(
+          room,
+          myWebsocketId,
+          board,
+          winningIndexes,
+        ),
+
+        RoundStatus.result => WaitingForPlayersWidget(
+          room: room,
+          waitingForNextRound: true,
+        ),
+      },
     );
   }
 
@@ -262,7 +277,7 @@ class _GameScreenState extends State<GameScreen> {
           ),
           child: Column(
             children: [
-              _buildRoundIndicator(room, compact: isCompact),
+              GameRoundIndicatorWidget(room: room, compact: isCompact),
               SizedBox(height: sectionSpacing),
               _buildPlayers(room, myWebsocketId, compact: isCompact),
               SizedBox(height: sectionSpacing),
@@ -274,60 +289,15 @@ class _GameScreenState extends State<GameScreen> {
                 isMyTurn: room.turn?.socketId == myWebsocketId,
               ),
               SizedBox(height: sectionSpacing),
-              _buildGameStatus(room, myWebsocketId, compact: isCompact),
+              GameStatusWidget(
+                room: room,
+                webSocketId: myWebsocketId,
+                compact: isCompact,
+              ),
             ],
           ),
         );
       },
-    );
-  }
-
-  Widget _buildRoundIndicator(RoomModel room, {required bool compact}) {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: compact ? 11 : 14,
-        vertical: compact ? 6 : 7,
-      ),
-      decoration: BoxDecoration(
-        color: Themes.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: room.theme.primary.withValues(alpha: 0.20)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        spacing: 7,
-        children: [
-          Icon(
-            Icons.sports_esports_outlined,
-            color: room.theme.primary,
-            size: compact ? 14 : 15,
-          ),
-          Text(
-            'ROUND ${room.currentRound}',
-            style: TextStyle(
-              color: room.theme.primary,
-              fontSize: compact ? 9 : 10,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.3,
-            ),
-          ),
-          Text(
-            '/',
-            style: TextStyle(
-              color: Themes.textSecondary.withValues(alpha: 0.6),
-              fontSize: 10,
-            ),
-          ),
-          Text(
-            '${room.maxRounds}',
-            style: const TextStyle(
-              color: Themes.textSecondary,
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -340,7 +310,7 @@ class _GameScreenState extends State<GameScreen> {
       spacing: compact ? 6 : 10,
       children: [
         Expanded(
-          child: _buildPlayerCard(
+          child: GamePlayerCardWidget(
             webSocketId: myWebsocketId,
             player: room.players[0],
             isTurn: room.turnIndex == 0,
@@ -349,9 +319,9 @@ class _GameScreenState extends State<GameScreen> {
             isMe: myWebsocketId == room.players[0].socketId,
           ),
         ),
-        _buildVersus(compact: compact),
+        VersusWidget(compact: compact),
         Expanded(
-          child: _buildPlayerCard(
+          child: GamePlayerCardWidget(
             webSocketId: myWebsocketId,
             player: room.players[1],
             isTurn: room.turnIndex == 1,
@@ -361,159 +331,6 @@ class _GameScreenState extends State<GameScreen> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildPlayerCard({
-    required PlayerModel player,
-    required String? webSocketId,
-    required bool isMe,
-    required bool isTurn,
-    required RoomTheme theme,
-    required bool compact,
-  }) {
-    final color = player.symbol == PlayerSymbol.x
-        ? theme.primary
-        : theme.secondary;
-
-    final avatarSize = compact ? 40.0 : 48.0;
-
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 220),
-      padding: EdgeInsets.symmetric(
-        horizontal: compact ? 7 : 10,
-        vertical: compact ? 7 : 9,
-      ),
-      decoration: BoxDecoration(
-        color: isTurn ? color.withValues(alpha: 0.07) : Themes.surface,
-        borderRadius: BorderRadius.circular(compact ? 13 : 16),
-        border: Border.all(
-          color: isTurn ? color.withValues(alpha: 0.55) : Themes.border,
-          width: isTurn ? 1.5 : 1,
-        ),
-        boxShadow: isTurn
-            ? [
-                BoxShadow(
-                  color: color.withValues(alpha: 0.10),
-                  blurRadius: 16,
-                  spreadRadius: 1,
-                ),
-              ]
-            : null,
-      ),
-      child: Row(
-        spacing: compact ? 6 : 9,
-        children: [
-          PlayerAvatarWidget(
-            player: player,
-            isMe: isMe,
-            isTurn: isTurn,
-            size: avatarSize,
-          ),
-          Expanded(
-            child: Column(
-              spacing: 3,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  spacing: 5,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        player.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: Themes.textPrimary,
-                          fontSize: compact ? 10 : 12,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: compact ? 4 : 5,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isMe
-                            ? color.withValues(alpha: 0.12)
-                            : Themes.card,
-                        borderRadius: BorderRadius.circular(5),
-                        border: Border.all(
-                          color: isMe
-                              ? color.withValues(alpha: 0.25)
-                              : Themes.border,
-                        ),
-                      ),
-                      child: Text(
-                        isMe ? 'YOU' : 'OPPONENT',
-                        style: TextStyle(
-                          color: isMe ? color : Themes.textSecondary,
-                          fontSize: compact ? 6 : 7,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.7,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                Row(
-                  spacing: 5,
-                  children: [
-                    Text(
-                      player.symbol.value.toUpperCase(),
-                      style: TextStyle(
-                        color: color,
-                        fontSize: compact ? 8 : 9,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                    if (isTurn)
-                      Flexible(
-                        child: Text(
-                          'TURN',
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: color.withValues(alpha: 0.8),
-                            fontSize: 8,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 1,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildVersus({required bool compact}) {
-    final size = compact ? 24.0 : 28.0;
-
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: Themes.card,
-        shape: BoxShape.circle,
-        border: Border.all(color: Themes.border),
-      ),
-      child: Center(
-        child: Text(
-          'VS',
-          style: TextStyle(
-            color: Themes.textSecondary,
-            fontSize: compact ? 7 : 8,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ),
     );
   }
 
@@ -535,62 +352,6 @@ class _GameScreenState extends State<GameScreen> {
           isMyTurn: isMyTurn,
           winningIndexes: winningIndexes,
         ),
-      ),
-    );
-  }
-
-  Widget _buildGameStatus(
-    RoomModel room,
-    String? webSocketId, {
-    required bool compact,
-  }) {
-    final player = room.turn;
-    if (player == null) {
-      return const SizedBox.shrink();
-    }
-    final isMyTurn = player.socketId == webSocketId;
-    final color = player.symbol == PlayerSymbol.x
-        ? room.theme.primary
-        : room.theme.secondary;
-    final text = isMyTurn ? 'Your turn' : '${player.name}\'s turn';
-    return Container(
-      constraints: const BoxConstraints(maxWidth: 420),
-      padding: EdgeInsets.symmetric(
-        horizontal: compact ? 12 : 16,
-        vertical: compact ? 8 : 10,
-      ),
-      decoration: BoxDecoration(
-        color: Themes.surface,
-        borderRadius: BorderRadius.circular(compact ? 12 : 14),
-        border: Border.all(color: color.withValues(alpha: 0.20)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 6,
-            height: 6,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(color: color.withValues(alpha: 0.6), blurRadius: 7),
-              ],
-            ),
-          ),
-          const SizedBox(width: 7),
-          Flexible(
-            child: Text(
-              text,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: color,
-                fontSize: compact ? 9 : 10,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
