@@ -77,3 +77,41 @@ enum GameMode {
     );
   }
 }
+
+enum GameResult {
+  xWins(value: 'x_wins', name: 'X Wins', message: 'Player X wins the round!'),
+  oWins(value: 'o_wins', name: 'O Wins', message: 'Player O wins the round!'),
+  draw(value: 'draw', name: 'Draw', message: 'The round ended in a draw!'),
+  inProgress(
+    value: 'in_progress',
+    name: 'In Progress',
+    message: 'The game is still ongoing.',
+  );
+
+  const GameResult({
+    required this.value,
+    required this.name,
+    required this.message,
+  });
+
+  final String value;
+  final String name;
+  final String message;
+
+  bool get isFinished => this != GameResult.inProgress;
+
+  bool get hasWinner => this == GameResult.xWins || this == GameResult.oWins;
+
+  PlayerSymbol? get winner => switch (this) {
+    GameResult.xWins => PlayerSymbol.x,
+    GameResult.oWins => PlayerSymbol.o,
+    _ => null,
+  };
+
+  static GameResult fromValue(String value) {
+    return GameResult.values.firstWhere(
+      (result) => result.value == value,
+      orElse: () => GameResult.inProgress,
+    );
+  }
+}

@@ -48,7 +48,7 @@ class GameBoardCellWidget extends StatelessWidget {
         ),
         child: Center(
           child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 180),
+            duration: const Duration(milliseconds: 200),
             transitionBuilder: (child, animation) {
               return ScaleTransition(
                 scale: CurvedAnimation(
