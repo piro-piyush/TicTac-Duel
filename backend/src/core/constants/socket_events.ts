@@ -1,4 +1,4 @@
-const ROOM_SOCKET_EVENTS = Object.freeze({
+const ROOM_SOCKET_EVENTS = {
     CREATE_ROOM: 'create_room',
     ROOM_CREATED: 'room_created',
 
@@ -24,8 +24,8 @@ const ROOM_SOCKET_EVENTS = Object.freeze({
 
     ROOM_ERROR: 'room_error',
     GAME_ERROR: 'game_error',
-});
+} as const;
 
-module.exports = {
-    ROOM_SOCKET_EVENTS,
+export {
+    ROOM_SOCKET_EVENTS
 };

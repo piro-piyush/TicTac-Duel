@@ -1,18 +1,32 @@
-const Logger = require('../core/utils/logger');
-const RoomService = require('../services/room_service');
-const SocketResponse = require('../core/utils/socket_response');
-const {
-  ROOM_SOCKET_EVENTS,
-} = require('../core/constants/socket_events');
+import type {
+  Server,
+  Socket,
+} from 'socket.io';
 
-function registerRoomSocket(io, socket) {
+import Logger from '../core/utils/logger';
+import SocketResponse from '../core/utils/socket_response';
+import RoomService from '../services/room_service';
+
+import {
+  ROOM_SOCKET_EVENTS,
+} from '../core/constants/socket_events';
+import { PlayerSymbol, RoomTheme } from '../models/room_model';
+
+
+
+function registerRoomSocket(io: Server,
+  socket: Socket,) {
   // ---------------------------------------------------------------------------
   // Create Room
   // ---------------------------------------------------------------------------
 
   socket.on(
     ROOM_SOCKET_EVENTS.CREATE_ROOM,
-    async (data) => {
+    async (data: {
+      playerName: string;
+      symbol: PlayerSymbol;
+      theme: RoomTheme;
+    }) => {
       try {
         Logger.info(
           'Create room request received',
@@ -46,7 +60,6 @@ function registerRoomSocket(io, socket) {
             currentRound: room.currentRound,
             theme: room.theme,
             roundStatus: room.roundStatus,
-            isPlaying: room.isPlaying,
             turnIndex: room.turnIndex,
             turn: room.turn,
             players: room.players,
@@ -65,7 +78,11 @@ function registerRoomSocket(io, socket) {
 
         socket.emit(
           ROOM_SOCKET_EVENTS.ROOM_ERROR,
-          SocketResponse.error(error.message),
+          SocketResponse.error(
+            error instanceof Error
+              ? error.message
+              : 'Failed to create room',
+          ),
         );
       }
     },
@@ -77,7 +94,10 @@ function registerRoomSocket(io, socket) {
 
   socket.on(
     ROOM_SOCKET_EVENTS.JOIN_ROOM,
-    async (data) => {
+    async (data: {
+      roomCode: string;
+      playerName: string;
+    },) => {
       try {
         Logger.info(
           'Join room request received',
@@ -109,7 +129,6 @@ function registerRoomSocket(io, socket) {
             currentRound: room.currentRound,
             theme: room.theme,
             roundStatus: room.roundStatus,
-            isPlaying: room.isPlaying,
             turnIndex: room.turnIndex,
             turn: room.turn,
             players: room.players,
@@ -135,7 +154,9 @@ function registerRoomSocket(io, socket) {
 
         socket.emit(
           ROOM_SOCKET_EVENTS.ROOM_ERROR,
-          SocketResponse.error(error.message),
+          SocketResponse.error(error instanceof Error
+            ? error.message
+            : "Failed to join room"),
         );
       }
     },
@@ -147,7 +168,10 @@ function registerRoomSocket(io, socket) {
 
   socket.on(
     ROOM_SOCKET_EVENTS.MAKE_MOVE,
-    async (data) => {
+    async (data: {
+      roomCode: string;
+      index: number;
+    }) => {
       try {
         Logger.info(
           'Make Move request received',
@@ -187,7 +211,9 @@ function registerRoomSocket(io, socket) {
 
         socket.emit(
           ROOM_SOCKET_EVENTS.ROOM_ERROR,
-          SocketResponse.error(error.message),
+          SocketResponse.error(error instanceof Error
+            ? error.message
+            : "Failed to make move"),
         );
       }
     },
@@ -199,7 +225,11 @@ function registerRoomSocket(io, socket) {
 
   socket.on(
     ROOM_SOCKET_EVENTS.SUBMIT_GAME_RESULT,
-    async (data) => {
+    async (data: {
+      roomCode: string;
+      winnerSocketId: string;
+      winningIndexes: number[];
+    },) => {
       try {
         Logger.info(
           'Submit game result request received',
@@ -249,7 +279,11 @@ function registerRoomSocket(io, socket) {
 
         socket.emit(
           ROOM_SOCKET_EVENTS.ROOM_ERROR,
-          SocketResponse.error(error.message),
+          SocketResponse.error(
+            error instanceof Error
+              ? error.message
+              : "Failed to submit game result"
+          ),
         );
       }
     },
@@ -261,7 +295,10 @@ function registerRoomSocket(io, socket) {
 
   socket.on(
     ROOM_SOCKET_EVENTS.TOGGLE_READY,
-    async (data) => {
+    async (data: {
+      roomCode: string;
+      isReady: boolean;
+    },) => {
       try {
         Logger.info(
           'Toggle ready request received',
@@ -290,7 +327,6 @@ function registerRoomSocket(io, socket) {
             roomCode: room.code,
             round: room.currentRound,
             roundStatus: room.roundStatus,
-            isPlaying: room.isPlaying,
             players: room.players,
           },
         );
@@ -308,11 +344,13 @@ function registerRoomSocket(io, socket) {
 
         socket.emit(
           ROOM_SOCKET_EVENTS.ROOM_ERROR,
-          SocketResponse.error(error.message),
+          SocketResponse.error(error instanceof Error
+            ? error.message
+            : "Failed to update ready status"),
         );
       }
     },
   );
 }
 
-module.exports = registerRoomSocket;
+export default registerRoomSocket;
