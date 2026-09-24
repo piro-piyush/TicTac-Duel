@@ -1,0 +1,112 @@
+name: Build Flutter Android
+
+on:
+  workflow_dispatch:
+  # push:
+  #   branches:
+  #     - main
+
+permissions:
+  contents: write
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    environment: production
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.1
+          channel: stable
+          cache: true
+
+      - name: Flutter Version
+        run: flutter --version
+
+      - name: Flutter Doctor
+        run: flutter doctor -v
+
+      - name: Accept Android Licenses
+        run: yes | flutter doctor --android-licenses || true
+
+      - name: Clean Project
+        run: |
+          flutter clean
+          rm -rf .dart_tool
+          rm -rf build
+
+      - name: Get Dependencies
+        run: flutter pub get
+
+      - name: Create .env
+        run: |
+          cat > .env <<EOF
+          SOCKET_URL=${{ secrets.SOCKET_URL }}
+          EOF
+
+      - name: Analyze
+        continue-on-error: true
+        run: flutter analyze
+
+      - name: Build Release APK
+        env:
+          GRADLE_OPTS: "-Xmx4g"
+        run: flutter build apk --release --no-pub
+
+      - name: Build Release AAB
+        env:
+          GRADLE_OPTS: "-Xmx4g"
+        run: flutter build appbundle --release --no-pub
+
+      - name: List Build Outputs
+        if: always()
+        run: |
+          echo "===== APK ====="
+          find build -name "*.apk" || true
+
+          echo ""
+          echo "===== AAB ====="
+          find build -name "*.aab" || true
+
+      - name: Upload APK
+        if: success()
+        uses: actions/upload-artifact@v5
+        with:
+          name: app-release-apk
+          path: frontend/build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+
+      - name: Upload AAB
+        if: success()
+        uses: actions/upload-artifact@v5
+        with:
+          name: app-release-aab
+          path: frontend/build/app/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: Momentum v1.0.${{ github.run_number }}
+          generate_release_notes: true
+          files: |
+            frontend/build/app/outputs/flutter-apk/app-release.apk
+            frontend/build/app/outputs/bundle/release/app-release.aab
