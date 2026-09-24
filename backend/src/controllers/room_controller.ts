@@ -1,4 +1,7 @@
-import { Response as ExpressResponse, Request } from 'express';
+import {
+  Response as ExpressResponse,
+  Request,
+} from 'express';
 
 import Response from '../core/utils/response';
 import RoomService from '../services/room_service';
@@ -11,7 +14,15 @@ class RoomController {
     try {
       const { roomCode } = req.params;
 
-      const room = await RoomService.getRoom(roomCode);
+      if (typeof roomCode !== 'string') {
+        return Response.badRequest(
+          res,
+          'Invalid room code',
+        );
+      }
+
+      const room =
+        await RoomService.getRoom(roomCode);
 
       if (!room) {
         return Response.notFound(
