@@ -1,4 +1,9 @@
-const Room = require('../models/room_model');
+const {
+  Room,
+  PLAYER_SYMBOL,
+  ROOM_STATUS,
+} = require('../models/room_model');
+
 const Logger = require('../core/utils/logger');
 
 class RoomService {
@@ -15,13 +20,13 @@ class RoomService {
         name: playerName,
         symbol,
         socketId: socket.id,
+        isReady: true,
       };
 
       const room = await Room.create({
         code: roomCode,
         theme,
         players: [player],
-
         turn: player,
         turnIndex: 0,
       });
@@ -52,24 +57,28 @@ class RoomService {
         throw new Error('Game is already in progress');
       }
 
-      if (room.players.length >= room.occupancy) {
+      if (room.players.length >= 2) {
         throw new Error('Room is full');
       }
 
       const hostSymbol = room.players[0].symbol;
 
       const guestSymbol =
-        hostSymbol === 'x' ? 'o' : 'x';
+        hostSymbol === PLAYER_SYMBOL.X
+          ? PLAYER_SYMBOL.O
+          : PLAYER_SYMBOL.X;
 
       room.players.push({
         name: playerName,
         symbol: guestSymbol,
         socketId: socket.id,
         points: 0,
+        isReady: true,
       });
 
       room.occupancy = room.players.length;
-      room.isPlaying = true;
+
+      room.roundStatus = ROOM_STATUS.PLAYING;
       room.turnIndex = 0;
       room.turn = room.players[room.turnIndex];
 
@@ -145,7 +154,6 @@ class RoomService {
     }
   }
 
-
   async submitGameResult({
     roomCode,
     winnerSocketId,
@@ -160,7 +168,6 @@ class RoomService {
         throw new Error('Room not found');
       }
 
-
       if (!room.isPlaying) {
         throw new Error('Round is not active');
       }
@@ -169,8 +176,6 @@ class RoomService {
         throw new Error('Room does not have two players');
       }
 
-      // Only the player who actually submitted the result
-      // can report themselves as the winner.
       if (socket.id !== winnerSocketId) {
         throw new Error('Invalid winner');
       }
@@ -189,13 +194,20 @@ class RoomService {
 
       const winner = room.players[winnerIndex];
 
-      // Prevent duplicate result submissions for the same round.
+      // Round has finished.
       room.isPlaying = false;
+      room.roundStatus = ROOM_STATUS.RESULT;
+
+      // Players must ready up before the next round.
+      room.players.forEach((player) => {
+        player.isReady = false;
+      });
 
       // Award one point.
       winner.points = (winner.points ?? 0) + 1;
 
       const completedRound = room.currentRound;
+
       const gameFinished =
         completedRound >= room.maxRounds;
 
@@ -211,14 +223,8 @@ class RoomService {
         };
       }
 
-      // Prepare the next round.
-      room.currentRound += 1;
-
-      room.turnIndex = 0;
-      room.turn = room.players[room.turnIndex];
-      // Next round is ready.
-      room.isPlaying = true;
       await room.save();
+
       return {
         room,
         winnerSocketId,
@@ -230,6 +236,67 @@ class RoomService {
       Logger.error(error);
       throw error;
     }
+  }
+
+  async setPlayerReady({
+    roomCode,
+    isReady,
+    socket,
+  }) {
+    if (typeof isReady !== 'boolean') {
+      throw new Error('isReady must be a boolean');
+    }
+
+    const code = roomCode.trim().toUpperCase();
+    const room = await this.getRoom(code);
+
+    if (!room) {
+      throw new Error('Room not found');
+    }
+
+    if (room.players.length !== 2) {
+      throw new Error('Room does not have two players');
+    }
+
+    const player = room.players.find(
+      (player) => player.socketId === socket.id,
+    );
+
+    if (!player) {
+      throw new Error('Player is not in this room');
+    }
+
+    if (room.isPlaying) {
+      throw new Error('Round is already active');
+    }
+
+    // Update this player's ready state.
+    player.isReady = isReady;
+
+    const allReady = room.players.every(
+      (player) => player.isReady,
+    );
+
+    if (allReady) {
+      // Start the next round.
+      room.currentRound += 1;
+
+      room.turnIndex = 0;
+      room.turn = room.players[room.turnIndex];
+
+      room.isPlaying = true;
+      room.roundStatus = ROOM_STATUS.PLAYING;
+
+      // Ready state is only used as a gate
+      // for starting the round.
+      room.players.forEach((player) => {
+        player.isReady = false;
+      });
+    }
+
+    await room.save();
+
+    return room;
   }
 
   async getRoom(roomCode) {

@@ -1,5 +1,22 @@
 const mongoose = require('mongoose');
 
+const PLAYER_SYMBOL = Object.freeze({
+    X: 'x',
+    O: 'o',
+});
+
+const ROOM_STATUS = Object.freeze({
+    WAITING: 'waiting',
+    PLAYING: 'playing',
+    RESULT: 'result',
+});
+
+const ROOM_THEME = Object.freeze({
+    CLASSIC: 'classic',
+    CYBERPUNK: 'cyberpunk',
+    NEON: 'neon',
+});
+
 const playerSchema = new mongoose.Schema(
     {
         name: {
@@ -9,24 +26,20 @@ const playerSchema = new mongoose.Schema(
             minlength: 2,
             maxlength: 20,
         },
-
         symbol: {
             type: String,
             required: true,
-            enum: ['x', 'o'],
+            enum: Object.values(PLAYER_SYMBOL),
         },
-
         socketId: {
             type: String,
             required: true,
         },
-
         points: {
             type: Number,
             default: 0,
             min: 0,
         },
-
         isReady: {
             type: Boolean,
             default: false,
@@ -45,19 +58,16 @@ const roomSchema = new mongoose.Schema(
             min: 0,
             max: 2,
         },
-
         maxRounds: {
             type: Number,
             default: 5,
             min: 1,
         },
-
         currentRound: {
             type: Number,
-            default: 1,
-            min: 1,
+            default: 0,
+            min: 0,
         },
-
         code: {
             type: String,
             required: true,
@@ -67,13 +77,11 @@ const roomSchema = new mongoose.Schema(
             minlength: 6,
             maxlength: 6,
         },
-
         theme: {
             type: String,
             required: true,
-            enum: ['classic', 'cyberpunk', 'neon'],
+            enum: Object.values(ROOM_THEME),
         },
-
         players: {
             type: [playerSchema],
             validate: {
@@ -81,25 +89,21 @@ const roomSchema = new mongoose.Schema(
                 message: 'A room can only have two players.',
             },
         },
-
         roundStatus: {
             type: String,
-            enum: ['waiting', 'playing', 'result'],
-            default: 'waiting',
+            enum: Object.values(ROOM_STATUS),
+            default: ROOM_STATUS.WAITING,
         },
-
         turn: {
             type: playerSchema,
             default: null,
         },
-
         turnIndex: {
             type: Number,
             default: 0,
             min: 0,
             max: 1,
         },
-
         boardSize: {
             type: Number,
             default: 9,
@@ -108,9 +112,15 @@ const roomSchema = new mongoose.Schema(
     },
     {
         timestamps: true,
+        strict: true,
     },
 );
 
 const Room = mongoose.model('Room', roomSchema);
 
-module.exports = Room;
+module.exports = {
+    Room,
+    PLAYER_SYMBOL,
+    ROOM_STATUS,
+    ROOM_THEME,
+};
