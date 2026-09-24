@@ -145,6 +145,93 @@ class RoomService {
     }
   }
 
+
+  async submitGameResult({
+    roomCode,
+    winnerSocketId,
+    winningIndexes,
+    socket,
+  }) {
+    try {
+      const code = roomCode.trim().toUpperCase();
+      const room = await this.getRoom(code);
+
+      if (!room) {
+        throw new Error('Room not found');
+      }
+
+
+      if (!room.isPlaying) {
+        throw new Error('Round is not active');
+      }
+
+      if (room.players.length !== 2) {
+        throw new Error('Room does not have two players');
+      }
+
+      // Only the player who actually submitted the result
+      // can report themselves as the winner.
+      if (socket.id !== winnerSocketId) {
+        throw new Error('Invalid winner');
+      }
+
+      const winnerIndex = room.players.findIndex(
+        (player) => player.socketId === winnerSocketId,
+      );
+
+      if (winnerIndex === -1) {
+        throw new Error('Winner is not part of this room');
+      }
+
+      if (!Array.isArray(winningIndexes)) {
+        throw new Error('Invalid winning indexes');
+      }
+
+      const winner = room.players[winnerIndex];
+
+      // Prevent duplicate result submissions for the same round.
+      room.isPlaying = false;
+
+      // Award one point.
+      winner.points = (winner.points ?? 0) + 1;
+
+      const completedRound = room.currentRound;
+      const gameFinished =
+        completedRound >= room.maxRounds;
+
+      if (gameFinished) {
+        await room.save();
+
+        return {
+          room,
+          winnerSocketId,
+          winningIndexes,
+          completedRound,
+          gameFinished: true,
+        };
+      }
+
+      // Prepare the next round.
+      room.currentRound += 1;
+
+      room.turnIndex = 0;
+      room.turn = room.players[room.turnIndex];
+      // Next round is ready.
+      room.isPlaying = true;
+      await room.save();
+      return {
+        room,
+        winnerSocketId,
+        winningIndexes,
+        completedRound,
+        gameFinished: false,
+      };
+    } catch (error) {
+      Logger.error(error);
+      throw error;
+    }
+  }
+
   async getRoom(roomCode) {
     try {
       return await Room.findOne({

@@ -178,6 +178,72 @@ function registerRoomSocket(io, socket) {
       );
     }
   });
+
+  // ---------------------------------------------------------------------------
+  // Submit Game Result
+  // ---------------------------------------------------------------------------
+
+  socket.on('submit_game_result', async (data) => {
+    try {
+      Logger.info(
+        'Submit game result request received',
+        data,
+      );
+
+      const {
+        roomCode,
+        winnerSocketId,
+        winningIndexes,
+      } = data;
+
+      const result = await RoomService.submitGameResult({
+        roomCode,
+        winnerSocketId,
+        winningIndexes,
+        socket,
+      });
+
+      Logger.success(
+        `Round result submitted for room: ${result.room.code}`,
+      );
+
+      Logger.info(
+        'Round result',
+        {
+          roomCode: result.room.code,
+          round: result.room.currentRound,
+          winnerSocketId: result.winnerSocketId,
+          winningIndexes: result.winningIndexes,
+          gameFinished: result.gameFinished,
+        },
+      );
+
+      // if (result.gameFinished) {
+      //   io.to(result.room.code).emit(
+      //     'game_ended',
+      //     SocketResponse.success(result),
+      //   );
+
+      //   return;
+      // }
+
+      // Notify both players.
+      io.to(result.room.code).emit(
+        'round_result',
+        SocketResponse.success(result),
+      );
+    } catch (error) {
+      Logger.error(
+        'Failed to submit game result',
+        error,
+      );
+
+      socket.emit(
+        'room_error',
+        SocketResponse.error(error.message),
+      );
+    }
+  });
 }
 
 module.exports = registerRoomSocket;

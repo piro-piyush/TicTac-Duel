@@ -20,11 +20,17 @@ const playerSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
+
         points: {
             type: Number,
             default: 0,
+            min: 0,
+        },
 
-        }
+        isReady: {
+            type: Boolean,
+            default: false,
+        },
     },
     {
         _id: false,
@@ -35,8 +41,11 @@ const roomSchema = new mongoose.Schema(
     {
         occupancy: {
             type: Number,
-            default: 2
+            default: 0,
+            min: 0,
+            max: 2,
         },
+
         maxRounds: {
             type: Number,
             default: 5,
@@ -48,6 +57,7 @@ const roomSchema = new mongoose.Schema(
             default: 1,
             min: 1,
         },
+
         code: {
             type: String,
             required: true,
@@ -61,12 +71,9 @@ const roomSchema = new mongoose.Schema(
         theme: {
             type: String,
             required: true,
-            enum: [
-                'classic',
-                'cyberpunk',
-                'neon',
-            ],
+            enum: ['classic', 'cyberpunk', 'neon'],
         },
+
         players: {
             type: [playerSchema],
             validate: {
@@ -74,20 +81,29 @@ const roomSchema = new mongoose.Schema(
                 message: 'A room can only have two players.',
             },
         },
-        isPlaying: {
-            type: Boolean,
-            default: false
+
+        roundStatus: {
+            type: String,
+            enum: ['waiting', 'playing', 'result'],
+            default: 'waiting',
         },
-        turn: playerSchema,
+
+        turn: {
+            type: playerSchema,
+            default: null,
+        },
+
         turnIndex: {
             type: Number,
             default: 0,
             min: 0,
             max: 1,
         },
+
         boardSize: {
             type: Number,
             default: 9,
+            min: 4,
         },
     },
     {
