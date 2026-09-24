@@ -49,15 +49,97 @@ class _GameScreenState extends State<GameScreen> {
       required int index,
       required PlayerSymbol symbol,
     }) {
-      if (!mounted) {
+      if (!mounted) return;
+
+      final roomData = context.read<RoomDataProvider>();
+
+      // Always apply the confirmed move locally.
+      roomData.setBoardValue(index, symbol);
+      roomData.updateRoom(room);
+
+      final mySymbol = room.players
+          .firstWhere(
+            (player) => player.socketId == SocketService.instance.socketId,
+          )
+          .symbol;
+
+      // Opponent's move: just update the board.
+      if (symbol != mySymbol) {
         return;
       }
 
-      context.read<RoomDataProvider>().updateRoom(room);
-      context.read<RoomDataProvider>().setBoardValue(index, symbol);
+      // This was MY confirmed move.
+      final result = GameLogicUtils.checkWinner(context);
 
-      // Server confirmed the move.
-      MusicAndFeedbackService.instance.lightVibration();
+      if (!result.isFinished) {
+        return;
+      }
+
+      // Draw: no winner needs to submit anything.
+      // Show the draw dialog locally.
+      if (result == GameResult.draw) {
+        context.read<RoomDataProvider>().clearBoard();
+        GameDialogUtils.showGameResult(
+          context: context,
+          result: result,
+          theme: room.theme,
+          mySymbol: mySymbol,
+        );
+        return;
+      }
+
+      // I won, so calculate the winning line and submit the result.
+      final winningIndexes = GameLogicUtils.getWinningIndexes(context);
+
+      roomData.setWinningIndexes(winningIndexes);
+
+      RoomSocketService.instance.submitGameResult(
+        roomCode: room.code,
+        winnerSocketId: SocketService.instance.socketId!,
+        winningIndexes: winningIndexes.toList(),
+      );
+
+      // Do NOT show win dialog here.
+      // round_result will be received by both players
+      // and will show You Won / You Lose.
+    });
+
+    roomSocket.onRoundResult(({
+      required RoomModel room,
+      required String winnerSocketId,
+      required List<int> winningIndexes,
+      required int completedRound,
+      required bool gameFinished,
+    }) {
+      if (!mounted) return;
+
+      final roomData = context.read<RoomDataProvider>();
+
+      roomData.updateRoom(room);
+      roomData.setWinningIndexes(winningIndexes.toSet());
+
+      final mySocketId = SocketService.instance.socketId;
+
+      final winner = room.players.firstWhere(
+        (player) => player.socketId == winnerSocketId,
+      );
+
+      final myPlayer = room.players.firstWhere(
+        (player) => player.socketId == mySocketId,
+      );
+
+      final result = winner.symbol == PlayerSymbol.x
+          ? GameResult.xWins
+          : GameResult.oWins;
+
+      // Clear the board and
+      context.read<RoomDataProvider>().clearBoard();
+      GameDialogUtils.showGameResult(
+        context: context,
+        result: result,
+        theme: room.theme,
+        mySymbol: myPlayer.symbol,
+      );
     });
 
     roomSocket.onRoomError((message) {
@@ -86,6 +168,7 @@ class _GameScreenState extends State<GameScreen> {
     final room = context.watch<RoomDataProvider>().room;
     final board = context.watch<RoomDataProvider>().board;
     final myWebsocketId = SocketService.instance.socketId;
+    final winningIndexes = context.watch<RoomDataProvider>().winningIndexes;
     if (room == null) {
       return const Scaffold(
         backgroundColor: Themes.background,
@@ -103,7 +186,7 @@ class _GameScreenState extends State<GameScreen> {
       title: 'Tic Tac Duel',
       child: !room.isPlaying
           ? WaitingForPlayersWidget(room: room)
-          : _buildGame(room, myWebsocketId, board),
+          : _buildGame(room, myWebsocketId, board, winningIndexes),
     );
   }
 
@@ -111,6 +194,7 @@ class _GameScreenState extends State<GameScreen> {
     RoomModel room,
     String? myWebsocketId,
     List<PlayerSymbol?> board,
+    Set<int> winningIndexes,
   ) {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -137,6 +221,7 @@ class _GameScreenState extends State<GameScreen> {
               _buildBoard(
                 room,
                 board,
+                winningIndexes,
                 isWide: isWide,
                 isMyTurn: room.turn?.socketId == myWebsocketId,
               ),
@@ -386,7 +471,8 @@ class _GameScreenState extends State<GameScreen> {
 
   Widget _buildBoard(
     RoomModel room,
-    List<PlayerSymbol?> values, {
+    List<PlayerSymbol?> values,
+    Set<int> winningIndexes, {
     required bool isWide,
     required bool isMyTurn,
   }) {
@@ -399,6 +485,7 @@ class _GameScreenState extends State<GameScreen> {
           onCellTap: (index) => _handleCellTap(index, room),
           values: values,
           isMyTurn: isMyTurn,
+          winningIndexes: winningIndexes,
         ),
       ),
     );
