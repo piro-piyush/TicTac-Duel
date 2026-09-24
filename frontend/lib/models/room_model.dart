@@ -28,53 +28,32 @@ class RoomModel {
   final int boardSize;
 
   factory RoomModel.fromJson(Map<String, dynamic> json) {
-    return RoomModel(
-      id: json['_id'] as String,
-      code: json['code'] as String,
-      occupancy: json['occupancy'] as int,
-      maxRounds: json['maxRounds'] as int,
-      currentRound: json['currentRound'] as int,
-      theme: RoomTheme.fromValue(json['theme'] as String),
-      players: (json['players'] as List)
-          .map(
-            (player) =>
-                PlayerModel.fromJson(Map<String, dynamic>.from(player as Map)),
-          )
-          .toList(),
-      isPlaying: json['isPlaying'] as bool,
-      turn: json['turn'] == null
-          ? null
-          : PlayerModel.fromJson(
-              Map<String, dynamic>.from(json['turn'] as Map),
-            ),
-      turnIndex: json['turnIndex'] as int,
-      boardSize: json['boardSize'] as int,
-    );
+    try {
+      return RoomModel(
+        id: json['_id'] as String,
+        code: json['code'] as String,
+        occupancy: json['occupancy'] as int,
+        maxRounds: json['maxRounds'] as int,
+        currentRound: json['currentRound'] as int,
+        theme: RoomTheme.fromValue(json['theme'] as String),
+        players: (json['players'] as List)
+            .map(
+              (player) => PlayerModel.fromJson(
+                Map<String, dynamic>.from(player as Map),
+              ),
+            )
+            .toList(),
+        isPlaying: json['isPlaying'] as bool,
+        turn: json['turn'] == null
+            ? null
+            : PlayerModel.fromJson(
+                Map<String, dynamic>.from(json['turn'] as Map),
+              ),
+        turnIndex: json['turnIndex'] as int,
+        boardSize: json['boardSize'] as int,
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
-}
-
-class PlayerModel {
-  const PlayerModel({
-    required this.name,
-    required this.symbol,
-    required this.socketId,
-    required this.points,
-  });
-
-  final String name;
-  final PlayerSymbol symbol;
-  final String socketId;
-  final int points;
-
-  factory PlayerModel.fromJson(Map<String, dynamic> json) {
-    return PlayerModel(
-      name: json['name'] as String,
-      symbol: PlayerSymbol.fromValue(json['symbol'] as String),
-      socketId: json['socketId'] as String,
-      points: json['points'] as int? ?? 0,
-    );
-  }
-
-  String get imageUrl =>
-      'https://api.dicebear.com/10.x/pixelbot/svg?seed=$socketId';
 }
