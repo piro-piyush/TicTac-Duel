@@ -30,12 +30,7 @@ class RoomSocketService {
     });
   }
 
-  void toggleReady({required String roomCode, required bool isReady}) {
-    _socket.emit(RoomSocketEvents.toggleReady, {
-      'roomCode': roomCode,
-      'isReady': isReady,
-    });
-  }
+
 
   void leaveRoom({required String roomCode}) {
     _socket.emit(RoomSocketEvents.leaveRoom, {'roomCode': roomCode});
@@ -69,9 +64,9 @@ class RoomSocketService {
     _listenToRoomEvent(RoomSocketEvents.playerLeft, callback);
   }
 
-  void onReadyUpdated(void Function(RoomModel room) callback) {
-    _listenToRoomEvent(RoomSocketEvents.readyUpdated, callback);
-  }
+  // void onReadyUpdated(void Function(RoomModel room) callback) {
+  //   _listenToRoomEvent(RoomSocketEvents.readyUpdated, callback);
+  // }
 
   // ---------------------------------------------------------------------------
   // Error Events
@@ -105,6 +100,13 @@ class RoomSocketService {
       'roomCode': roomCode,
       'winnerSocketId': winnerSocketId,
       'winningIndexes': winningIndexes,
+    });
+  }
+
+  void setPlayerReady({required String roomCode}) {
+    _socket.emit(RoomSocketEvents.toggleReady, {
+      'roomCode': roomCode,
+      'isReady': true,
     });
   }
 
@@ -149,6 +151,20 @@ class RoomSocketService {
       } catch (_) {
         return;
       }
+    });
+  }
+
+  void onReadyUpdated(void Function(RoomModel room) callback) {
+    _socket.off(RoomSocketEvents.readyUpdated);
+
+    _socket.on(RoomSocketEvents.readyUpdated, (response) {
+      final room = _parseRoom(response);
+
+      if (room == null) {
+        return;
+      }
+
+      callback(room);
     });
   }
 

@@ -132,6 +132,10 @@ class _GameScreenState extends State<GameScreen> {
           result: result,
           theme: room.theme,
           mySymbol: mySymbol,
+          onConfirm: () {
+            RoomSocketService.instance.setPlayerReady(roomCode: room.code);
+            context.read<RoomDataProvider>().clearBoard();
+          },
         );
         return;
       }
@@ -181,12 +185,16 @@ class _GameScreenState extends State<GameScreen> {
           : GameResult.oWins;
 
       // Clear the board and
-      context.read<RoomDataProvider>().clearBoard();
+
       GameDialogUtils.showGameResult(
         context: context,
         result: result,
         theme: room.theme,
         mySymbol: myPlayer.symbol,
+        onConfirm: () {
+          RoomSocketService.instance.setPlayerReady(roomCode: room.code);
+          context.read<RoomDataProvider>().clearBoard();
+        },
       );
     });
 
@@ -232,24 +240,12 @@ class _GameScreenState extends State<GameScreen> {
     return NeonBackgroundWidget(
       needScroll: true,
       title: 'Tic Tac Duel',
-      child: switch (room.roundStatus) {
-        RoundStatus.waiting => WaitingForPlayersWidget(
-          room: room,
-          waitingForNextRound: false,
-        ),
-
-        RoundStatus.playing => _buildGame(
-          room,
-          myWebsocketId,
-          board,
-          winningIndexes,
-        ),
-
-        RoundStatus.result => WaitingForPlayersWidget(
-          room: room,
-          waitingForNextRound: true,
-        ),
-      },
+      child: room.roundStatus == RoundStatus.playing
+          ? _buildGame(room, myWebsocketId, board, winningIndexes)
+          : WaitingForPlayersWidget(
+              room: room,
+              waitingForNextRound: room.currentRound > 0,
+            ),
     );
   }
 
@@ -363,7 +359,7 @@ class _GameScreenState extends State<GameScreen> {
     if (roomData.getBoardValue(index) != null) {
       return;
     }
-
+    // roomData.setBoardValue(index, symbol);
     // Give immediate tactile feedback for a valid tap.
     MusicAndFeedbackService.instance.selectionVibration();
 

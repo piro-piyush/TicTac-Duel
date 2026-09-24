@@ -8,6 +8,7 @@ class GameDialogUtils {
     required GameResult result,
     required PlayerSymbol mySymbol,
     required RoomTheme theme,
+    VoidCallback? onConfirm,
   }) {
     return showDialog<void>(
       context: context,
@@ -32,31 +33,24 @@ class GameDialogUtils {
           backgroundColor: Themes.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            side: BorderSide(
-              color: theme.primary.withValues(alpha: 0.4),
-            ),
+            side: BorderSide(color: theme.primary.withValues(alpha: 0.4)),
           ),
           title: Text(
             title,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: theme.primary,
-              fontWeight: FontWeight.w800,
-            ),
+            style: TextStyle(color: theme.primary, fontWeight: FontWeight.w800),
           ),
           content: Text(
             message,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Themes.textPrimary,
-            ),
+            style: const TextStyle(color: Themes.textPrimary),
           ),
           actionsAlignment: MainAxisAlignment.center,
           actions: [
             ElevatedButton(
               onPressed: () {
-                // context.read<RoomDataProvider>().clearBoard();
                 Navigator.of(context).pop();
+                onConfirm?.call();
               },
               child: const Text('OK'),
             ),

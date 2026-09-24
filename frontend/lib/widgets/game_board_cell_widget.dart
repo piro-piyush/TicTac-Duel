@@ -27,7 +27,12 @@ class GameBoardCellWidget extends StatelessWidget {
     };
 
     return GestureDetector(
-      onTap: isMyTurn && symbol == null ? () => onCellTap?.call(index) : null,
+      onTap: () {
+        if (isMyTurn && symbol == null) {
+          onCellTap?.call(index);
+        }
+        LoggerUtils.debug("Tapped");
+      },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         decoration: BoxDecoration(
