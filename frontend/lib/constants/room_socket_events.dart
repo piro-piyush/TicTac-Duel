@@ -24,4 +24,7 @@ class RoomSocketEvents {
   // Move events
   static const makeMove = 'make_move';
   static const moveMade = 'move_made';
+
+  static const submitGameResult = 'submit_game_result';
+  static const roundResult = 'round_result';
 }

@@ -3,7 +3,9 @@ import 'package:tictac_duel/lib.dart';
 class RoomDataProvider extends ChangeNotifier {
   RoomModel? _room;
 
-  final List<PlayerSymbol?> _board = List<PlayerSymbol?>.filled(9, null);
+  List<PlayerSymbol?> _board = List<PlayerSymbol?>.empty();
+
+  Set<int> _winningIndexes = {};
 
   RoomModel? get room => _room;
 
@@ -11,8 +13,12 @@ class RoomDataProvider extends ChangeNotifier {
 
   List<PlayerSymbol?> get board => List.unmodifiable(_board);
 
+  Set<int> get winningIndexes => Set.unmodifiable(_winningIndexes);
+
   void setRoom(RoomModel room) {
     _room = room;
+    _board = List<PlayerSymbol?>.filled(room.boardSize, null);
+    _winningIndexes = {};
     notifyListeners();
   }
 
@@ -34,18 +40,23 @@ class RoomDataProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  PlayerSymbol? getBoardValue(int index, ) {
+  PlayerSymbol? getBoardValue(int index) {
     if (index < 0 || index >= _board.length) {
       return null;
     }
+
     return _board[index];
   }
 
-  void clearBoard() {
-    for (var i = 0; i < _board.length; i++) {
-      _board[i] = null;
-    }
+  void setWinningIndexes(Set<int> indexes) {
+    _winningIndexes = Set.from(indexes);
+    notifyListeners();
+  }
 
+  void clearBoard() {
+    _board = List<PlayerSymbol?>.filled(_room?.boardSize ?? 0, null);
+
+    _winningIndexes = {};
     notifyListeners();
   }
 
@@ -55,6 +66,9 @@ class RoomDataProvider extends ChangeNotifier {
     }
 
     _room = null;
-    clearBoard();
+    _board = List<PlayerSymbol?>.empty();
+    _winningIndexes = {};
+
+    notifyListeners();
   }
 }

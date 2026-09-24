@@ -85,6 +85,18 @@ class RoomSocketService {
     });
   }
 
+  void submitGameResult({
+    required String roomCode,
+    required String winnerSocketId,
+    required List<int> winningIndexes,
+  }) {
+    _socket.emit(RoomSocketEvents.submitGameResult, {
+      'roomCode': roomCode,
+      'winnerSocketId': winnerSocketId,
+      'winningIndexes': winningIndexes,
+    });
+  }
+
   // ---------------------------------------------------------------------------
   // Game Events
   // ---------------------------------------------------------------------------
@@ -194,6 +206,73 @@ class RoomSocketService {
     } catch (_) {
       return null;
     }
+  }
+
+  // ---------------------------------------------------------------------------
+// Round Result Event
+// ---------------------------------------------------------------------------
+
+  void onRoundResult(
+      void Function({
+      required RoomModel room,
+      required String winnerSocketId,
+      required List<int> winningIndexes,
+      required int completedRound,
+      required bool gameFinished,
+      })
+      callback,
+      ) {
+    _socket.off(RoomSocketEvents.roundResult);
+
+    _socket.on(RoomSocketEvents.roundResult, (response) {
+      if (response is! Map) {
+        return;
+      }
+
+      if (response['success'] != true) {
+        return;
+      }
+
+      final data = response['data'];
+
+      if (data is! Map) {
+        return;
+      }
+
+      final roomData = data['room'];
+      final winnerSocketId = data['winnerSocketId'];
+      final winningIndexesData = data['winningIndexes'];
+      final completedRound = data['completedRound'];
+      final gameFinished = data['gameFinished'];
+
+      if (roomData is! Map ||
+          winnerSocketId is! String ||
+          winningIndexesData is! List ||
+          completedRound is! int ||
+          gameFinished is! bool) {
+        return;
+      }
+
+      try {
+        final room = RoomModel.fromJson(
+          Map<String, dynamic>.from(roomData),
+        );
+
+        final winningIndexes = winningIndexesData
+            .whereType<int>()
+            .toList();
+
+        callback(
+          room: room,
+          winnerSocketId: winnerSocketId,
+          winningIndexes: winningIndexes,
+          completedRound: completedRound,
+          gameFinished: gameFinished,
+        );
+      } catch (_) {
+        return;
+      }
+    });
   }
 
   // ---------------------------------------------------------------------------
