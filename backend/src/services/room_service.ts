@@ -80,7 +80,7 @@ class RoomService {
         symbol,
         socketId: socket.id,
         points: 0,
-        isReady: false,
+        isReady: true,
       };
 
       const room = await Room.create({
@@ -151,13 +151,13 @@ class RoomService {
         symbol: guestSymbol,
         socketId: socket.id,
         points: 0,
-        isReady: false,
+        isReady: true,
       });
 
       room.occupancy = room.players.length;
 
       // Joining the room does NOT start the round.
-      room.roundStatus = ROOM_STATUS.WAITING;
+      room.roundStatus = ROOM_STATUS.PLAYING;
       room.currentRound = 0;
       room.turnIndex = 0;
       room.turn = null;
