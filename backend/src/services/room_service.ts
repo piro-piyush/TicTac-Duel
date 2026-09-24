@@ -90,7 +90,7 @@ class RoomService {
         occupancy: 1,
         currentRound: 0,
         roundStatus: ROOM_STATUS.WAITING,
-        turn: null,
+        turn: player,
         turnIndex: 0,
       });
 
@@ -152,15 +152,14 @@ class RoomService {
         socketId: socket.id,
         points: 0,
         isReady: true,
+
       });
 
       room.occupancy = room.players.length;
 
       // Joining the room does NOT start the round.
       room.roundStatus = ROOM_STATUS.PLAYING;
-      room.currentRound = 0;
-      room.turnIndex = 0;
-      room.turn = null;
+      room.currentRound = 1;
 
       await room.save();
 
