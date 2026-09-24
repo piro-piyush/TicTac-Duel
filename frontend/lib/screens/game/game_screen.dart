@@ -44,6 +44,54 @@ class _GameScreenState extends State<GameScreen> {
       SnackbarUtils.showWarning(context, 'Player left the game');
     });
 
+
+    // Ready status updated.
+    roomSocket.onReadyUpdated((room) {
+      if (!mounted) {
+        return;
+      }
+
+      final roomData = context.read<RoomDataProvider>();
+
+      roomData.setRoom(room);
+
+      final mySocketId = SocketService.instance.socketId;
+
+      final myPlayer = room.players
+          .where((player) => player.socketId == mySocketId)
+          .firstOrNull;
+
+      final allReady = room.players.length == 2 &&
+          room.players.every((player) => player.isReady);
+
+      // Both players are ready and the next round has started.
+      if (room.isPlaying) {
+        MusicAndFeedbackService.instance.mediumVibration();
+
+        SnackbarUtils.showSuccess(
+          context,
+          'Round ${room.currentRound} started',
+        );
+
+        return;
+      }
+
+      // Only one player is ready.
+      if (myPlayer?.isReady == true && !allReady) {
+        SnackbarUtils.showSuccess(
+          context,
+          'You are ready. Waiting for opponent...',
+        );
+
+        return;
+      }
+
+      // Player cancelled ready.
+      if (myPlayer?.isReady == false) {
+        return;
+      }
+    });
+
     roomSocket.onMoveMade(({
       required RoomModel room,
       required int index,

@@ -27,4 +27,6 @@ class RoomSocketEvents {
 
   static const submitGameResult = 'submit_game_result';
   static const roundResult = 'round_result';
+  static const toggleReady = 'toggle_ready';
+  static const readyUpdated = 'ready_updated';
 }

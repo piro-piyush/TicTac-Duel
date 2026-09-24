@@ -37,12 +37,7 @@ enum RoomTheme {
   final Color primary;
   final Color secondary;
 
-  static RoomTheme fromValue(String value) {
-    return RoomTheme.values.firstWhere(
-      (theme) => theme.value == value,
-      orElse: () => RoomTheme.classic,
-    );
-  }
+
 }
 
 enum PlayerSymbol {
@@ -114,4 +109,14 @@ enum GameResult {
       orElse: () => GameResult.inProgress,
     );
   }
+}
+
+enum RoundStatus {
+  waiting(value: 'waiting'),
+  playing(value: 'playing'),
+  result(value: 'result');
+
+  const RoundStatus({required this.value});
+
+  final String value;
 }

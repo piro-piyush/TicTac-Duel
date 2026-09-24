@@ -30,6 +30,13 @@ class RoomSocketService {
     });
   }
 
+  void toggleReady({required String roomCode, required bool isReady}) {
+    _socket.emit(RoomSocketEvents.toggleReady, {
+      'roomCode': roomCode,
+      'isReady': isReady,
+    });
+  }
+
   void leaveRoom({required String roomCode}) {
     _socket.emit(RoomSocketEvents.leaveRoom, {'roomCode': roomCode});
   }
@@ -60,6 +67,10 @@ class RoomSocketService {
 
   void onPlayerLeft(void Function(RoomModel room) callback) {
     _listenToRoomEvent(RoomSocketEvents.playerLeft, callback);
+  }
+
+  void onReadyUpdated(void Function(RoomModel room) callback) {
+    _listenToRoomEvent(RoomSocketEvents.readyUpdated, callback);
   }
 
   // ---------------------------------------------------------------------------
@@ -209,19 +220,19 @@ class RoomSocketService {
   }
 
   // ---------------------------------------------------------------------------
-// Round Result Event
-// ---------------------------------------------------------------------------
+  // Round Result Event
+  // ---------------------------------------------------------------------------
 
   void onRoundResult(
-      void Function({
+    void Function({
       required RoomModel room,
       required String winnerSocketId,
       required List<int> winningIndexes,
       required int completedRound,
       required bool gameFinished,
-      })
-      callback,
-      ) {
+    })
+    callback,
+  ) {
     _socket.off(RoomSocketEvents.roundResult);
 
     _socket.on(RoomSocketEvents.roundResult, (response) {
@@ -254,13 +265,9 @@ class RoomSocketService {
       }
 
       try {
-        final room = RoomModel.fromJson(
-          Map<String, dynamic>.from(roomData),
-        );
+        final room = RoomModel.fromJson(Map<String, dynamic>.from(roomData));
 
-        final winningIndexes = winningIndexesData
-            .whereType<int>()
-            .toList();
+        final winningIndexes = winningIndexesData.whereType<int>().toList();
 
         callback(
           room: room,

@@ -7,6 +7,7 @@ class RoomModel {
     required this.occupancy,
     required this.maxRounds,
     required this.currentRound,
+    required this.roundStatus,
     required this.theme,
     required this.players,
     required this.isPlaying,
@@ -24,6 +25,7 @@ class RoomModel {
   final List<PlayerModel> players;
   final bool isPlaying;
   final PlayerModel? turn;
+  final RoundStatus roundStatus;
   final int turnIndex;
   final int boardSize;
 
@@ -35,7 +37,8 @@ class RoomModel {
         occupancy: json['occupancy'] as int,
         maxRounds: json['maxRounds'] as int,
         currentRound: json['currentRound'] as int,
-        theme: RoomTheme.fromValue(json['theme'] as String),
+        theme: RoomTheme.values.byName(json['theme'] as String),
+        roundStatus: RoundStatus.values.byName(json['roundStatus'] as String),
         players: (json['players'] as List)
             .map(
               (player) => PlayerModel.fromJson(
