@@ -5,22 +5,22 @@ class JoinRoomHintWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return  Row(
+    final textTheme = Theme.of(context).textTheme;
+
+    return Row(
       mainAxisAlignment: MainAxisAlignment.center,
-      spacing: 8,
+      spacing: Dimens.eight,
       children: [
-        const Icon(
+        Icon(
           Icons.info_outline_rounded,
           color: Themes.textSecondary,
-          size: 15,
+          size: Dimens.iconSm,
         ),
         Text(
           'Use the 6–8 character code from your friend',
-          style: TextStyle(
-            color: Themes.textSecondary.withValues(alpha: 0.8),
-            fontSize: 10,
-          ),
+          style: textTheme.labelSmall,
         ),
       ],
-    );}
+    );
+  }
 }
