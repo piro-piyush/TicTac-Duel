@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'dimens.dart';
+
 class Themes {
   Themes._();
 
@@ -39,10 +41,25 @@ class Themes {
       fontFamily: 'Poppins',
 
       colorScheme: const ColorScheme.dark(
-        primary: neonCyan,
-        secondary: neonPurple,
+        primary: neonPurple,
+        onPrimary: textPrimary,
+
+        secondary: neonCyan,
+        onSecondary: background,
+
+        tertiary: neonPink,
+        onTertiary: textPrimary,
+
         surface: surface,
+        onSurface: textPrimary,
+
         error: neonPink,
+        onError: textPrimary,
+
+        outline: border,
+        outlineVariant: border,
+
+        surfaceContainerHighest: card,
       ),
 
       appBarTheme: const AppBarTheme(
@@ -52,32 +69,269 @@ class Themes {
         centerTitle: true,
       ),
 
-      textTheme: const TextTheme(
+      textTheme: TextTheme(
+        displayLarge: TextStyle(
+          color: textPrimary,
+          fontSize: Dimens.font9Xl,
+          fontWeight: FontWeight.w900,
+          letterSpacing: -1.2,
+          height: 1.1,
+        ),
+
+        displayMedium: TextStyle(
+          color: textPrimary,
+          fontSize: Dimens.font8Xl,
+          fontWeight: FontWeight.w900,
+          letterSpacing: -1,
+          height: 1.1,
+        ),
+
+        displaySmall: TextStyle(
+          color: textPrimary,
+          fontSize: Dimens.font7Xl,
+          fontWeight: FontWeight.w800,
+          letterSpacing: -0.5,
+          height: 1.15,
+        ),
+
         headlineLarge: TextStyle(
           color: textPrimary,
-          fontWeight: FontWeight.bold,
+          fontSize: Dimens.font6Xl,
+          fontWeight: FontWeight.w800,
+          letterSpacing: -0.4,
+          height: 1.2,
         ),
-        bodyLarge: TextStyle(color: textPrimary),
-        bodyMedium: TextStyle(color: textSecondary),
+
+        headlineMedium: TextStyle(
+          color: textPrimary,
+          fontSize: Dimens.font5Xl,
+          fontWeight: FontWeight.w800,
+          letterSpacing: -0.2,
+          height: 1.2,
+        ),
+
+        headlineSmall: TextStyle(
+          color: textPrimary,
+          fontSize: Dimens.font4Xl,
+          fontWeight: FontWeight.w700,
+          height: 1.25,
+        ),
+
+        titleLarge: TextStyle(
+          color: textPrimary,
+          fontSize: Dimens.fontXl,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.1,
+          height: 1.3,
+        ),
+
+        titleMedium: TextStyle(
+          color: textPrimary,
+          fontSize: Dimens.fontLg,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.15,
+          height: 1.3,
+        ),
+
+        titleSmall: TextStyle(
+          color: textSecondary,
+          fontSize: Dimens.fontMd,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.2,
+          height: 1.3,
+        ),
+
+        bodyLarge: TextStyle(
+          color: textPrimary,
+          fontSize: Dimens.fontMd,
+          fontWeight: FontWeight.w500,
+          height: 1.5,
+        ),
+
+        bodyMedium: TextStyle(
+          color: textSecondary,
+          fontSize: Dimens.fontSm,
+          fontWeight: FontWeight.w400,
+          height: 1.45,
+        ),
+
+        bodySmall: TextStyle(
+          color: textSecondary,
+          fontSize: Dimens.fontXs,
+          fontWeight: FontWeight.w400,
+          height: 1.4,
+        ),
+
+        labelLarge: TextStyle(
+          color: textPrimary,
+          fontSize: Dimens.fontSm,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.5,
+          height: 1.2,
+        ),
+
+        labelMedium: TextStyle(
+          color: textSecondary,
+          fontSize: Dimens.fontXs,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.8,
+          height: 1.2,
+        ),
+
+        labelSmall: TextStyle(
+          color: textSecondary,
+          fontSize: Dimens.font2Xs,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1.2,
+          height: 1.2,
+        ),
       ),
 
-      cardTheme: CardThemeData(
-        color: card,
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: border),
-        ),
-      ),
+
 
       elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: neonPurple,
-          foregroundColor: textPrimary,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+        style: ButtonStyle(
+          minimumSize: WidgetStatePropertyAll(
+            Size(double.infinity, Dimens.elevatedButtonHeight),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          padding: WidgetStatePropertyAll(
+            EdgeInsets.symmetric(
+              horizontal: Dimens.twentyFour,
+              vertical: Dimens.eight,
+            ),
+          ),
+          backgroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return disabled;
+            }
+
+            if (states.contains(WidgetState.pressed)) {
+              return neonPurple.withValues(alpha: 0.8);
+            }
+
+            return neonPurple;
+          }),
+          foregroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return textSecondary;
+            }
+
+            return textPrimary;
+          }),
+          overlayColor: WidgetStatePropertyAll(
+            textPrimary.withValues(alpha: 0.08),
+          ),
+          elevation: const WidgetStatePropertyAll(0),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(Dimens.radiusMd),
+            ),
+          ),
+          textStyle: WidgetStatePropertyAll(
+            TextStyle(
+              fontSize: Dimens.fontSm,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.8,
+            ),
+          ),
+        ),
+      ),
+
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: ButtonStyle(
+          minimumSize: WidgetStatePropertyAll(
+            Size(double.infinity, Dimens.elevatedButtonHeight),
+          ),
+          padding: WidgetStatePropertyAll(
+            EdgeInsets.symmetric(
+              horizontal: Dimens.twentyFour,
+              vertical: Dimens.eight,
+            ),
+          ),
+          foregroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return disabled;
+            }
+
+            if (states.contains(WidgetState.pressed)) {
+              return textPrimary;
+            }
+
+            return neonPurple;
+          }),
+          backgroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.pressed)) {
+              return neonPurple.withValues(alpha: 0.12);
+            }
+
+            return Colors.transparent;
+          }),
+          overlayColor: WidgetStatePropertyAll(
+            neonPurple.withValues(alpha: 0.08),
+          ),
+          side: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return const BorderSide(color: disabled);
+            }
+
+            if (states.contains(WidgetState.pressed)) {
+              return const BorderSide(color: neonPurple, width: 1.5);
+            }
+
+            return const BorderSide(color: border, width: 1.2);
+          }),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(Dimens.radiusMd),
+            ),
+          ),
+          textStyle: WidgetStatePropertyAll(
+            TextStyle(
+              fontSize: Dimens.fontSm,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.8,
+            ),
+          ),
+        ),
+      ),
+
+      textButtonTheme: TextButtonThemeData(
+        style: ButtonStyle(
+          minimumSize: WidgetStatePropertyAll(
+            Size(0, Dimens.elevatedButtonHeight),
+          ),
+          padding: WidgetStatePropertyAll(
+            EdgeInsets.symmetric(
+              horizontal: Dimens.sixteen,
+              vertical: Dimens.eight,
+            ),
+          ),
+          foregroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return disabled;
+            }
+
+            if (states.contains(WidgetState.pressed)) {
+              return neonPurple;
+            }
+
+            return textSecondary;
+          }),
+          overlayColor: WidgetStatePropertyAll(
+            neonPurple.withValues(alpha: 0.08),
+          ),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(Dimens.radiusMd),
+            ),
+          ),
+          textStyle: WidgetStatePropertyAll(
+            TextStyle(
+              fontSize: Dimens.fontSm,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.4,
+            ),
+          ),
         ),
       ),
     );
