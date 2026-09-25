@@ -18,32 +18,22 @@ class HeaderSectionWidget extends StatelessWidget {
       spacing: Dimens.fourteen,
       children: [
         Container(
-          width: 46,
-          height: 46,
+          width: Dimens.fortyEight,
+          height: Dimens.fortyEight,
           decoration: BoxDecoration(
             color: Themes.neonCyan.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(13),
+            borderRadius: Dimens.radius14,
             border: Border.all(color: Themes.neonCyan.withValues(alpha: 0.18)),
           ),
-          child: Icon(icon, color: Themes.neonCyan, size: 21),
+          child: Icon(icon, color: Themes.neonCyan),
         ),
         Expanded(
           child: Column(
+            spacing: Dimens.two,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title,
-                style: TextStyle(
-                  color: Themes.textPrimary,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              SizedBox(height: 3),
-              Text(
-                subtitle,
-                style: TextStyle(color: Themes.textSecondary, fontSize: 11),
-              ),
+              Text(title, style: Theme.of(context).textTheme.titleLarge),
+              Text(subtitle, style: Theme.of(context).textTheme.bodyMedium),
             ],
           ),
         ),
