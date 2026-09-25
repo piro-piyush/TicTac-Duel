@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import 'package:tictac_duel/lib.dart';
 
@@ -12,7 +10,15 @@ class SocketService {
 
   bool get isConnected => _socket?.connected ?? false;
 
-  String? get socketId => _socket?.id;
+  String get socketId {
+    final id = _socket?.id;
+
+    if (id == null || id.isEmpty) {
+      throw StateError('Socket is not connected.');
+    }
+
+    return id;
+  }
 
   Future<void> connect() async {
     if (isConnected) {

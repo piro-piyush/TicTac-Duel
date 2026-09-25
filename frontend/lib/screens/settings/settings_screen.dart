@@ -1,19 +1,11 @@
 import 'package:tictac_duel/lib.dart';
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
-}
-
-class _SettingsScreenState extends State<SettingsScreen> {
-  bool _soundEnabled = true;
-  bool _musicEnabled = true;
-  bool _vibrationEnabled = true;
-
-  @override
   Widget build(BuildContext context) {
+    final musicProvider = context.watch<MusicProvider>();
     return NeonBackgroundWidget(
       title: 'SETTINGS',
       child: Column(
@@ -29,22 +21,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
 
               SettingsAudioSectionWidget(
-                soundEnabled: _soundEnabled,
-                musicEnabled: _musicEnabled,
-                vibrationEnabled: _vibrationEnabled,
-                onSoundChanged: (value) =>
-                    setState(() => _soundEnabled = value),
-                onMusicChanged: (value) =>
-                    setState(() => _musicEnabled = value),
-                onVibrationChanged: (value) =>
-                    setState(() => _vibrationEnabled = value),
+                soundEnabled: musicProvider.effectsEnabled,
+                musicEnabled: musicProvider.isEnabled,
+                vibrationEnabled: musicProvider.vibrationEnabled,
+                onSoundChanged: musicProvider.setEffectsEnabled,
+                onMusicChanged: musicProvider.setMusicEnabled,
+                onVibrationChanged: musicProvider.setVibrationEnabled,
               ),
 
-              SettingsAboutSectionWidget(),
+              const SettingsAboutSectionWidget(),
             ],
           ),
 
-          FooterCardWidget(),
+          const FooterCardWidget(),
         ],
       ),
     );
