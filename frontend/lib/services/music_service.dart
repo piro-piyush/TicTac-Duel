@@ -166,15 +166,11 @@ class MusicService {
     }
 
     if (_effectsEnabled) {
-      unawaited(
-        _playEffect(AudioConstants.touchSound),
-      );
+      unawaited(_playEffect(AudioConstants.touchSound));
     }
 
     if (_vibrationEnabled) {
-      unawaited(
-        HapticFeedback.selectionClick(),
-      );
+      unawaited(HapticFeedback.selectionClick());
     }
   }
 
@@ -202,12 +198,26 @@ class MusicService {
     unawaited(_playEffect(AudioConstants.loseSound));
   }
 
-  void playJoin() {
+  void playRoundStart() {
     if (!_initialized || !_effectsEnabled) {
       return;
     }
 
-    unawaited(_playEffect(AudioConstants.joinSound));
+    unawaited(_playEffect(AudioConstants.roundSound));
+  }
+
+  void playJoin() {
+    if (!_initialized) {
+      return;
+    }
+
+    if (_effectsEnabled) {
+      unawaited(_playEffect(AudioConstants.joinSound));
+    }
+
+    if (_vibrationEnabled) {
+      unawaited(HapticFeedback.lightImpact());
+    }
   }
 
   Future<void> _playEffect(String asset) async {
@@ -216,6 +226,7 @@ class MusicService {
     }
 
     try {
+      await _effectPlayer.stop();
       await _effectPlayer.setAsset(asset);
       await _effectPlayer.seek(Duration.zero);
       await _effectPlayer.play();

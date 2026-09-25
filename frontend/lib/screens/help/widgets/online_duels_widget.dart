@@ -26,14 +26,14 @@ class OnlineDuelsWidget extends StatelessWidget {
               'ready to play.',
         ),
 
-        SectionTileWidget(
-          icon: Icons.lock_outline_rounded,
-          color: Themes.neonCyan,
-          title: 'Private Rooms',
-          subtitle:
-              'Private rooms are accessible through their room code, making '
-              'them useful when playing directly with a friend.',
-        ),
+        // SectionTileWidget(
+        //   icon: Icons.lock_outline_rounded,
+        //   color: Themes.neonCyan,
+        //   title: 'Private Rooms',
+        //   subtitle:
+        //       'Private rooms are accessible through their room code, making '
+        //       'them useful when playing directly with a friend.',
+        // ),
       ],
     );
   }
