@@ -11,3 +11,4 @@ export 'section_title_widget.dart';
 export 'player_avatar_widget.dart';
 export 'game_board_widget.dart';
 export 'game_board_cell_widget.dart';
+export 'game_text_form_field_widget.dart';
