@@ -13,16 +13,16 @@ class SelectRoomThemeWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      spacing: 20,
+      spacing: Dimens.eight,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Column(
-          spacing: 12,
+          spacing: Dimens.eight,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SectionTitleWidget(title: 'ROOM THEME'),
             Row(
-              spacing: 10,
+              spacing: Dimens.ten,
               children: RoomTheme.values.map(_buildThemeChip).toList(),
             ),
           ],
@@ -128,19 +128,19 @@ class SelectRoomThemeWidget extends StatelessWidget {
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 220),
-      padding: const EdgeInsets.all(16),
+      padding: Dimens.edgeInsets16,
       decoration: BoxDecoration(
         color: Themes.surface,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: Dimens.radius18,
         border: Border.all(color: theme.primary.withValues(alpha: 0.25)),
       ),
       child: Row(
-        spacing: 16,
+        spacing: Dimens.sixteen,
         children: [
           _buildMiniBoard(theme),
           Expanded(
             child: Column(
-              spacing: 7,
+              spacing: Dimens.eight,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
@@ -168,7 +168,7 @@ class SelectRoomThemeWidget extends StatelessWidget {
                   ),
                 ),
                 Row(
-                  spacing: 5,
+                  spacing: Dimens.six,
                   children: [
                     Icon(
                       Icons.palette_outlined,
@@ -197,8 +197,8 @@ class SelectRoomThemeWidget extends StatelessWidget {
     const symbols = ['X', '', 'O', '', 'X', '', 'O', '', ''];
 
     return SizedBox(
-      width: 94,
-      height: 94,
+      width: Dimens.ninetySix,
+      height: Dimens.ninetySix,
       child: GridView.builder(
         physics: const NeverScrollableScrollPhysics(),
         padding: EdgeInsets.zero,
@@ -214,7 +214,7 @@ class SelectRoomThemeWidget extends StatelessWidget {
           return Container(
             decoration: BoxDecoration(
               color: Themes.card,
-              borderRadius: BorderRadius.circular(5),
+              borderRadius: Dimens.radius6,
               border: Border.all(color: theme.primary.withValues(alpha: 0.07)),
             ),
             child: Center(
@@ -237,8 +237,8 @@ class SelectRoomThemeWidget extends StatelessWidget {
 
   Widget _buildThemeDot(Color color) {
     return Container(
-      width: 9,
-      height: 9,
+      width: Dimens.ten,
+      height: Dimens.ten,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: color,

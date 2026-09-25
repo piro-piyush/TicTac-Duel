@@ -59,4 +59,70 @@ class RoomModel {
       rethrow;
     }
   }
+
+  static List<RoomModel> publicRooms = [
+    RoomModel(
+      id: 'public-room-1',
+      code: 'ALEX01',
+      occupancy: 1,
+      maxRounds: 3,
+      currentRound: 0,
+      roundStatus: RoundStatus.waiting,
+      theme: RoomTheme.classic,
+      players: [
+        PlayerModel(
+          name: 'Alex',
+          symbol: PlayerSymbol.x,
+          socketId: 'mock-alex',
+          points: 0,
+          isReady: false,
+        ),
+      ],
+      turn: null,
+      turnIndex: 0,
+      boardSize: 9,
+    ),
+    RoomModel(
+      id: 'public-room-2',
+      code: 'SHDW01',
+      occupancy: 1,
+      maxRounds: 5,
+      currentRound: 0,
+      roundStatus: RoundStatus.waiting,
+      theme: RoomTheme.inferno,
+      players: [
+        PlayerModel(
+          name: 'Shadow',
+          symbol: PlayerSymbol.x,
+          socketId: 'mock-shadow',
+          points: 0,
+          isReady: false,
+        ),
+      ],
+      turn: null,
+      turnIndex: 0,
+      boardSize: 9,
+    ),
+    RoomModel(
+      id: 'public-room-3',
+      code: 'NOVA01',
+      occupancy: 1,
+      maxRounds: 7,
+      currentRound: 0,
+      roundStatus: RoundStatus.waiting,
+      theme: RoomTheme.classic,
+      players: [
+        PlayerModel(
+          name: 'Nova',
+          symbol: PlayerSymbol.o,
+          socketId: 'mock-nova',
+          points: 0,
+          isReady: false,
+        ),
+      ],
+      turn: null,
+      turnIndex: 0,
+      boardSize: 9,
+    ),
+  ];
 }
