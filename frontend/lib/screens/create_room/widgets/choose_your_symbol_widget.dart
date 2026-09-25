@@ -13,14 +13,14 @@ class ChooseYourSymbolWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      spacing: 14,
+      spacing: Dimens.eight,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const SectionTitleWidget(
           title: 'CHOOSE YOUR SYMBOL',
         ),
         Row(
-          spacing: 14,
+          spacing: Dimens.twelve,
           children: [
             Expanded(
               child: _buildSymbolCard(
