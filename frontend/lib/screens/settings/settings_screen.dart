@@ -9,6 +9,7 @@ class SettingsScreen extends StatelessWidget {
     return NeonBackgroundWidget(
       title: 'SETTINGS',
       child: Column(
+
         spacing: 32,
         children: [
           Column(

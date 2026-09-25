@@ -14,30 +14,19 @@ class SectionTitleAndOptionsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const radius = BorderRadius.all(Radius.circular(14));
     return Column(
-      spacing: 10,
+      spacing: Dimens.ten,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SectionTitleWidget(title: title),
-        Material(
-          color: Colors.transparent,
-          borderRadius: radius,
+        Card(
+          color: Themes.surface,
           clipBehavior: Clip.antiAlias,
-          child: Ink(
-            decoration: BoxDecoration(
-              color: Themes.surface,
-              borderRadius: radius,
-              border: Border.all(color: Themes.border),
-            ),
-            child: Column(
-              children: List.generate(children.length * 2 - 1, (index) {
-                if (index.isOdd) {
-                  return const DividerWidget();
-                }
-
-                return children[index ~/ 2];
-              }),
+          child: Column(
+            children: List.generate(
+              children.length * 2 - 1,
+              (index) =>
+                  index.isOdd ? const DividerWidget() : children[index ~/ 2],
             ),
           ),
         ),

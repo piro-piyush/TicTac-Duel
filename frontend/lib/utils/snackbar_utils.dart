@@ -71,12 +71,12 @@ class SnackbarUtils {
           backgroundColor: Themes.surface,
           showCloseIcon: true,closeIconColor: Themes.textPrimary,
           dismissDirection: DismissDirection.horizontal,
-          margin: Dimens.padding8.copyWith(
+          margin: Dimens.edgeInsets8.copyWith(
             bottom: 12
           ),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(Dimens.radius12),
+            borderRadius: Dimens.radius12,
           ),
           elevation: 4,
           content: Row(
