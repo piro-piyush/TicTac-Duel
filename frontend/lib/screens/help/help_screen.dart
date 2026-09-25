@@ -8,10 +8,10 @@ class HelpScreen extends StatelessWidget {
     return NeonBackgroundWidget(
       title: 'HELP',
       child: Column(
-        spacing: 32,
+        spacing: Dimens.thirtyTwo,
         children: [
           Column(
-            spacing: 28,
+            spacing: Dimens.twentyEight,
             children: [
               const HeaderSectionWidget(
                 title: 'NEED A HAND?',

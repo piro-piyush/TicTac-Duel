@@ -36,36 +36,25 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ScreenUtilInit(
-      designSize: const Size(360, 690),
-      minTextAdapt: true,
-      splitScreenMode: true,
-      builder: (context, child) {
-        return MultiProvider(
-          providers: [
-            ChangeNotifierProvider<RoomDataProvider>(
-              create: (_) => RoomDataProvider(),
-            ),
-            ChangeNotifierProvider<MusicProvider>(
-              create: (_) => MusicProvider(musicService),
-            ),
-          ],
-          child: MaterialApp.router(
-            debugShowCheckedModeBanner: false,
-            title: 'Tic Tac Duel',
-            theme: Themes.darkTheme,
-            routerConfig: Routes.router,
-            builder: (context, child) {
-              return Listener(
-                onPointerDown: (_) {
-                  context.read<MusicProvider>().playTouch();
-                },
-                child: child!,
-              );
-            },
-          ),
-        );
-      },
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<RoomDataProvider>(
+          create: (_) => RoomDataProvider(),
+        ),
+        ChangeNotifierProvider<MusicProvider>(
+          create: (_) => MusicProvider(musicService),
+        ),
+      ],
+      child: MaterialApp.router(
+        debugShowCheckedModeBanner: false,
+        title: 'Tic Tac Duel',
+        theme: Themes.darkTheme,
+        routerConfig: Routes.router,
+        builder: (context, child) => Listener(
+          onPointerDown: (_) => context.read<MusicProvider>().playTouch(),
+          child: child!,
+        ),
+      ),
     );
   }
 }
