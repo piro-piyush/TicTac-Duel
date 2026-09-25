@@ -18,6 +18,7 @@ interface CreateRoomParams {
   playerName: string;
   symbol: PlayerSymbol;
   theme: RoomTheme;
+  maxRounds: number;
   socket: Socket;
 }
 
@@ -67,6 +68,7 @@ class RoomService {
     playerName,
     symbol,
     theme,
+    maxRounds,
     socket,
   }: CreateRoomParams): Promise<
     InstanceType<typeof Room>
@@ -90,6 +92,7 @@ class RoomService {
         occupancy: 1,
         currentRound: 0,
         roundStatus: ROOM_STATUS.WAITING,
+        maxRounds:maxRounds,
         turn: player,
         turnIndex: 0,
       });
@@ -308,7 +311,9 @@ class RoomService {
 
       // Round has finished.
       room.roundStatus = ROOM_STATUS.RESULT;
-
+      // Winner starts the next round.
+      room.turnIndex = winnerIndex;
+      room.turn = winner;
       // Players must ready up before the next round.
       room.players.forEach((player) => {
         player.isReady = false;
@@ -404,19 +409,13 @@ class RoomService {
     );
 
     if (allReady) {
-      // Start the next round.
       room.currentRound += 1;
 
-      room.turnIndex = 0;
+      room.roundStatus = ROOM_STATUS.PLAYING;
 
       room.turn =
         room.players[room.turnIndex] ?? null;
 
-      room.roundStatus =
-        ROOM_STATUS.PLAYING;
-
-      // Ready state is only used as a gate
-      // for starting the round.
       room.players.forEach((player) => {
         player.isReady = false;
       });

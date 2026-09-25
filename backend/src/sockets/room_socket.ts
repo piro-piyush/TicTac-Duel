@@ -26,6 +26,7 @@ function registerRoomSocket(io: Server,
       playerName: string;
       symbol: PlayerSymbol;
       theme: RoomTheme;
+      maxRounds:number,
     }) => {
       try {
         Logger.info(
@@ -37,12 +38,14 @@ function registerRoomSocket(io: Server,
           playerName,
           symbol,
           theme,
+          maxRounds,
         } = data;
 
         const room = await RoomService.createRoom({
           playerName,
           symbol,
           theme,
+          maxRounds,
           socket,
         });
 
