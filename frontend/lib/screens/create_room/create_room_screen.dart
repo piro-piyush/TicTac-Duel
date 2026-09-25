@@ -14,43 +14,29 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
 
   PlayerSymbol _selectedSymbol = PlayerSymbol.x;
   RoomTheme _selectedTheme = RoomTheme.classic;
+  int _selectedMaxRounds = 3;
+
+  static const List<int> _roundOptions = [1, 3, 5, 7];
 
   @override
   void initState() {
     super.initState();
-
     _playerNameFocusNode.requestFocus();
-
     final roomSocket = RoomSocketService.instance;
-
     roomSocket.onRoomCreated((room) async {
       if (!mounted) {
         return;
       }
-
-      MusicAndFeedbackService.instance.mediumVibration();
-
-      SnackbarUtils.showSuccess(
-        context,
-        'Room created',
-      );
-
+      context.read<MusicProvider>().lightVibration();
       context.read<RoomDataProvider>().setRoom(room);
-
-      Routes.replaceGame();
+      Routes.replaceToGame();
     });
-
     roomSocket.onRoomError((message) {
       if (!mounted) {
         return;
       }
-
-      MusicAndFeedbackService.instance.mediumVibration();
-
-      SnackbarUtils.showError(
-        context,
-        'Room error: $message',
-      );
+      context.read<MusicProvider>().mediumVibration();
+      SnackbarUtils.showError(context, 'Room error: $message');
     });
   }
 
@@ -89,6 +75,8 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
                 setState(() => _selectedSymbol = symbol);
               },
             ),
+
+            _buildRoundSelector(),
 
             SelectRoomThemeWidget(
               selectedTheme: _selectedTheme,
@@ -194,6 +182,88 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
     setState(() {});
   }
 
+  Widget _buildRoundSelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'ROUNDS',
+          style: TextStyle(
+            color: Themes.textSecondary,
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 2,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.all(5),
+          decoration: BoxDecoration(
+            color: Themes.card,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: Themes.border),
+          ),
+          child: Row(
+            children: _roundOptions.map((rounds) {
+              final isSelected = rounds == _selectedMaxRounds;
+
+              return Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedMaxRounds = rounds;
+                    });
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? Themes.neonPurple.withValues(alpha: 0.18)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: isSelected
+                            ? Themes.neonPurple
+                            : Colors.transparent,
+                      ),
+                    ),
+                    child: Column(
+                      spacing: 2,
+                      children: [
+                        Text(
+                          '$rounds',
+                          style: TextStyle(
+                            color: isSelected
+                                ? Themes.textPrimary
+                                : Themes.textSecondary,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        Text(
+                          rounds == 1 ? 'ROUND' : 'ROUNDS',
+                          style: TextStyle(
+                            color: isSelected
+                                ? Themes.neonPurple
+                                : Themes.textSecondary,
+                            fontSize: 8,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildRoomInfo() {
     return Column(
       spacing: 14,
@@ -274,6 +344,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
         playerName: playerName,
         symbol: _selectedSymbol,
         theme: _selectedTheme,
+        maxRounds: _selectedMaxRounds,
       );
     } catch (e) {
       LoggerUtils.error('Error creating room: $e');
