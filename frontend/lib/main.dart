@@ -1,30 +1,38 @@
 import 'package:tictac_duel/lib.dart';
 
-void main() async {
-  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+late final MusicService musicService;
+
+Future<void> main() async {
+  final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
 
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  await dotenv.load();
+
+  await _initCore();
 
   runApp(const MyApp());
 }
 
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+// =============================================================================
+// CORE INITIALIZATION
+// =============================================================================
 
-  @override
-  State<MyApp> createState() => _MyAppState();
+Future<void> _initCore() async {
+  await dotenv.load();
+  await LocalStorageUtils.init();
+
+  musicService = MusicService(LocalStorageUtils.prefs);
+
+  await musicService.init();
+
+  FlutterNativeSplash.remove();
 }
 
-class _MyAppState extends State<MyApp> {
-  @override
-  void initState() {
-    super.initState();
+// =============================================================================
+// APP
+// =============================================================================
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      FlutterNativeSplash.remove();
-    });
-  }
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -35,16 +43,27 @@ class _MyAppState extends State<MyApp> {
       builder: (context, child) {
         return MultiProvider(
           providers: [
-            ChangeNotifierProvider(create: (_) => RoomDataProvider()),
+            ChangeNotifierProvider<RoomDataProvider>(
+              create: (_) => RoomDataProvider(),
+            ),
+            ChangeNotifierProvider<MusicProvider>(
+              create: (_) => MusicProvider(musicService),
+            ),
           ],
-          builder: (context, child) {
-            return MaterialApp.router(
-              title: 'Tic Tac Duel',
-              theme: Themes.darkTheme,
-              routerConfig: Routes.router,
-              debugShowCheckedModeBanner: false,
-            );
-          },
+          child: MaterialApp.router(
+            debugShowCheckedModeBanner: false,
+            title: 'Tic Tac Duel',
+            theme: Themes.darkTheme,
+            routerConfig: Routes.router,
+            builder: (context, child) {
+              return Listener(
+                onPointerDown: (_) {
+                  context.read<MusicProvider>().playTouch();
+                },
+                child: child!,
+              );
+            },
+          ),
         );
       },
     );
