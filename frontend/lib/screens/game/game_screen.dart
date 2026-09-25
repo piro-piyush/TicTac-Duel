@@ -161,7 +161,7 @@ class _GameScreenState extends State<GameScreen> {
 
       RoomSocketService.instance.submitGameResult(
         roomCode: room.code,
-        winnerSocketId: SocketService.instance.socketId!,
+        winnerSocketId: SocketService.instance.socketId,
         winningIndexes: winningIndexes.toList(),
       );
 
