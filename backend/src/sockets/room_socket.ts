@@ -26,7 +26,7 @@ function registerRoomSocket(io: Server,
       playerName: string;
       symbol: PlayerSymbol;
       theme: RoomTheme;
-      maxRounds:number,
+      maxRounds: number,
     }) => {
       try {
         Logger.info(
@@ -230,9 +230,9 @@ function registerRoomSocket(io: Server,
     ROOM_SOCKET_EVENTS.SUBMIT_GAME_RESULT,
     async (data: {
       roomCode: string;
-      winnerSocketId: string;
+      winnerSocketId: string | null;
       winningIndexes: number[];
-    },) => {
+    }) => {
       try {
         Logger.info(
           'Submit game result request received',
@@ -245,13 +245,12 @@ function registerRoomSocket(io: Server,
           winningIndexes,
         } = data;
 
-        const result =
-          await RoomService.submitGameResult({
-            roomCode,
-            winnerSocketId,
-            winningIndexes,
-            socket,
-          });
+        const result = await RoomService.submitGameResult({
+          roomCode,
+          winnerSocketId,
+          winningIndexes,
+          socket,
+        });
 
         Logger.success(
           `Round result submitted for room: ${result.room.code}`,
@@ -261,7 +260,7 @@ function registerRoomSocket(io: Server,
           'Round result',
           {
             roomCode: result.room.code,
-            round: result.room.currentRound,
+            round: result.completedRound,
             roundStatus: result.room.roundStatus,
             winnerSocketId: result.winnerSocketId,
             winningIndexes: result.winningIndexes,
@@ -274,7 +273,7 @@ function registerRoomSocket(io: Server,
           ROOM_SOCKET_EVENTS.ROUND_RESULT,
           SocketResponse.success(result),
         );
-      } catch (error) {
+      } catch (error: unknown) {
         Logger.error(
           'Failed to submit game result',
           error,
@@ -285,7 +284,7 @@ function registerRoomSocket(io: Server,
           SocketResponse.error(
             error instanceof Error
               ? error.message
-              : "Failed to submit game result"
+              : 'Failed to submit game result',
           ),
         );
       }

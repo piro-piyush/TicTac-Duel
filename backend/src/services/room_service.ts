@@ -36,7 +36,7 @@ interface MakeMoveParams {
 
 interface SubmitGameResultParams {
   roomCode: string;
-  winnerSocketId: string;
+  winnerSocketId: string | null;
   winningIndexes: number[];
   socket: Socket;
 }
@@ -49,7 +49,7 @@ interface SetPlayerReadyParams {
 
 interface GameResult {
   room: InstanceType<typeof Room>;
-  winnerSocketId: string;
+  winnerSocketId: string | null;
   winningIndexes: number[];
   completedRound: number;
   gameFinished: boolean;
@@ -82,7 +82,7 @@ class RoomService {
         symbol,
         socketId: socket.id,
         points: 0,
-        isReady: true,
+        isReady: false,
       };
 
       const room = await Room.create({
@@ -92,7 +92,7 @@ class RoomService {
         occupancy: 1,
         currentRound: 0,
         roundStatus: ROOM_STATUS.WAITING,
-        maxRounds:maxRounds,
+        maxRounds: maxRounds,
         turn: player,
         turnIndex: 0,
       });
@@ -154,15 +154,14 @@ class RoomService {
         symbol: guestSymbol,
         socketId: socket.id,
         points: 0,
-        isReady: true,
-
+        isReady: false,
       });
 
       room.occupancy = room.players.length;
 
       // Joining the room does NOT start the round.
-      room.roundStatus = ROOM_STATUS.PLAYING;
-      room.currentRound = 1;
+      room.roundStatus = ROOM_STATUS.WAITING;
+      room.currentRound = 0;
 
       await room.save();
 
@@ -259,9 +258,7 @@ class RoomService {
     socket,
   }: SubmitGameResultParams): Promise<GameResult> {
     try {
-      const code = roomCode
-        .trim()
-        .toUpperCase();
+      const code = roomCode.trim().toUpperCase();
 
       const room = await this.getRoom(code);
 
@@ -269,38 +266,75 @@ class RoomService {
         throw new Error('Room not found');
       }
 
-      if (
-        room.roundStatus !== ROOM_STATUS.PLAYING
-      ) {
+      if (room.roundStatus !== ROOM_STATUS.PLAYING) {
         throw new Error('Round is not active');
       }
 
       if (room.players.length !== 2) {
-        throw new Error(
-          'Room does not have two players',
-        );
+        throw new Error('Room does not have two players');
       }
 
+      if (!Array.isArray(winningIndexes)) {
+        throw new Error('Invalid winning indexes');
+      }
+
+      // --------------------------------------------------
+      // DRAW
+      // --------------------------------------------------
+      if (winnerSocketId === null) {
+        // The player submitting the draw must belong to the room.
+        const player = room.players.find(
+          (player) => player.socketId === socket.id,
+        );
+
+        if (!player) {
+          throw new Error('Player is not in this room');
+        }
+
+        // Round has finished.
+        room.roundStatus = ROOM_STATUS.RESULT;
+
+        // In a draw, there is no winner.
+        // Keep the current turnIndex/turn unchanged.
+        room.turn = null;
+
+        // Players must ready up before the next round.
+        room.players.forEach((player) => {
+          player.isReady = false;
+        });
+
+        const completedRound = room.currentRound;
+
+        const gameFinished =
+          completedRound >= room.maxRounds;
+
+        await room.save();
+
+        return {
+          room,
+          winnerSocketId: null,
+          winningIndexes: [],
+          completedRound,
+          gameFinished,
+        };
+      }
+
+      // --------------------------------------------------
+      // WIN
+      // --------------------------------------------------
+
+      // Only the player who made the winning move
+      // can submit themselves as the winner.
       if (socket.id !== winnerSocketId) {
         throw new Error('Invalid winner');
       }
 
-      const winnerIndex =
-        room.players.findIndex(
-          (player) =>
-            player.socketId === winnerSocketId,
-        );
+      const winnerIndex = room.players.findIndex(
+        (player) => player.socketId === winnerSocketId,
+      );
 
       if (winnerIndex === -1) {
-        throw new Error(
-          'Winner is not part of this room',
-        );
-      }
-
-      if (!Array.isArray(winningIndexes)) {
-        throw new Error(
-          'Invalid winning indexes',
-        );
+        throw new Error('Winner is not part of this room');
       }
 
       const winner = room.players[winnerIndex];
@@ -311,19 +345,20 @@ class RoomService {
 
       // Round has finished.
       room.roundStatus = ROOM_STATUS.RESULT;
+
       // Winner starts the next round.
       room.turnIndex = winnerIndex;
       room.turn = winner;
+
       // Players must ready up before the next round.
       room.players.forEach((player) => {
         player.isReady = false;
       });
 
-      // Award one point.
+      // Award one point to the winner.
       winner.points = (winner.points ?? 0) + 1;
 
-      const completedRound =
-        room.currentRound;
+      const completedRound = room.currentRound;
 
       const gameFinished =
         completedRound >= room.maxRounds;
@@ -342,6 +377,7 @@ class RoomService {
         'Failed to submit game result',
         error,
       );
+
       throw error;
     }
   }
@@ -350,18 +386,12 @@ class RoomService {
     roomCode,
     isReady,
     socket,
-  }: SetPlayerReadyParams): Promise<
-    InstanceType<typeof Room>
-  > {
+  }: SetPlayerReadyParams): Promise<InstanceType<typeof Room>> {
     if (typeof isReady !== 'boolean') {
-      throw new Error(
-        'isReady must be a boolean',
-      );
+      throw new Error('isReady must be a boolean');
     }
 
-    const code = roomCode
-      .trim()
-      .toUpperCase();
+    const code = roomCode.trim().toUpperCase();
 
     const room = await this.getRoom(code);
 
@@ -369,29 +399,16 @@ class RoomService {
       throw new Error('Room not found');
     }
 
-    if (room.players.length !== 2) {
-      throw new Error(
-        'Room does not have two players',
-      );
-    }
-
     const player = room.players.find(
-      (player) =>
-        player.socketId === socket.id,
+      (player) => player.socketId === socket.id,
     );
 
     if (!player) {
-      throw new Error(
-        'Player is not in this room',
-      );
+      throw new Error('Player is not in this room');
     }
 
-    if (
-      room.roundStatus === ROOM_STATUS.PLAYING
-    ) {
-      throw new Error(
-        'Round is already active',
-      );
+    if (room.roundStatus === ROOM_STATUS.PLAYING) {
+      throw new Error('Round is already active');
     }
 
     if (
@@ -404,18 +421,23 @@ class RoomService {
     // Update this player's ready state.
     player.isReady = isReady;
 
-    const allReady = room.players.every(
-      (player) => player.isReady,
-    );
+    // Do not start a round until the room has all required players.
+    const hasAllPlayers =
+      room.occupancy === 2 &&
+      room.players.length === room.occupancy;
+
+    const allReady =
+      hasAllPlayers &&
+      room.players.every((player) => player.isReady);
 
     if (allReady) {
       room.currentRound += 1;
-
       room.roundStatus = ROOM_STATUS.PLAYING;
 
       room.turn =
         room.players[room.turnIndex] ?? null;
 
+      // Reset ready state once the round starts.
       room.players.forEach((player) => {
         player.isReady = false;
       });
