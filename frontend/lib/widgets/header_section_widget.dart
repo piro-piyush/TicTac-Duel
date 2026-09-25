@@ -15,6 +15,7 @@ class HeaderSectionWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      spacing: Dimens.fourteen,
       children: [
         Container(
           width: 46,
@@ -26,7 +27,6 @@ class HeaderSectionWidget extends StatelessWidget {
           ),
           child: Icon(icon, color: Themes.neonCyan, size: 21),
         ),
-        const SizedBox(width: 14),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

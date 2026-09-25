@@ -16,26 +16,39 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
   RoomTheme _selectedTheme = RoomTheme.classic;
   int _selectedMaxRounds = 3;
 
-  static const List<int> _roundOptions = [1, 3, 5, 7];
+  // Temporary UI data.
+  final List<_PublicRoom> _publicRooms = const [
+    _PublicRoom(playerName: 'Alex', theme: RoomTheme.classic, maxRounds: 3),
+    _PublicRoom(playerName: 'Shadow', theme: RoomTheme.inferno, maxRounds: 5),
+    _PublicRoom(playerName: 'Nova', theme: RoomTheme.classic, maxRounds: 7),
+  ];
 
   @override
   void initState() {
     super.initState();
+
     _playerNameFocusNode.requestFocus();
+
     final roomSocket = RoomSocketService.instance;
+
     roomSocket.onRoomCreated((room) async {
       if (!mounted) {
         return;
       }
+
       context.read<MusicProvider>().lightVibration();
       context.read<RoomDataProvider>().setRoom(room);
+
       Routes.replaceToGame();
     });
+
     roomSocket.onRoomError((message) {
       if (!mounted) {
         return;
       }
+
       context.read<MusicProvider>().mediumVibration();
+
       SnackbarUtils.showError(context, 'Room error: $message');
     });
   }
@@ -58,7 +71,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
 
   Widget _buildContent() {
     return SingleChildScrollView(
-      padding: Dimens.defaultPadding,
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 110),
       child: Form(
         key: _formKey,
         child: Column(
@@ -72,7 +85,9 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
             ChooseYourSymbolWidget(
               selectedSymbol: _selectedSymbol,
               onSymbolChanged: (symbol) {
-                setState(() => _selectedSymbol = symbol);
+                setState(() {
+                  _selectedSymbol = symbol;
+                });
               },
             ),
 
@@ -81,13 +96,15 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
             SelectRoomThemeWidget(
               selectedTheme: _selectedTheme,
               onThemeChanged: (theme) {
-                setState(() => _selectedTheme = theme);
+                setState(() {
+                  _selectedTheme = theme;
+                });
               },
             ),
 
-            _buildRoomInfo(),
+            _buildPublicRooms(),
 
-            const SizedBox(height: 20),
+            _buildRoomInfo(),
           ],
         ),
       ),
@@ -204,7 +221,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
             border: Border.all(color: Themes.border),
           ),
           child: Row(
-            children: _roundOptions.map((rounds) {
+            children: GameConstants.roundOptions.map((rounds) {
               final isSelected = rounds == _selectedMaxRounds;
 
               return Expanded(
@@ -261,6 +278,174 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildPublicRooms() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Expanded(
+              child: Text(
+                'PUBLIC ROOMS',
+                style: TextStyle(
+                  color: Themes.textSecondary,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 2,
+                ),
+              ),
+            ),
+            IconButton(
+              onPressed: () {
+                // TODO: Refresh public rooms.
+              },
+              visualDensity: VisualDensity.compact,
+              tooltip: 'Refresh',
+              icon: const Icon(
+                Icons.refresh_rounded,
+                color: Themes.textSecondary,
+                size: 18,
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 8),
+
+        if (_publicRooms.isEmpty)
+          _buildEmptyPublicRooms()
+        else
+          Column(
+            spacing: 10,
+            children: _publicRooms.map((room) {
+              return _buildPublicRoomCard(room);
+            }).toList(),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildPublicRoomCard(_PublicRoom room) {
+    final themeColor = room.theme.primary;
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Themes.card,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Themes.border),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: themeColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: themeColor.withValues(alpha: 0.35)),
+            ),
+            child: Icon(
+              Icons.sports_esports_rounded,
+              color: themeColor,
+              size: 20,
+            ),
+          ),
+
+          const SizedBox(width: 12),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  room.playerName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Themes.textPrimary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${room.theme.name}  •  '
+                  '${room.maxRounds} '
+                  '${room.maxRounds == 1 ? 'Round' : 'Rounds'}',
+                  style: const TextStyle(
+                    color: Themes.textSecondary,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(width: 8),
+
+          TextButton.icon(
+            onPressed: () {
+              // TODO: Join public room.
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: themeColor,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            icon: const Icon(Icons.arrow_forward_rounded, size: 16),
+            label: const Text(
+              'JOIN',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyPublicRooms() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      decoration: BoxDecoration(
+        color: Themes.card,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Themes.border),
+      ),
+      child: const Column(
+        children: [
+          Icon(
+            Icons.sports_esports_outlined,
+            color: Themes.textSecondary,
+            size: 28,
+          ),
+          SizedBox(height: 10),
+          Text(
+            'No public rooms available',
+            style: TextStyle(
+              color: Themes.textPrimary,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          SizedBox(height: 4),
+          Text(
+            'Create a room and wait for an opponent.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Themes.textSecondary, fontSize: 10),
+          ),
+        ],
+      ),
     );
   }
 
@@ -350,4 +535,16 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
       LoggerUtils.error('Error creating room: $e');
     }
   }
+}
+
+class _PublicRoom {
+  const _PublicRoom({
+    required this.playerName,
+    required this.theme,
+    required this.maxRounds,
+  });
+
+  final String playerName;
+  final RoomTheme theme;
+  final int maxRounds;
 }
