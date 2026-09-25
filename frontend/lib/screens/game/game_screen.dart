@@ -15,6 +15,31 @@ class _GameScreenState extends State<GameScreen> {
   void initState() {
     super.initState();
     final roomSocket = RoomSocketService.instance;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+
+      final room = context.read<RoomDataProvider>().room;
+
+      if (room == null) {
+        return;
+      }
+
+      final mySocketId = SocketService.instance.socketId;
+
+      final myPlayer = room.players
+          .where((player) => player.socketId == mySocketId)
+          .firstOrNull;
+
+      if (myPlayer == null || myPlayer.isReady) {
+        return;
+      }
+
+      roomSocket.setPlayerReady(roomCode: room.code);
+    });
+
     roomSocket.onPlayerJoined((room) {
       if (!mounted) {
         return;
@@ -22,19 +47,10 @@ class _GameScreenState extends State<GameScreen> {
 
       context.read<RoomDataProvider>().setRoom(room);
       context.read<MusicProvider>().playJoin();
-
       if (room.roundStatus == RoundStatus.playing &&
           _animatedRound != room.currentRound) {
         _animatedRound = room.currentRound;
-
         showRoundAnimation();
-
-        context.read<MusicProvider>().mediumVibration();
-
-        SnackbarUtils.showSuccess(
-          context,
-          'Round ${room.currentRound} started',
-        );
       }
     });
 
@@ -91,15 +107,7 @@ class _GameScreenState extends State<GameScreen> {
 
         if (_animatedRound != room.currentRound) {
           _animatedRound = room.currentRound;
-
           showRoundAnimation();
-
-          context.read<MusicProvider>().mediumVibration();
-
-          SnackbarUtils.showSuccess(
-            context,
-            'Round ${room.currentRound} started',
-          );
         }
 
         return;
@@ -126,65 +134,73 @@ class _GameScreenState extends State<GameScreen> {
       required int index,
       required PlayerSymbol symbol,
     }) {
-      if (!mounted) return;
-
-      final roomData = context.read<RoomDataProvider>();
-
-      // Always apply the confirmed move locally.
-      roomData.setBoardValue(index, symbol);
-      roomData.updateRoom(room);
-
-      final mySymbol = room.players
-          .firstWhere(
-            (player) => player.socketId == SocketService.instance.socketId,
-          )
-          .symbol;
-
-      // Opponent's move: just update the board.
-      if (symbol != mySymbol) {
+      if (!mounted) {
         return;
       }
 
-      // This was MY confirmed move.
+      final roomData = context.read<RoomDataProvider>();
+
+      // Apply the server-confirmed move locally.
+      roomData.setBoardValue(index, symbol);
+      roomData.updateRoom(room);
+
+      // Do not process results if the round is already finished.
+      if (room.roundStatus != RoundStatus.playing) {
+        return;
+      }
+
+      final mySocketId = SocketService.instance.socketId;
+
+      final myPlayer = room.players.firstWhere(
+            (player) => player.socketId == mySocketId,
+      );
+
+      final mySymbol = myPlayer.symbol;
+
+      // Check the result for every confirmed move.
       final result = GameLogicUtils.checkWinner(context);
 
+      // Round is still active.
       if (!result.isFinished) {
         return;
       }
 
-      // Draw: no winner needs to submit anything.
-      // Show the draw dialog locally.
+      // --------------------------------------------------
+      // DRAW
+      // --------------------------------------------------
+      // Either player can make the final move that causes
+      // a draw, so submit the draw to the backend.
       if (result == GameResult.draw) {
-        context.read<RoomDataProvider>().clearBoard();
-        GameDialogUtils.showGameResult(
-          context: context,
-          result: result,
-          theme: room.theme,
-          mySymbol: mySymbol,
-          onConfirm: () {
-            RoomSocketService.instance.setPlayerReady(roomCode: room.code);
-            context.read<RoomDataProvider>().clearBoard();
-          },
+        RoomSocketService.instance.submitGameResult(
+          roomCode: room.code,
+          winnerSocketId: null,
+          winningIndexes: const [],
         );
+
         return;
       }
 
-      // I won, so calculate the winning line and submit the result.
+      // --------------------------------------------------
+      // WIN
+      // --------------------------------------------------
+      // Only the player who made the winning move submits
+      // the result.
+      if (symbol != mySymbol) {
+        return;
+      }
+
       final winningIndexes = GameLogicUtils.getWinningIndexes(context);
 
       roomData.setWinningIndexes(winningIndexes);
 
       RoomSocketService.instance.submitGameResult(
         roomCode: room.code,
-        winnerSocketId: SocketService.instance.socketId,
+        winnerSocketId: mySocketId,
         winningIndexes: winningIndexes.toList(),
       );
 
-      // Do NOT show win dialog here.
-      // round_result will be received by both players
-      // and will show You Won / You Lose.
+      // round_result will be received by both players.
     });
-
     roomSocket.onRoundResult(({
       required RoomModel room,
       required String winnerSocketId,

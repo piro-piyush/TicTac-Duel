@@ -31,7 +31,6 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
     super.initState();
     _playerNameFocusNode.requestFocus();
     RoomSocketService.instance.onRoomJoined((room) {
-      SnackbarUtils.showSuccess(context, 'Room joined');
       Provider.of<RoomDataProvider>(context, listen: false).setRoom(room);
       Routes.replaceToGame();
     });
