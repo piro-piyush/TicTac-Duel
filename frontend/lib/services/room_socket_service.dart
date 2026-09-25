@@ -15,11 +15,13 @@ class RoomSocketService {
     required String playerName,
     required PlayerSymbol symbol,
     required RoomTheme theme,
+    required int maxRounds,
   }) {
     _socket.emit(RoomSocketEvents.createRoom, {
       'playerName': playerName,
       'symbol': symbol.value,
       'theme': theme.value,
+      'maxRounds': maxRounds,
     });
   }
 
