@@ -20,7 +20,6 @@ class QuickActionWidget extends StatelessWidget {
       onPressed: onTap,
       icon: Icon(icon),
       label: Text(label),
-      style: TextButton.styleFrom(foregroundColor: color),
     );
   }
 }

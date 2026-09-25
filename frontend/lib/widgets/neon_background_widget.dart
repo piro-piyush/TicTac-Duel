@@ -8,12 +8,14 @@ class NeonBackgroundWidget extends StatefulWidget {
     required this.child,
     this.title,
     this.actions,
+    this.padding,
     this.showGrid = true,
     this.showParticles = true,
     this.needScroll = true,
   });
 
   final Widget child;
+  final EdgeInsetsGeometry? padding;
   final String? title;
   final bool showGrid;
   final bool needScroll;
@@ -158,21 +160,30 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
 
             // Foreground
             Positioned.fill(
-              child: Responsive(
-                child: SafeArea(
-                  child: Column(
-                    children: [
-                      if (widget.title != null) _buildAppBar(context),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: Dimens.fourHundredSixty,
+                  ),
+                  child: SafeArea(
+                    child: Column(
+                      children: [
+                        if (widget.title != null) _buildAppBar(context),
 
-                      Expanded(
-                        child: widget.needScroll
-                            ? SingleChildScrollView(
-                                padding: Dimens.defaultPadding,
-                                child: widget.child,
-                              )
-                            : widget.child,
-                      ),
-                    ],
+                        Expanded(
+                          child: widget.needScroll
+                              ? SingleChildScrollView(
+                                  padding: widget.padding?? Dimens.defaultPadding ,
+                                  child: widget.child,
+                                )
+                              : Padding(
+                                  padding:
+                                      widget.padding ?? Dimens.defaultPadding,
+                                  child: widget.child,
+                                ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -187,33 +198,27 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
     return SizedBox(
       height: kToolbarHeight,
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const SizedBox(
-            width: 48,
-            child: BackButton(
-              color: Themes.textPrimary,
-            ),
-          ),
+          BackButton(color: Themes.textPrimary),
 
-          Expanded(
-            child: Text(
-              widget.title!,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Themes.textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 3,
-              ),
+          Text(
+            widget.title!,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Themes.textPrimary,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 3,
             ),
           ),
 
           if (widget.actions != null)
-            ...widget.actions!
+            Row(children: widget.actions!)
           else
-            const SizedBox(width: 48),
+            const SizedBox(),
         ],
       ),
     );
