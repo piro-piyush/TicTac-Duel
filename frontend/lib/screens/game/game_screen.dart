@@ -21,8 +21,7 @@ class _GameScreenState extends State<GameScreen> {
 
       context.read<RoomDataProvider>().setRoom(room);
 
-      MusicAndFeedbackService.instance.mediumVibration();
-
+      context.read<MusicProvider>().mediumVibration();
       SnackbarUtils.showSuccess(context, 'Player joined the game');
     });
 
@@ -51,14 +50,28 @@ class _GameScreenState extends State<GameScreen> {
       }
 
       final roomData = context.read<RoomDataProvider>();
-
-      roomData.setRoom(room);
-
       final mySocketId = SocketService.instance.socketId;
 
       final myPlayer = room.players
           .where((player) => player.socketId == mySocketId)
           .firstOrNull;
+
+      if (myPlayer == null) {
+        return;
+      }
+
+      final currentRoom = roomData.room;
+
+      final currentMyPlayer = currentRoom?.players
+          .where((player) => player.socketId == mySocketId)
+          .firstOrNull;
+
+      final myReadyChanged = currentMyPlayer?.isReady != myPlayer.isReady;
+
+      // Only update the complete room when my own ready state changed.
+      if (myReadyChanged) {
+        roomData.setRoom(room);
+      }
 
       final allReady =
           room.players.length == 2 &&
@@ -66,8 +79,9 @@ class _GameScreenState extends State<GameScreen> {
 
       // Both players are ready and the round has started.
       if (room.roundStatus == RoundStatus.playing) {
-        MusicAndFeedbackService.instance.mediumVibration();
+        roomData.setRoom(room);
 
+        context.read<MusicProvider>().mediumVibration();
         SnackbarUtils.showSuccess(
           context,
           'Round ${room.currentRound} started',
@@ -76,8 +90,8 @@ class _GameScreenState extends State<GameScreen> {
         return;
       }
 
-      // Only one player is ready.
-      if (myPlayer?.isReady == true && !allReady) {
+      // Only I am ready.
+      if (myPlayer.isReady && !allReady) {
         SnackbarUtils.showSuccess(
           context,
           'You are ready. Waiting for opponent...',
@@ -86,8 +100,8 @@ class _GameScreenState extends State<GameScreen> {
         return;
       }
 
-      // Player cancelled ready.
-      if (myPlayer?.isReady == false) {
+      // I cancelled ready.
+      if (!myPlayer.isReady) {
         return;
       }
     });
@@ -163,7 +177,9 @@ class _GameScreenState extends State<GameScreen> {
       required int completedRound,
       required bool gameFinished,
     }) {
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
 
       final roomData = context.read<RoomDataProvider>();
 
@@ -184,8 +200,20 @@ class _GameScreenState extends State<GameScreen> {
           ? GameResult.xWins
           : GameResult.oWins;
 
-      // Clear the board and
+      // Game is completely finished.
+      if (gameFinished) {
+        Routes.replaceToResult();
+        // GameDialogUtils.showGameFinished(
+        //   context: context,
+        //   room: room,
+        //   mySymbol: myPlayer.symbol,
+        //   theme: room.theme,
+        // );
 
+        return;
+      }
+
+      // Current round finished, but more rounds remain.
       GameDialogUtils.showGameResult(
         context: context,
         result: result,
@@ -197,13 +225,12 @@ class _GameScreenState extends State<GameScreen> {
         },
       );
     });
-
     roomSocket.onRoomError((message) {
       if (!mounted) {
         return;
       }
 
-      MusicAndFeedbackService.instance.mediumVibration();
+      context.read<MusicProvider>().mediumVibration();
 
       SnackbarUtils.showError(context, message);
     });
@@ -213,7 +240,7 @@ class _GameScreenState extends State<GameScreen> {
         return;
       }
 
-      MusicAndFeedbackService.instance.mediumVibration();
+      context.read<MusicProvider>().mediumVibration();
 
       SnackbarUtils.showError(context, message);
     });
@@ -237,10 +264,20 @@ class _GameScreenState extends State<GameScreen> {
       );
     }
 
+    final amIReady = room.players
+        .where((player) => player.socketId == myWebsocketId)
+        .first
+        .isReady;
+
+    final showGame =
+        room.roundStatus == RoundStatus.playing ||
+        (room.roundStatus == RoundStatus.result && !amIReady);
+
     return NeonBackgroundWidget(
       needScroll: true,
       title: 'Tic Tac Duel',
-      child: room.roundStatus == RoundStatus.playing
+
+      child: showGame
           ? _buildGame(room, myWebsocketId, board, winningIndexes)
           : WaitingForPlayersWidget(
               room: room,
@@ -361,8 +398,7 @@ class _GameScreenState extends State<GameScreen> {
     }
     // roomData.setBoardValue(index, symbol);
     // Give immediate tactile feedback for a valid tap.
-    MusicAndFeedbackService.instance.selectionVibration();
-
+    // context.read<MusicProvider>().selectionVibration();
     // Send the move to the server.
     RoomSocketService.instance.makeMove(index: index, roomCode: room.code);
   }
