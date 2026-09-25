@@ -61,14 +61,19 @@ class RoomDataProvider extends ChangeNotifier {
   }
 
   void clearRoom() {
-    if (_room == null) {
-      return;
-    }
-
     _room = null;
     _board = List<PlayerSymbol?>.empty();
     _winningIndexes = {};
 
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _room = null;
+    _board = List<PlayerSymbol?>.empty();
+    _winningIndexes = {};
+
+    super.dispose();
   }
 }
