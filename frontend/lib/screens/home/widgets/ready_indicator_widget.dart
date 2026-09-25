@@ -7,11 +7,11 @@ class ReadyIndicatorWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
-      spacing: 10,
+      spacing: Dimens.ten,
       children: [
         Container(
-          width: 6,
-          height: 6,
+          width: Dimens.six,
+          height: Dimens.six,
           decoration: const BoxDecoration(
             shape: BoxShape.circle,
             color: Themes.neonGreen,

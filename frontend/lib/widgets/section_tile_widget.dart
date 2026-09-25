@@ -48,23 +48,13 @@ class SectionTileWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      onTap: onTap,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-      leading: Icon(icon, color: color, size: 21),
-      title: Text(
-        title,
-        style: const TextStyle(
-          color: Themes.textPrimary,
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-      subtitle: Padding(
-        padding: const EdgeInsets.only(top: 2),
-        child: Text(
-          subtitle,
-          style: const TextStyle(color: Themes.textSecondary, fontSize: 10),
-        ),
+      onTap: onTap ?? () {},
+      contentPadding: Dimens.edgeInsets16_4,
+      leading: Icon(icon, color: color),
+      title: Text(title),
+      subtitle: Text(
+        subtitle,
+        style: const TextStyle(color: Themes.textSecondary, fontSize: 10),
       ),
       trailing: _buildTrailing(),
     );
@@ -81,14 +71,8 @@ class SectionTileWidget extends StatelessWidget {
           inactiveTrackColor: Themes.card,
           inactiveThumbColor: Themes.disabled,
         );
-
       case SectionTileType.action:
-        return Icon(
-          Icons.chevron_right_rounded,
-          color: Themes.textSecondary.withValues(alpha: 0.7),
-          size: 20,
-        );
-
+        return Icon(Icons.chevron_right_rounded, color: color);
       case SectionTileType.none:
         return null;
     }
