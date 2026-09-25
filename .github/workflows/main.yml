@@ -62,6 +62,19 @@ jobs:
           SOCKET_URL=${{ secrets.SOCKET_URL }}
           EOF
 
+      - name: Read App Version
+        id: version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //')
+          APP_VERSION="${VERSION%%+*}"
+          BUILD_NUMBER="${VERSION##*+}"
+
+          echo "version=$APP_VERSION" >> "$GITHUB_OUTPUT"
+          echo "build_number=$BUILD_NUMBER" >> "$GITHUB_OUTPUT"
+
+          echo "App Version: $APP_VERSION"
+          echo "Build Number: $BUILD_NUMBER"
+
       - name: Analyze
         continue-on-error: true
         run: flutter analyze
@@ -101,11 +114,12 @@ jobs:
           name: app-release-aab
           path: frontend/build/app/outputs/bundle/release/app-release.aab
           if-no-files-found: error
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.${{ github.run_number }}
-          name: Tic Tac Duel v1.0.${{ github.run_number }}
+          tag_name: v${{ steps.version.outputs.version }}
+          name: Tic Tac Duel v${{ steps.version.outputs.version }}
           generate_release_notes: true
           files: |
             frontend/build/app/outputs/flutter-apk/app-release.apk
