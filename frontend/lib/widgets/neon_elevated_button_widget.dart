@@ -16,34 +16,18 @@ class NeonElevatedButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: Dimens.elevatedButtonHeight,
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          foregroundColor: Themes.background,
-          elevation: 0,
-          padding: Dimens.edgeInsets24_0,
-          shape: RoundedRectangleBorder(borderRadius: Dimens.radius16),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          spacing: Dimens.ten,
-          children: [
-            if (icon != null) Icon(icon, size: Dimens.iconMd),
-            Text(
-              label,
-              style: const TextStyle(
-                fontWeight: FontWeight.w900,
-                fontSize: 14,
-                letterSpacing: 2,
-              ),
-            ),
-          ],
+    return ElevatedButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: Dimens.iconMd),
+      label:Text(
+        label,
+        style: const TextStyle(
+          fontWeight: FontWeight.w900,
+          fontSize: 14,
+          letterSpacing: 2,
         ),
       ),
+
     );
   }
 }
