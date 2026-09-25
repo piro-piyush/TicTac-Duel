@@ -78,6 +78,8 @@ class MusicProvider extends ChangeNotifier {
 
   void playLose() {
     _musicService.playLose();
+  }void playRoundStart() {
+    _musicService.playRoundStart();
   }
 
   void playJoin() {

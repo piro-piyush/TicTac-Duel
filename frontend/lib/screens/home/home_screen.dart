@@ -80,20 +80,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: 30),
 
                       ReadyIndicatorWidget(),
-                      Row(
-                        children: [
-                          IconButton(
-                            onPressed: () => _openDummyResult(won: true),
-                            icon: const Icon(Icons.emoji_events_rounded),
-                          ),
-                          IconButton(
-                            onPressed: () => _openDummyResult(won: false),
-                            icon: const Icon(
-                              Icons.sentiment_dissatisfied_rounded,
-                            ),
-                          ),
-                        ],
-                      ),
                     ],
                   ),
                 ),
@@ -123,42 +109,5 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
-  }
-
-  void _openDummyResult({required bool won}) {
-    final mySocketId = SocketService.instance.socketId;
-
-    final room = RoomModel(
-      id: won ? '222' : '333',
-      code: 'ABC123',
-      theme: RoomTheme.classic,
-      occupancy: 2,
-      maxRounds: 5,
-      currentRound: 5,
-      roundStatus: RoundStatus.result,
-      turn: null,
-      turnIndex: 0,
-      boardSize: 9,
-      players: [
-        PlayerModel(
-          name: 'Piyush',
-          symbol: PlayerSymbol.x,
-          socketId: mySocketId,
-          points: won ? 3 : 2,
-          isReady: false,
-        ),
-        PlayerModel(
-          name: 'Alex',
-          symbol: PlayerSymbol.o,
-          socketId: 'opponent-socket-id',
-          points: won ? 2 : 3,
-          isReady: false,
-        ),
-      ],
-    );
-
-    context.read<RoomDataProvider>().setRoom(room);
-
-    Routes.pushResult();
   }
 }

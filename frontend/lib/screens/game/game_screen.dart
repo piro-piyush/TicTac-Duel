@@ -8,21 +8,34 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
+  bool _showRoundAnimation = false;
+  int _animatedRound = 0;
+
   @override
   void initState() {
     super.initState();
-
     final roomSocket = RoomSocketService.instance;
-
     roomSocket.onPlayerJoined((room) {
       if (!mounted) {
         return;
       }
 
       context.read<RoomDataProvider>().setRoom(room);
+      context.read<MusicProvider>().playJoin();
 
-      context.read<MusicProvider>().mediumVibration();
-      SnackbarUtils.showSuccess(context, 'Player joined the game');
+      if (room.roundStatus == RoundStatus.playing &&
+          _animatedRound != room.currentRound) {
+        _animatedRound = room.currentRound;
+
+        showRoundAnimation();
+
+        context.read<MusicProvider>().mediumVibration();
+
+        SnackbarUtils.showSuccess(
+          context,
+          'Round ${room.currentRound} started',
+        );
+      }
     });
 
     roomSocket.onRoomUpdated((room) {
@@ -37,9 +50,7 @@ class _GameScreenState extends State<GameScreen> {
       if (!mounted) {
         return;
       }
-
       context.read<RoomDataProvider>().setRoom(room);
-
       SnackbarUtils.showWarning(context, 'Player left the game');
     });
 
@@ -48,18 +59,14 @@ class _GameScreenState extends State<GameScreen> {
       if (!mounted) {
         return;
       }
-
       final roomData = context.read<RoomDataProvider>();
       final mySocketId = SocketService.instance.socketId;
-
       final myPlayer = room.players
           .where((player) => player.socketId == mySocketId)
           .firstOrNull;
-
       if (myPlayer == null) {
         return;
       }
-
       final currentRoom = roomData.room;
 
       final currentMyPlayer = currentRoom?.players
@@ -78,14 +85,22 @@ class _GameScreenState extends State<GameScreen> {
           room.players.every((player) => player.isReady);
 
       // Both players are ready and the round has started.
+      // Both players are ready and the round has started.
       if (room.roundStatus == RoundStatus.playing) {
         roomData.setRoom(room);
 
-        context.read<MusicProvider>().mediumVibration();
-        SnackbarUtils.showSuccess(
-          context,
-          'Round ${room.currentRound} started',
-        );
+        if (_animatedRound != room.currentRound) {
+          _animatedRound = room.currentRound;
+
+          showRoundAnimation();
+
+          context.read<MusicProvider>().mediumVibration();
+
+          SnackbarUtils.showSuccess(
+            context,
+            'Round ${room.currentRound} started',
+          );
+        }
 
         return;
       }
@@ -276,9 +291,68 @@ class _GameScreenState extends State<GameScreen> {
     return NeonBackgroundWidget(
       needScroll: true,
       title: 'Tic Tac Duel',
-
       child: showGame
-          ? _buildGame(room, myWebsocketId, board, winningIndexes)
+          ? Stack(
+              alignment: Alignment.center,
+              children: [
+                _buildGame(room, myWebsocketId, board, winningIndexes),
+
+                IgnorePointer(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 650),
+                    switchInCurve: Curves.easeOutCubic,
+                    switchOutCurve: Curves.easeInCubic,
+                    transitionBuilder: (child, animation) {
+                      final scale = Tween<double>(begin: 0.82, end: 1.0)
+                          .animate(
+                            CurvedAnimation(
+                              parent: animation,
+                              curve: Curves.easeOutBack,
+                            ),
+                          );
+
+                      final slide =
+                          Tween<Offset>(
+                            begin: const Offset(0, 0.08),
+                            end: Offset.zero,
+                          ).animate(
+                            CurvedAnimation(
+                              parent: animation,
+                              curve: Curves.easeOutCubic,
+                            ),
+                          );
+
+                      return FadeTransition(
+                        opacity: animation,
+                        child: SlideTransition(
+                          position: slide,
+                          child: ScaleTransition(scale: scale, child: child),
+                        ),
+                      );
+                    },
+                    child: _showRoundAnimation
+                        ? Text(
+                            'ROUND ${room.currentRound}',
+                            key: ValueKey(room.currentRound),
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 3.5,
+                              color: Colors.white,
+                              shadows: [
+                                Shadow(blurRadius: 6, color: Themes.neonPurple),
+                                Shadow(
+                                  blurRadius: 18,
+                                  color: Themes.neonPurple,
+                                ),
+                              ],
+                            ),
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                ),
+              ],
+            )
           : WaitingForPlayersWidget(
               room: room,
               waitingForNextRound: room.currentRound > 0,
@@ -332,6 +406,28 @@ class _GameScreenState extends State<GameScreen> {
         );
       },
     );
+  }
+
+  void showRoundAnimation() {
+    if (!mounted) {
+      return;
+    }
+
+    context.read<MusicProvider>().playRoundStart();
+
+    setState(() {
+      _showRoundAnimation = true;
+    });
+
+    Future.delayed(const Duration(milliseconds: 900), () {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _showRoundAnimation = false;
+      });
+    });
   }
 
   Widget _buildPlayers(
