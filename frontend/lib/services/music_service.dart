@@ -204,6 +204,9 @@ class MusicService {
     }
 
     unawaited(_playEffect(AudioConstants.roundSound));
+    if (_vibrationEnabled) {
+      unawaited(HapticFeedback.lightImpact());
+    }
   }
 
   void playJoin() {

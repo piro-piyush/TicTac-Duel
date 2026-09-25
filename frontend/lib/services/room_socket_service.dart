@@ -95,14 +95,17 @@ class RoomSocketService {
 
   void submitGameResult({
     required String roomCode,
-    required String winnerSocketId,
-    required List<int> winningIndexes,
+    String? winnerSocketId,
+    List<int> winningIndexes = const [],
   }) {
-    _socket.emit(RoomSocketEvents.submitGameResult, {
-      'roomCode': roomCode,
-      'winnerSocketId': winnerSocketId,
-      'winningIndexes': winningIndexes,
-    });
+    _socket.emit(
+      RoomSocketEvents.submitGameResult,
+      {
+        'roomCode': roomCode,
+        'winnerSocketId': winnerSocketId,
+        'winningIndexes': winningIndexes,
+      },
+    );
   }
 
   void setPlayerReady({required String roomCode}) {
