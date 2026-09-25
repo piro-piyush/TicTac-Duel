@@ -5,42 +5,40 @@ class FooterCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
     return Column(
       children: [
         Container(
-          width: 32,
-          height: 2,
+          width: Dimens.thirtyTwo,
+          height: Dimens.two,
           decoration: BoxDecoration(
             color: Themes.neonCyan.withValues(alpha: 0.6),
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: Dimens.radius10,
           ),
         ),
-        const SizedBox(height: 16),
-        const Text(
+        SizedBox(height: Dimens.sixteen),
+        Text(
           'Tic Tac Duel',
-          style: TextStyle(
+          style: textTheme.titleSmall?.copyWith(
             color: Themes.textPrimary,
-            fontSize: 13,
             fontWeight: FontWeight.w700,
             letterSpacing: 1.2,
           ),
         ),
-        const SizedBox(height: 5),
+        SizedBox(height: Dimens.four),
         Text(
           'YOUR MOVE. YOUR GLORY.',
-          style: TextStyle(
+          style: textTheme.labelSmall?.copyWith(
             color: Themes.textSecondary.withValues(alpha: 0.65),
-            fontSize: 8,
-            fontWeight: FontWeight.w600,
             letterSpacing: 1.6,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: Dimens.eight),
         Text(
           'v1.0.0',
-          style: TextStyle(
+          style: textTheme.labelSmall?.copyWith(
             color: Themes.textSecondary.withValues(alpha: 0.35),
-            fontSize: 8,
             letterSpacing: 0.8,
           ),
         ),
