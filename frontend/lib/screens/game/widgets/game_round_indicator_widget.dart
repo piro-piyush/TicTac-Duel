@@ -18,7 +18,7 @@ class GameRoundIndicatorWidget extends StatelessWidget {
         vertical: compact ? 6 : 7,
       ),
       decoration: BoxDecoration(
-        color: Themes.surface,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: room.theme.primary.withValues(alpha: 0.20)),
       ),
@@ -43,14 +43,14 @@ class GameRoundIndicatorWidget extends StatelessWidget {
           Text(
             '/',
             style: TextStyle(
-              color: Themes.textSecondary.withValues(alpha: 0.6),
+              color: AppColors.textSecondary.withValues(alpha: 0.6),
               fontSize: 10,
             ),
           ),
           Text(
             '${room.maxRounds}',
             style: const TextStyle(
-              color: Themes.textSecondary,
+              color: AppColors.textSecondary,
               fontSize: 10,
               fontWeight: FontWeight.w700,
             ),

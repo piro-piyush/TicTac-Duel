@@ -30,7 +30,7 @@ class GameStatusWidget extends StatelessWidget {
         vertical: compact ? 8 : 10,
       ),
       decoration: BoxDecoration(
-        color: Themes.surface,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(compact ? 12 : 14),
         border: Border.all(color: color.withValues(alpha: 0.20)),
       ),

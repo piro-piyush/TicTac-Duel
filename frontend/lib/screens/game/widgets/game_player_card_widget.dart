@@ -33,10 +33,10 @@ class GamePlayerCardWidget extends StatelessWidget {
         vertical: compact ? 7 : 9,
       ),
       decoration: BoxDecoration(
-        color: isTurn ? color.withValues(alpha: 0.07) : Themes.surface,
+        color: isTurn ? color.withValues(alpha: 0.07) : AppColors.surface,
         borderRadius: BorderRadius.circular(compact ? 13 : 16),
         border: Border.all(
-          color: isTurn ? color.withValues(alpha: 0.55) : Themes.border,
+          color: isTurn ? color.withValues(alpha: 0.55) : AppColors.border,
           width: isTurn ? 1.5 : 1,
         ),
         boxShadow: isTurn
@@ -72,7 +72,7 @@ class GamePlayerCardWidget extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: Themes.textPrimary,
+                          color: AppColors.textPrimary,
                           fontSize: compact ? 10 : 12,
                           fontWeight: FontWeight.w700,
                         ),
@@ -86,18 +86,18 @@ class GamePlayerCardWidget extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: isMe
                             ? color.withValues(alpha: 0.12)
-                            : Themes.card,
+                            : AppColors.card,
                         borderRadius: BorderRadius.circular(5),
                         border: Border.all(
                           color: isMe
                               ? color.withValues(alpha: 0.25)
-                              : Themes.border,
+                              : AppColors.border,
                         ),
                       ),
                       child: Text(
                         isMe ? 'YOU' : 'OPPONENT',
                         style: TextStyle(
-                          color: isMe ? color : Themes.textSecondary,
+                          color: isMe ? color : AppColors.textSecondary,
                           fontSize: compact ? 6 : 7,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 0.7,

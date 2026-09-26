@@ -1,19 +1,20 @@
 import 'package:tictac_duel/lib.dart';
 
-class GameScreen extends StatefulWidget {
+class GameScreen extends ConsumerStatefulWidget {
   const GameScreen({super.key});
 
   @override
-  State<GameScreen> createState() => _GameScreenState();
+  ConsumerState<GameScreen> createState() => _GameScreenState();
 }
 
-class _GameScreenState extends State<GameScreen> {
+class _GameScreenState extends ConsumerState<GameScreen> {
   bool _showRoundAnimation = false;
   int _animatedRound = 0;
 
   @override
   void initState() {
     super.initState();
+
     final roomSocket = RoomSocketService.instance;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -21,7 +22,7 @@ class _GameScreenState extends State<GameScreen> {
         return;
       }
 
-      final room = context.read<RoomDataProvider>().room;
+      final room = ref.read(roomProvider).room;
 
       if (room == null) {
         return;
@@ -45,8 +46,9 @@ class _GameScreenState extends State<GameScreen> {
         return;
       }
 
-      context.read<RoomDataProvider>().setRoom(room);
-      context.read<MusicProvider>().playJoin();
+      ref.read(roomProvider.notifier).setRoom(room);
+      ref.read(musicProvider.notifier).playJoin();
+
       if (room.roundStatus == RoundStatus.playing &&
           _animatedRound != room.currentRound) {
         _animatedRound = room.currentRound;
@@ -59,14 +61,16 @@ class _GameScreenState extends State<GameScreen> {
         return;
       }
 
-      context.read<RoomDataProvider>().setRoom(room);
+      ref.read(roomProvider.notifier).setRoom(room);
     });
 
     roomSocket.onPlayerLeft((room) {
       if (!mounted) {
         return;
       }
-      context.read<RoomDataProvider>().setRoom(room);
+
+      ref.read(roomProvider.notifier).setRoom(room);
+
       SnackbarUtils.showWarning(context, 'Player left the game');
     });
 
@@ -75,15 +79,19 @@ class _GameScreenState extends State<GameScreen> {
       if (!mounted) {
         return;
       }
-      final roomData = context.read<RoomDataProvider>();
+
+      final roomNotifier = ref.read(roomProvider.notifier);
+      final currentRoom = ref.read(roomProvider).room;
+
       final mySocketId = SocketService.instance.socketId;
+
       final myPlayer = room.players
           .where((player) => player.socketId == mySocketId)
           .firstOrNull;
+
       if (myPlayer == null) {
         return;
       }
-      final currentRoom = roomData.room;
 
       final currentMyPlayer = currentRoom?.players
           .where((player) => player.socketId == mySocketId)
@@ -93,7 +101,7 @@ class _GameScreenState extends State<GameScreen> {
 
       // Only update the complete room when my own ready state changed.
       if (myReadyChanged) {
-        roomData.setRoom(room);
+        roomNotifier.setRoom(room);
       }
 
       final allReady =
@@ -101,9 +109,8 @@ class _GameScreenState extends State<GameScreen> {
           room.players.every((player) => player.isReady);
 
       // Both players are ready and the round has started.
-      // Both players are ready and the round has started.
       if (room.roundStatus == RoundStatus.playing) {
-        roomData.setRoom(room);
+        roomNotifier.setRoom(room);
 
         if (_animatedRound != room.currentRound) {
           _animatedRound = room.currentRound;
@@ -138,11 +145,11 @@ class _GameScreenState extends State<GameScreen> {
         return;
       }
 
-      final roomData = context.read<RoomDataProvider>();
+      final roomNotifier = ref.read(roomProvider.notifier);
 
       // Apply the server-confirmed move locally.
-      roomData.setBoardValue(index, symbol);
-      roomData.updateRoom(room);
+      roomNotifier.setBoardValue(index, symbol);
+      roomNotifier.updateRoom(room);
 
       // Do not process results if the round is already finished.
       if (room.roundStatus != RoundStatus.playing) {
@@ -152,13 +159,13 @@ class _GameScreenState extends State<GameScreen> {
       final mySocketId = SocketService.instance.socketId;
 
       final myPlayer = room.players.firstWhere(
-            (player) => player.socketId == mySocketId,
+        (player) => player.socketId == mySocketId,
       );
 
       final mySymbol = myPlayer.symbol;
 
       // Check the result for every confirmed move.
-      final result = GameLogicUtils.checkWinner(context);
+      final result = GameLogicUtils.checkWinner(ref.read(roomProvider).board);
 
       // Round is still active.
       if (!result.isFinished) {
@@ -168,8 +175,7 @@ class _GameScreenState extends State<GameScreen> {
       // --------------------------------------------------
       // DRAW
       // --------------------------------------------------
-      // Either player can make the final move that causes
-      // a draw, so submit the draw to the backend.
+
       if (result == GameResult.draw) {
         RoomSocketService.instance.submitGameResult(
           roomCode: room.code,
@@ -183,15 +189,18 @@ class _GameScreenState extends State<GameScreen> {
       // --------------------------------------------------
       // WIN
       // --------------------------------------------------
+
       // Only the player who made the winning move submits
       // the result.
       if (symbol != mySymbol) {
         return;
       }
 
-      final winningIndexes = GameLogicUtils.getWinningIndexes(context);
+      final winningIndexes = GameLogicUtils.getWinningIndexes(
+        ref.read(roomProvider).board,
+      );
 
-      roomData.setWinningIndexes(winningIndexes);
+      roomNotifier.setWinningIndexes(winningIndexes);
 
       RoomSocketService.instance.submitGameResult(
         roomCode: room.code,
@@ -201,6 +210,7 @@ class _GameScreenState extends State<GameScreen> {
 
       // round_result will be received by both players.
     });
+
     roomSocket.onRoundResult(({
       required RoomModel room,
       required String winnerSocketId,
@@ -212,10 +222,10 @@ class _GameScreenState extends State<GameScreen> {
         return;
       }
 
-      final roomData = context.read<RoomDataProvider>();
+      final roomNotifier = ref.read(roomProvider.notifier);
 
-      roomData.updateRoom(room);
-      roomData.setWinningIndexes(winningIndexes.toSet());
+      roomNotifier.updateRoom(room);
+      roomNotifier.setWinningIndexes(winningIndexes.toSet());
 
       final mySocketId = SocketService.instance.socketId;
 
@@ -234,6 +244,7 @@ class _GameScreenState extends State<GameScreen> {
       // Game is completely finished.
       if (gameFinished) {
         Routes.replaceToResult();
+
         // GameDialogUtils.showGameFinished(
         //   context: context,
         //   room: room,
@@ -252,16 +263,18 @@ class _GameScreenState extends State<GameScreen> {
         mySymbol: myPlayer.symbol,
         onConfirm: () {
           RoomSocketService.instance.setPlayerReady(roomCode: room.code);
-          context.read<RoomDataProvider>().clearBoard();
+
+          roomNotifier.clearBoard();
         },
       );
     });
+
     roomSocket.onRoomError((message) {
       if (!mounted) {
         return;
       }
 
-      context.read<MusicProvider>().mediumVibration();
+      ref.read(musicProvider.notifier).mediumVibration();
 
       SnackbarUtils.showError(context, message);
     });
@@ -271,7 +284,7 @@ class _GameScreenState extends State<GameScreen> {
         return;
       }
 
-      context.read<MusicProvider>().mediumVibration();
+      ref.read(musicProvider.notifier).mediumVibration();
 
       SnackbarUtils.showError(context, message);
     });
@@ -279,17 +292,21 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final room = context.watch<RoomDataProvider>().room;
-    final board = context.watch<RoomDataProvider>().board;
+    final roomState = ref.watch(roomProvider);
+
+    final room = roomState.room;
+    final board = roomState.board;
+    final winningIndexes = roomState.winningIndexes;
+
     final myWebsocketId = SocketService.instance.socketId;
-    final winningIndexes = context.watch<RoomDataProvider>().winningIndexes;
+
     if (room == null) {
       return const Scaffold(
-        backgroundColor: Themes.background,
+        backgroundColor: AppColors.background,
         body: Center(
           child: Text(
             'Room not found',
-            style: TextStyle(color: Themes.textSecondary, fontSize: 13),
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
           ),
         ),
       );
@@ -312,7 +329,6 @@ class _GameScreenState extends State<GameScreen> {
               alignment: Alignment.center,
               children: [
                 _buildGame(room, myWebsocketId, board, winningIndexes),
-
                 IgnorePointer(
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 650),
@@ -356,10 +372,13 @@ class _GameScreenState extends State<GameScreen> {
                               letterSpacing: 3.5,
                               color: Colors.white,
                               shadows: [
-                                Shadow(blurRadius: 6, color: Themes.neonPurple),
+                                Shadow(
+                                  blurRadius: 6,
+                                  color: AppColors.neonPurple,
+                                ),
                                 Shadow(
                                   blurRadius: 18,
-                                  color: Themes.neonPurple,
+                                  color: AppColors.neonPurple,
                                 ),
                               ],
                             ),
@@ -429,7 +448,7 @@ class _GameScreenState extends State<GameScreen> {
       return;
     }
 
-    context.read<MusicProvider>().playRoundStart();
+    ref.read(musicProvider.notifier).playRoundStart();
 
     setState(() {
       _showRoundAnimation = true;
@@ -502,15 +521,13 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _handleCellTap(int index, RoomModel room) {
-    final roomData = context.read<RoomDataProvider>();
+    final roomState = ref.read(roomProvider);
 
     // Ignore already occupied cells.
-    if (roomData.getBoardValue(index) != null) {
+    if (roomState.board[index] != null) {
       return;
     }
-    // roomData.setBoardValue(index, symbol);
-    // Give immediate tactile feedback for a valid tap.
-    // context.read<MusicProvider>().selectionVibration();
+
     // Send the move to the server.
     RoomSocketService.instance.makeMove(index: index, roomCode: room.code);
   }

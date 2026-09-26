@@ -30,7 +30,7 @@ class GameDialogUtils {
             : 'Your opponent won this round.';
 
         return AlertDialog(
-          backgroundColor: Themes.surface,
+          backgroundColor: AppColors.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
             side: BorderSide(color: theme.primary.withValues(alpha: 0.4)),
@@ -43,7 +43,7 @@ class GameDialogUtils {
           content: Text(
             message,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Themes.textPrimary),
+            style: const TextStyle(color: AppColors.textPrimary),
           ),
           actionsAlignment: MainAxisAlignment.center,
           actions: [
@@ -90,7 +90,7 @@ class GameDialogUtils {
       barrierDismissible: false,
       builder: (context) {
         return AlertDialog(
-          backgroundColor: Themes.surface,
+          backgroundColor: AppColors.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
             side: BorderSide(
@@ -114,7 +114,7 @@ class GameDialogUtils {
                     : '${overallWinner!.name} wins the game!',
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  color: Themes.textPrimary,
+                  color: AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 20),
@@ -153,7 +153,7 @@ class GameDialogUtils {
             player.name,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              color: Themes.textPrimary,
+              color: AppColors.textPrimary,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -161,7 +161,7 @@ class GameDialogUtils {
         Text(
           '${player.points}',
           style: const TextStyle(
-            color: Themes.neonCyan,
+            color: AppColors.neonCyan,
             fontSize: 18,
             fontWeight: FontWeight.w800,
           ),

@@ -47,26 +47,26 @@ class GameTextFormFieldWidget extends StatelessWidget {
       onChanged: onChanged,
       onFieldSubmitted: onFieldSubmitted,
       style: textTheme.bodyLarge?.copyWith(
-        color: Themes.textPrimary,
+        color: AppColors.textPrimary,
         fontWeight: FontWeight.w600,
       ),
       decoration: InputDecoration(
         counterText: '',
         hintText: hintText,
         hintStyle: textTheme.bodyMedium?.copyWith(
-          color: Themes.textSecondary.withValues(alpha: 0.4),
+          color: AppColors.textSecondary.withValues(alpha: 0.4),
           fontWeight: FontWeight.w600,
           letterSpacing: 1,
         ),
         suffixIcon: suffixIcon,
         filled: true,
-        fillColor: Themes.card,
+        fillColor: AppColors.card,
         border: _buildInputBorder(),
         enabledBorder: _buildInputBorder(),
-        focusedBorder: _buildInputBorder(color: Themes.neonPurple, width: 1.5),
-        errorBorder: _buildInputBorder(color: Themes.neonPink),
+        focusedBorder: _buildInputBorder(color: AppColors.neonPurple, width: 1.5),
+        errorBorder: _buildInputBorder(color: AppColors.neonPink),
         focusedErrorBorder: _buildInputBorder(
-          color: Themes.neonPink,
+          color: AppColors.neonPink,
           width: 1.5,
         ),
         contentPadding: EdgeInsets.symmetric(
@@ -78,7 +78,7 @@ class GameTextFormFieldWidget extends StatelessWidget {
   }
 
   OutlineInputBorder _buildInputBorder({
-    Color color = Themes.border,
+    Color color = AppColors.border,
     double width = 1,
   }) {
     return OutlineInputBorder(

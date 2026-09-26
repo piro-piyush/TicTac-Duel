@@ -3,8 +3,7 @@ import 'dart:math';
 import 'package:tictac_duel/lib.dart';
 
 class GameLogicUtils {
-  static GameResult checkWinner(BuildContext context) {
-    final board = Provider.of<RoomDataProvider>(context, listen: false).board;
+  static GameResult checkWinner(List<PlayerSymbol?> board) {
 
     final size = sqrt(board.length).toInt();
 
@@ -74,8 +73,7 @@ class GameLogicUtils {
     return GameResult.inProgress;
   }
 
-  static Set<int> getWinningIndexes(BuildContext context) {
-    final board = Provider.of<RoomDataProvider>(context, listen: false).board;
+  static Set<int> getWinningIndexes(List<PlayerSymbol?> board) {
 
     final size = sqrt(board.length).toInt();
 
