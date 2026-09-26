@@ -3,88 +3,89 @@ import 'dart:developer' as dev;
 import 'package:flutter/services.dart';
 import 'package:tictac_duel/lib.dart';
 
-class MusicService {
-  MusicService(this._prefs);
+class MusicController extends GetxController {
+  MusicController({required this._player, required this._effectPlayer});
 
-  final SharedPreferences _prefs;
-
-  late final AudioPlayer _player;
-  late final AudioPlayer _effectPlayer;
+  final AudioPlayer _player;
+  final AudioPlayer _effectPlayer;
 
   static const String _musicEnabledKey = 'background_music_enabled';
-
   static const String _effectsEnabledKey = 'sound_effects_enabled';
-
   static const String _vibrationEnabledKey = 'vibration_enabled';
 
-  static const String _logName = 'MusicService';
+  static const String _logName = 'MusicController';
 
-  bool _isEnabled = true;
-  bool _effectsEnabled = true;
-  bool _vibrationEnabled = true;
-  bool _initialized = false;
+  final RxBool _isEnabled = true.obs;
+  final RxBool _effectsEnabled = true.obs;
+  final RxBool _vibrationEnabled = true.obs;
+  final RxBool _isInitialized = false.obs;
 
   // ===========================================================================
   // GETTERS
   // ===========================================================================
 
-  bool get isEnabled => _isEnabled;
+  bool get isEnabled => _isEnabled.value;
 
-  bool get effectsEnabled => _effectsEnabled;
+  bool get effectsEnabled => _effectsEnabled.value;
 
-  bool get vibrationEnabled => _vibrationEnabled;
+  bool get vibrationEnabled => _vibrationEnabled.value;
 
-  bool get isInitialized => _initialized;
+  bool get isInitialized => _isInitialized.value;
 
-  bool get isPlaying => _initialized && _player.playing;
+  bool get isPlaying => isInitialized && _player.playing;
 
   // ===========================================================================
   // INITIALIZATION
   // ===========================================================================
 
-  Future<void> init() async {
-    if (_initialized) {
+  @override
+  void onInit() {
+    super.onInit();
+
+    unawaited(_init());
+  }
+
+  Future<void> _init() async {
+    if (_isInitialized.value) {
       return;
     }
 
-    final player = AudioPlayer();
-    final effectPlayer = AudioPlayer();
+    final prefs = Get.find<SharedPreferences>();
 
     try {
-      _isEnabled = _prefs.getBool(_musicEnabledKey) ?? true;
+      _isEnabled.value = prefs.getBool(_musicEnabledKey) ?? true;
 
-      _effectsEnabled = _prefs.getBool(_effectsEnabledKey) ?? true;
+      _effectsEnabled.value = prefs.getBool(_effectsEnabledKey) ?? true;
 
-      _vibrationEnabled = _prefs.getBool(_vibrationEnabledKey) ?? true;
+      _vibrationEnabled.value = prefs.getBool(_vibrationEnabledKey) ?? true;
 
       // -----------------------------------------------------------------------
       // Background music
       // -----------------------------------------------------------------------
 
-      await player.setAsset(AudioConstants.backgroundMusic);
+      await _player.setAsset(AudioConstants.backgroundMusic);
 
-      await player.setLoopMode(LoopMode.one);
-      await player.setVolume(0.4);
+      await _player.setLoopMode(LoopMode.one);
+
+      await _player.setVolume(0.4);
 
       // -----------------------------------------------------------------------
       // Sound effects
       // -----------------------------------------------------------------------
 
-      await effectPlayer.setVolume(1.0);
+      await _effectPlayer.setVolume(1.0);
 
-      _player = player;
-      _effectPlayer = effectPlayer;
-      _initialized = true;
+      _isInitialized.value = true;
 
-      if (_isEnabled) {
+      if (_isEnabled.value) {
         unawaited(play());
       }
     } catch (e, st) {
-      player.dispose();
-      effectPlayer.dispose();
+      await _player.dispose();
+      await _effectPlayer.dispose();
 
       dev.log(
-        'Failed to initialize music service',
+        'Failed to initialize music controller',
         name: _logName,
         error: e,
         stackTrace: st,
@@ -99,7 +100,7 @@ class MusicService {
   // ===========================================================================
 
   Future<void> play() async {
-    if (!_initialized || !_isEnabled || _player.playing) {
+    if (!isInitialized || !_isEnabled.value || _player.playing) {
       return;
     }
 
@@ -111,7 +112,7 @@ class MusicService {
   }
 
   Future<void> pause() async {
-    if (!_initialized || !_player.playing) {
+    if (!isInitialized || !_player.playing) {
       return;
     }
 
@@ -128,7 +129,7 @@ class MusicService {
   }
 
   Future<void> stop() async {
-    if (!_initialized) {
+    if (!isInitialized) {
       return;
     }
 
@@ -140,7 +141,7 @@ class MusicService {
   }
 
   Future<void> resume() async {
-    if (!_initialized || !_isEnabled) {
+    if (!isInitialized || !_isEnabled.value) {
       return;
     }
 
@@ -161,21 +162,21 @@ class MusicService {
   // ===========================================================================
 
   void playTouch() {
-    if (!_initialized) {
+    if (!isInitialized) {
       return;
     }
 
-    if (_effectsEnabled) {
+    if (_effectsEnabled.value) {
       unawaited(_playEffect(AudioConstants.touchSound));
     }
 
-    if (_vibrationEnabled) {
+    if (_vibrationEnabled.value) {
       unawaited(HapticFeedback.selectionClick());
     }
   }
 
   void playConfetti() {
-    if (!_initialized || !_effectsEnabled) {
+    if (!isInitialized || !_effectsEnabled.value) {
       return;
     }
 
@@ -183,7 +184,7 @@ class MusicService {
   }
 
   void playWin() {
-    if (!_initialized || !_effectsEnabled) {
+    if (!isInitialized || !_effectsEnabled.value) {
       return;
     }
 
@@ -191,7 +192,7 @@ class MusicService {
   }
 
   void playLose() {
-    if (!_initialized || !_effectsEnabled) {
+    if (!isInitialized || !_effectsEnabled.value) {
       return;
     }
 
@@ -199,39 +200,43 @@ class MusicService {
   }
 
   void playRoundStart() {
-    if (!_initialized || !_effectsEnabled) {
+    if (!isInitialized || !_effectsEnabled.value) {
       return;
     }
 
     unawaited(_playEffect(AudioConstants.roundSound));
-    if (_vibrationEnabled) {
+
+    if (_vibrationEnabled.value) {
       unawaited(HapticFeedback.lightImpact());
     }
   }
 
   void playJoin() {
-    if (!_initialized) {
+    if (!isInitialized) {
       return;
     }
 
-    if (_effectsEnabled) {
+    if (_effectsEnabled.value) {
       unawaited(_playEffect(AudioConstants.joinSound));
     }
 
-    if (_vibrationEnabled) {
+    if (_vibrationEnabled.value) {
       unawaited(HapticFeedback.lightImpact());
     }
   }
 
   Future<void> _playEffect(String asset) async {
-    if (!_initialized || !_effectsEnabled) {
+    if (!isInitialized || !_effectsEnabled.value) {
       return;
     }
 
     try {
       await _effectPlayer.stop();
+
       await _effectPlayer.setAsset(asset);
+
       await _effectPlayer.seek(Duration.zero);
+
       await _effectPlayer.play();
     } catch (e, st) {
       dev.log(
@@ -248,18 +253,20 @@ class MusicService {
   // ===========================================================================
 
   Future<void> setEnabled(bool enabled) async {
-    if (!_initialized) {
-      await init();
-    }
-
-    if (_isEnabled == enabled) {
+    if (!isInitialized) {
       return;
     }
 
-    try {
-      _isEnabled = enabled;
+    if (_isEnabled.value == enabled) {
+      return;
+    }
 
-      await _prefs.setBool(_musicEnabledKey, enabled);
+    final prefs = Get.find<SharedPreferences>();
+
+    try {
+      _isEnabled.value = enabled;
+
+      await prefs.setBool(_musicEnabledKey, enabled);
 
       if (enabled) {
         await play();
@@ -283,18 +290,20 @@ class MusicService {
   // ===========================================================================
 
   Future<void> setEffectsEnabled(bool enabled) async {
-    if (!_initialized) {
-      await init();
-    }
-
-    if (_effectsEnabled == enabled) {
+    if (!isInitialized) {
       return;
     }
 
-    try {
-      _effectsEnabled = enabled;
+    if (_effectsEnabled.value == enabled) {
+      return;
+    }
 
-      await _prefs.setBool(_effectsEnabledKey, enabled);
+    final prefs = Get.find<SharedPreferences>();
+
+    try {
+      _effectsEnabled.value = enabled;
+
+      await prefs.setBool(_effectsEnabledKey, enabled);
     } catch (e, st) {
       dev.log(
         'Failed to update sound effects setting: $enabled',
@@ -312,18 +321,20 @@ class MusicService {
   // ===========================================================================
 
   Future<void> setVibrationEnabled(bool enabled) async {
-    if (!_initialized) {
-      await init();
-    }
-
-    if (_vibrationEnabled == enabled) {
+    if (!isInitialized) {
       return;
     }
 
-    try {
-      _vibrationEnabled = enabled;
+    if (_vibrationEnabled.value == enabled) {
+      return;
+    }
 
-      await _prefs.setBool(_vibrationEnabledKey, enabled);
+    final prefs = Get.find<SharedPreferences>();
+
+    try {
+      _vibrationEnabled.value = enabled;
+
+      await prefs.setBool(_vibrationEnabledKey, enabled);
     } catch (e, st) {
       dev.log(
         'Failed to update vibration setting: $enabled',
@@ -337,7 +348,7 @@ class MusicService {
   }
 
   Future<void> lightVibration() async {
-    if (!_vibrationEnabled) {
+    if (!_vibrationEnabled.value) {
       return;
     }
 
@@ -345,7 +356,7 @@ class MusicService {
   }
 
   Future<void> mediumVibration() async {
-    if (!_vibrationEnabled) {
+    if (!_vibrationEnabled.value) {
       return;
     }
 
@@ -362,27 +373,19 @@ class MusicService {
   }
 
   Future<void> heavyVibration() async {
-    if (!_vibrationEnabled) {
+    if (!_vibrationEnabled.value) {
       return;
     }
 
     await HapticFeedback.heavyImpact();
   }
 
-  // Future<void> selectionVibration() async {
-  //   if (!_vibrationEnabled) {
-  //     return;
-  //   }
-  //
-  //   await HapticFeedback.selectionClick();
-  // }
-
   // ===========================================================================
   // VOLUME
   // ===========================================================================
 
   Future<void> setVolume(double volume) async {
-    if (!_initialized) {
+    if (!isInitialized) {
       return;
     }
 
@@ -409,15 +412,22 @@ class MusicService {
   // DISPOSE
   // ===========================================================================
 
-  Future<void> dispose() async {
-    if (!_initialized) {
+  @override
+  void onClose() {
+    unawaited(_disposePlayers());
+
+    super.onClose();
+  }
+
+  Future<void> _disposePlayers() async {
+    if (!_isInitialized.value) {
       return;
     }
 
     try {
       await Future.wait([_player.dispose(), _effectPlayer.dispose()]);
     } finally {
-      _initialized = false;
+      _isInitialized.value = false;
     }
   }
 }

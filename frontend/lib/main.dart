@@ -1,7 +1,5 @@
 import 'package:tictac_duel/lib.dart';
 
-late final MusicService musicService;
-
 Future<void> main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
 
@@ -9,7 +7,13 @@ Future<void> main() async {
 
   await _initCore();
 
-  runApp(const ProviderScope(child: MyApp()));
+  final preferences = await SharedPreferences.getInstance();
+
+  Get.put<SharedPreferences>(preferences, permanent: true);
+
+  FlutterNativeSplash.remove();
+
+  runApp(const MyApp());
 }
 
 // =============================================================================
@@ -19,32 +23,32 @@ Future<void> main() async {
 Future<void> _initCore() async {
   await dotenv.load();
   await LocalStorageUtils.init();
-
-  musicService = MusicService(LocalStorageUtils.prefs);
-
-  await musicService.init();
-
-  FlutterNativeSplash.remove();
 }
 
 // =============================================================================
 // APP
 // =============================================================================
 
-class MyApp extends ConsumerWidget {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return MaterialApp.router(
+  Widget build(BuildContext context) {
+    return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       title: GameConstants.appName,
       theme: AppTheme.darkTheme,
-      routerConfig: Routes.router,
-      builder: (context, child) => Listener(
-        onPointerDown: (_) => ref.read(musicProvider.notifier).playTouch(),
-        child: child ?? const SizedBox.shrink(),
-      ),
+      initialBinding: GlobalBindings(),
+      initialRoute: AppRoutes.home,
+      getPages: AppPages.routes,
+      builder: (context, child) {
+        return Listener(
+          onPointerDown: (_) {
+            Get.find<MusicController>().playTouch();
+          },
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
     );
   }
 }
