@@ -12,17 +12,17 @@ class AppLogoWidget extends StatelessWidget {
       height: size,
       padding: EdgeInsets.all(size * 0.15),
       decoration: BoxDecoration(
-        color: Themes.surface,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(size * 0.23),
-        border: Border.all(color: Themes.border, width: 1.5),
+        border: Border.all(color: AppColors.border, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Themes.neonPurple.withValues(alpha: 0.12),
+            color: AppColors.neonPurple.withValues(alpha: 0.12),
             blurRadius: 32,
             spreadRadius: 2,
           ),
           BoxShadow(
-            color: Themes.neonCyan.withValues(alpha: 0.05),
+            color: AppColors.neonCyan.withValues(alpha: 0.05),
             blurRadius: 18,
             spreadRadius: -2,
           ),
@@ -38,13 +38,13 @@ class AppLogoWidget extends StatelessWidget {
                 Expanded(
                   child: _LogoCell(
                     icon: Icons.close_rounded,
-                    color: Themes.neonCyan,
+                    color: AppColors.neonCyan,
                   ),
                 ),
                 Expanded(
                   child: _LogoCell(
                     icon: Icons.circle_outlined,
-                    color: Themes.neonPink,
+                    color: AppColors.neonPink,
                   ),
                 ),
               ],
@@ -57,13 +57,13 @@ class AppLogoWidget extends StatelessWidget {
                 Expanded(
                   child: _LogoCell(
                     icon: Icons.circle_outlined,
-                    color: Themes.neonPink,
+                    color: AppColors.neonPink,
                   ),
                 ),
                 Expanded(
                   child: _LogoCell(
                     icon: Icons.close_rounded,
-                    color: Themes.neonCyan,
+                    color: AppColors.neonCyan,
                   ),
                 ),
               ],

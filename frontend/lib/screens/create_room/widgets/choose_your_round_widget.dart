@@ -21,7 +21,7 @@ class ChooseYourRoundWidget extends StatelessWidget {
         const Text(
           'ROUNDS',
           style: TextStyle(
-            color: Themes.textSecondary,
+            color: AppColors.textSecondary,
             fontSize: 10,
             fontWeight: FontWeight.w700,
             letterSpacing: 2,
@@ -30,9 +30,9 @@ class ChooseYourRoundWidget extends StatelessWidget {
         Container(
           padding: Dimens.edgeInsets8,
           decoration: BoxDecoration(
-            color: Themes.card,
+            color: AppColors.card,
             borderRadius: Dimens.radius14,
-            border: Border.all(color: Themes.border),
+            border: Border.all(color: AppColors.border),
           ),
           child: Row(
             children: roundOptions.map((rounds) {
