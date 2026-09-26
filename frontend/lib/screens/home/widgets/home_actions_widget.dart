@@ -18,7 +18,7 @@ class HomeActionsWidget extends StatelessWidget {
               icon: Icons.bolt_rounded,
               color: AppColors.neonCyan,
               onTap: () {
-                SnackbarUtils.showWarning(context, 'Coming soon...');
+                SnackbarUtils.showWarning('Coming soon...');
               },
             ),
 
@@ -29,7 +29,7 @@ class HomeActionsWidget extends StatelessWidget {
               icon: Icons.smartphone_rounded,
               color: AppColors.neonPurple,
               onTap: () {
-                SnackbarUtils.showWarning(context, 'Coming soon...');
+                SnackbarUtils.showWarning('Coming soon...');
               },
             ),
           ],
@@ -43,14 +43,14 @@ class HomeActionsWidget extends StatelessWidget {
               child: QuickActionWidget(
                 icon: Icons.add_rounded,
                 label: 'Create Room',
-                onTap: Routes.pushCreateRoom,
+                onTap: AppNavigation.pushCreateRoom,
               ),
             ),
             Expanded(
               child: QuickActionWidget(
                 icon: Icons.login_rounded,
                 label: 'Join Room',
-                onTap: Routes.pushJoinRoom,
+                onTap: AppNavigation.pushJoinRoom,
               ),
             ),
           ],
