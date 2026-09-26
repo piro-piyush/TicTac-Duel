@@ -4,26 +4,26 @@ class RoomModel {
   const RoomModel({
     required this.id,
     required this.code,
+    required this.hostPlayerId,
     required this.occupancy,
     required this.maxRounds,
     required this.currentRound,
     required this.roundStatus,
     required this.theme,
     required this.players,
-    // required this.isPlaying,
     required this.turn,
     required this.turnIndex,
     required this.boardSize,
   });
 
   final String id;
+  final String hostPlayerId;
   final String code;
   final int occupancy;
   final int maxRounds;
   final int currentRound;
   final RoomTheme theme;
   final List<PlayerModel> players;
-  // final bool isPlaying;
   final PlayerModel? turn;
   final RoundStatus roundStatus;
   final int turnIndex;
@@ -32,8 +32,9 @@ class RoomModel {
   factory RoomModel.fromJson(Map<String, dynamic> json) {
     try {
       return RoomModel(
-        id: json['_id'] as String,
+        id: json['id'] as String,
         code: json['code'] as String,
+        hostPlayerId: json['hostPlayerId'] as String,
         occupancy: json['occupancy'] as int,
         maxRounds: json['maxRounds'] as int,
         currentRound: json['currentRound'] as int,
@@ -63,6 +64,7 @@ class RoomModel {
   static List<RoomModel> publicRooms = [
     RoomModel(
       id: 'public-room-1',
+      hostPlayerId: 'mock-alex',
       code: 'ALEX01',
       occupancy: 1,
       maxRounds: 3,
@@ -71,6 +73,7 @@ class RoomModel {
       theme: RoomTheme.classic,
       players: [
         PlayerModel(
+          id: 'mock-alex',
           name: 'Alex',
           symbol: PlayerSymbol.x,
           socketId: 'mock-alex',
@@ -84,6 +87,7 @@ class RoomModel {
     ),
     RoomModel(
       id: 'public-room-2',
+      hostPlayerId: 'mock-shadow',
       code: 'SHDW01',
       occupancy: 1,
       maxRounds: 5,
@@ -92,6 +96,7 @@ class RoomModel {
       theme: RoomTheme.inferno,
       players: [
         PlayerModel(
+          id: 'mock-shadow',
           name: 'Shadow',
           symbol: PlayerSymbol.x,
           socketId: 'mock-shadow',
@@ -105,6 +110,7 @@ class RoomModel {
     ),
     RoomModel(
       id: 'public-room-3',
+      hostPlayerId: 'mock-nova',
       code: 'NOVA01',
       occupancy: 1,
       maxRounds: 7,
@@ -113,6 +119,7 @@ class RoomModel {
       theme: RoomTheme.classic,
       players: [
         PlayerModel(
+          id: 'mock-nova',
           name: 'Nova',
           symbol: PlayerSymbol.o,
           socketId: 'mock-nova',

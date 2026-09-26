@@ -22,7 +22,7 @@ class SettingsAboutSectionWidget extends StatelessWidget {
           title: 'Privacy Policy',
           subtitle: 'How your data is handled',
           color: AppColors.textSecondary,
-          onTap: Routes.pushPrivacyPolicy,
+          onTap: AppNavigation.pushPrivacyPolicy,
         ),
       ],
     );

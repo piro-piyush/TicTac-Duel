@@ -1,54 +1,38 @@
 import 'package:tictac_duel/constants/animation_constants.dart';
 import 'package:tictac_duel/lib.dart';
 
-class ResultScreen extends ConsumerStatefulWidget {
+class ResultScreen extends GetView<ResultController> {
   const ResultScreen({super.key});
 
   @override
-  ConsumerState<ResultScreen> createState() => _ResultScreenState();
-}
-
-class _ResultScreenState extends ConsumerState<ResultScreen> {
-  @override
-  void initState() {
-    super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) {
-        return;
-      }
-
-      ref.read(resultProvider.notifier).playResultFeedback();
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final state = ref.watch(resultProvider);
+    return Obx(() {
+      final state = controller.state;
 
-    ref.listen<bool>(resultProvider.select((state) => state.showConfetti), (
-      _,
-      showConfetti,
-    ) {
-      if (showConfetti) {
-        _showConfetti();
-
-        ref.read(resultProvider.notifier).dismissConfetti();
+      if (!state.isValid) {
+        return const SizedBox.shrink();
       }
+
+      if (state.showConfetti) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!context.mounted) {
+            return;
+          }
+
+          _showConfetti(context);
+          controller.dismissConfetti();
+        });
+      }
+
+      return NeonBackgroundWidget(
+        needScroll: false,
+        title: 'Game Result',
+        child: _buildContent(state),
+      );
     });
-
-    if (!state.isValid) {
-      return const SizedBox.shrink();
-    }
-
-    return NeonBackgroundWidget(
-      needScroll: false,
-      title: 'Game Result',
-      child: _buildContent(state),
-    );
   }
 
-  Widget _buildContent(ResultState state) {
+  Widget _buildContent(ResultModel state) {
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -98,7 +82,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
           : AnimationConstants.loseAnimation,
       width: 110,
       height: 110,
-      repeat: hasWon ? false : true,
+      repeat: !hasWon,
     );
   }
 
@@ -143,8 +127,8 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
     required PlayerModel player,
     required PlayerModel? winner,
   }) {
-    final isWinner = winner?.socketId == player.socketId;
-    final isMe = player.socketId == SocketService.instance.socketId;
+    final isWinner = controller.isWinner(player);
+    final isMe = controller.isMe(player);
 
     return Row(
       children: [
@@ -193,24 +177,20 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
         Expanded(
           child: NeonOutlinedButtonWidget(
             label: 'HOME',
-            onPressed: () {
-              ref.read(resultProvider.notifier).goHome();
-            },
+            onPressed: controller.goHome,
           ),
         ),
         Expanded(
           child: NeonElevatedButton(
             label: 'NEW GAME',
-            onPressed: () {
-              ref.read(resultProvider.notifier).newGame();
-            },
+            onPressed: controller.newGame,
           ),
         ),
       ],
     );
   }
 
-  void _showConfetti() {
+  void _showConfetti(BuildContext context) {
     Confetti.launch(
       context,
       options: const ConfettiOptions(particleCount: 100, spread: 70, y: 0.55),
