@@ -128,14 +128,14 @@ class GameDialogUtils {
             OutlinedButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                Routes.goToHome();
+                AppNavigation.goToHome();
               },
               child: const Text('Home'),
             ),
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                Routes.goToCreateRoom();
+                AppNavigation.goToCreateRoom();
               },
               child: const Text('New Game'),
             ),
