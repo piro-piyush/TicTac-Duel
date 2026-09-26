@@ -52,7 +52,7 @@ class JoinRoomContentWidget extends StatelessWidget {
           label: 'CREATE YOUR OWN ROOM',
           icon: Icons.add_rounded,
           color: AppColors.neonPurple,
-          onPressed: Routes.replaceCreateRoom,
+          onPressed: AppNavigation.replaceCreateRoom,
         ),
       ],
     );

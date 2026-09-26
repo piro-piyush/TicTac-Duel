@@ -1,17 +1,16 @@
 import 'dotenv/config';
 import http from 'http';
-import mongoose from 'mongoose';
 
-import app from './app';
-import Logger from './core/utils/logger';
-import connectDatabase from './database/database';
-import SocketService from './sockets/socket_service';
+import app from './app.js';
+import Logger from './core/utils/logger.js';
+// import connectDatabase from './database/database.js';
+import SocketService from './sockets/socket_service.js';
 
 import {
     HOST,
     NODE_ENV,
     PORT,
-} from './config/env';
+} from './config/env.js';
 
 const server = http.createServer(app);
 
@@ -20,7 +19,7 @@ const socketService = new SocketService(server);
 
 async function startServer(): Promise<void> {
     try {
-        await connectDatabase();
+        // await connectDatabase();
 
         server.listen(
             PORT,
@@ -85,7 +84,6 @@ async function shutdown(
         await socketService.close();
 
         // Close MongoDB
-        await mongoose.connection.close();
 
         // Close HTTP server
         server.close((error) => {
