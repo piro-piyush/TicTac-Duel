@@ -9,9 +9,9 @@ class JoinDividerWidget extends StatelessWidget {
     return Row(
       spacing: Dimens.fourteen,
       children: [
-        Expanded(child: Container(height: 1, color: Themes.border)),
+        Expanded(child: Container(height: 1, color: AppColors.border)),
         Text('OR', style: textTheme.labelSmall),
-        Expanded(child: Container(height: 1, color: Themes.border)),
+        Expanded(child: Container(height: 1, color: AppColors.border)),
       ],
     );
   }

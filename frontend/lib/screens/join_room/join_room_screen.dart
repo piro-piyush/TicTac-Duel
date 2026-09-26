@@ -1,19 +1,26 @@
 import 'package:flutter/services.dart';
 import 'package:tictac_duel/lib.dart';
 
-class JoinRoomScreen extends StatefulWidget {
+class JoinRoomScreen extends ConsumerStatefulWidget {
   const JoinRoomScreen({super.key});
 
   @override
-  State<JoinRoomScreen> createState() => _JoinRoomScreenState();
+  ConsumerState<JoinRoomScreen> createState() => _JoinRoomScreenState();
 }
 
-class _JoinRoomScreenState extends State<JoinRoomScreen> {
+class _JoinRoomScreenState extends ConsumerState<JoinRoomScreen> {
   final _roomCodeController = TextEditingController();
   final _focusNode = FocusNode();
   final _playerNameController = TextEditingController();
   final _playerNameFocusNode = FocusNode();
   final _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+
+    _playerNameFocusNode.requestFocus();
+  }
 
   @override
   void dispose() {
@@ -27,37 +34,41 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    _playerNameFocusNode.requestFocus();
-    RoomSocketService.instance.onRoomJoined((room) {
-      Provider.of<RoomDataProvider>(context, listen: false).setRoom(room);
-      Routes.replaceToGame();
-    });
-    RoomSocketService.instance.onRoomError((room) {
-      SnackbarUtils.showError(context, 'Room error: $room');
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
+    ref.listen<String?>(
+      joinRoomProvider.select((state) => state.errorMessage),
+      (_, message) {
+        if (message == null || !mounted) {
+          return;
+        }
+
+        SnackbarUtils.showError(context, 'Room error: $message');
+
+        ref.read(joinRoomProvider.notifier).clearError();
+      },
+    );
+
+    final isJoining = ref.watch(
+      joinRoomProvider.select((state) => state.isJoining),
+    );
+
     return NeonBackgroundWidget(
       needScroll: false,
       title: 'JOIN ROOM',
-      child: Stack(
-        children: [
-          JoinRoomContentWidget(
-            formKey: _formKey,
-            playerNameController: _playerNameController,
-            roomCodeController: _roomCodeController,
-            playerNameFocusNode: _playerNameFocusNode,
-            roomCodeFocusNode: _focusNode,
-            onGenerateRandomName: _generateRandomName,
-            onPasteCode: _pasteCode,
-            onJoinRoom: _joinRoom,
-          ),
-          RoomJoinButtonWidget(joinRoom: _joinRoom),
-        ],
+      bottomNavigationBar: NeonElevatedButton(
+        label: 'JOIN DUEL',
+        icon: Icons.sports_esports_rounded,
+        onPressed: isJoining ? null : _joinRoom,
+      ),
+      child: JoinRoomContentWidget(
+        formKey: _formKey,
+        playerNameController: _playerNameController,
+        roomCodeController: _roomCodeController,
+        playerNameFocusNode: _playerNameFocusNode,
+        roomCodeFocusNode: _focusNode,
+        onGenerateRandomName: _generateRandomName,
+        onPasteCode: _pasteCode,
+        onJoinRoom: _joinRoom,
       ),
     );
   }
@@ -78,6 +89,7 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
 
   Future<void> _pasteCode() async {
     final data = await Clipboard.getData(Clipboard.kTextPlain);
+
     final code = data?.text?.trim().toUpperCase();
 
     if (code == null || code.isEmpty) {
@@ -87,6 +99,7 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
     _roomCodeController.text = code.length > 8 ? code.substring(0, 8) : code;
 
     _focusNode.requestFocus();
+
     setState(() {});
   }
 
@@ -95,12 +108,11 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
       return;
     }
 
-    final playerName = _playerNameController.text.trim();
-    final roomCode = _roomCodeController.text.trim().toUpperCase();
-
-    RoomSocketService.instance.joinRoom(
-      playerName: playerName,
-      roomCode: roomCode,
-    );
+    ref
+        .read(joinRoomProvider.notifier)
+        .joinRoom(
+          playerName: _playerNameController.text.trim(),
+          roomCode: _roomCodeController.text.trim().toUpperCase(),
+        );
   }
 }

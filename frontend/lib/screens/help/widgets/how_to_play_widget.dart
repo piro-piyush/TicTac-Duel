@@ -11,7 +11,7 @@ class HowToPlayWidget extends StatelessWidget {
       children: [
         SectionTileWidget(
           icon: Icons.grid_3x3_rounded,
-          color: Themes.neonCyan,
+          color: AppColors.neonCyan,
           title: 'Make Your Move',
           subtitle:
               'Tap an empty square on the board to place your symbol. '
@@ -20,7 +20,7 @@ class HowToPlayWidget extends StatelessWidget {
 
         SectionTileWidget(
           icon: Icons.emoji_events_rounded,
-          color: Themes.neonGreen,
+          color: AppColors.neonGreen,
           title: 'Win the Duel',
           subtitle:
               'Get three of your symbols in a row — horizontally, vertically, '
@@ -29,7 +29,7 @@ class HowToPlayWidget extends StatelessWidget {
 
         SectionTileWidget(
           icon: Icons.handshake_rounded,
-          color: Themes.draw,
+          color: AppColors.draw,
           title: 'Avoid a Draw',
           subtitle:
               'If every square is filled and neither player gets three in a row, '

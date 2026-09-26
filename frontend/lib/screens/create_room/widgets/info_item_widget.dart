@@ -19,7 +19,7 @@ class InfoItemWidget extends StatelessWidget {
     return Row(
       spacing: Dimens.twelve,
       children: [
-        Icon(icon, color: Themes.textSecondary, size: Dimens.iconMd),
+        Icon(icon, color: AppColors.textSecondary, size: Dimens.iconMd),
         Expanded(
           child: Column(
             spacing: Dimens.four,
@@ -28,14 +28,14 @@ class InfoItemWidget extends StatelessWidget {
               Text(
                 title,
                 style: textTheme.bodySmall?.copyWith(
-                  color: Themes.textPrimary,
+                  color: AppColors.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               Text(
                 subtitle,
                 style: textTheme.labelSmall?.copyWith(
-                  color: Themes.textSecondary,
+                  color: AppColors.textSecondary,
                 ),
               ),
             ],
