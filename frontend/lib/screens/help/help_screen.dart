@@ -8,7 +8,7 @@ class HelpScreen extends StatelessWidget {
     return NeonBackgroundWidget(
       title: 'HELP',
       child: Column(
-        spacing: Dimens.thirtyTwo,
+        spacing: Dimens.thirtySix,
         children: [
           Column(
             spacing: Dimens.twentyEight,

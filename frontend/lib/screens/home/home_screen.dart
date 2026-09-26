@@ -16,6 +16,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return NeonBackgroundWidget(
       needScroll: false,
       padding: Dimens.edgeInsets10_4,
@@ -28,30 +29,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   SizedBox(height: Dimens.twentyTwo),
-                  const AppLogoWidget(),
+                  AppLogoWidget(),
 
                   SizedBox(height: Dimens.twentyTwo),
 
-                  const Text(
-                    'Tic Tac Duel',
-                    style: TextStyle(
-                      color: Themes.textPrimary,
-                      fontSize: 32,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1.5,
-                    ),
-                  ),
+                  Text(GameConstants.appName, style: textTheme.headlineLarge),
 
                   SizedBox(height: Dimens.eight),
-                  Text(
-                    'YOUR MOVE. YOUR GLORY.',
-                    style: TextStyle(
-                      color: Themes.textSecondary.withValues(alpha: 0.85),
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 3.5,
-                    ),
-                  ),
+                  Text(GameConstants.appSlogan, style: textTheme.labelSmall),
 
                   SizedBox(height: Dimens.fortyEight),
 
@@ -66,24 +51,21 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-          Padding(
-            padding: Dimens.edgeInsets8_12,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              spacing: Dimens.twelve,
-              children: [
-                QuickActionWidget(
-                  icon: Icons.settings_rounded,
-                  label: 'Settings',
-                  onTap: Routes.pushSettings,
-                ),
-                QuickActionWidget(
-                  icon: Icons.help_outline_rounded,
-                  label: 'Help',
-                  onTap: Routes.pushHelp,
-                ),
-              ],
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            spacing: Dimens.twelve,
+            children: [
+              QuickActionWidget(
+                icon: Icons.settings_rounded,
+                label: 'Settings',
+                onTap: Routes.pushSettings,
+              ),
+              QuickActionWidget(
+                icon: Icons.help_outline_rounded,
+                label: 'Help',
+                onTap: Routes.pushHelp,
+              ),
+            ],
           ),
         ],
       ),
