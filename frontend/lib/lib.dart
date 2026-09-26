@@ -21,7 +21,6 @@ export 'models/models.dart';
 export 'screens/screens.dart';
 export 'services/services.dart';
 export 'utils/utils.dart';
-export 'state/state.dart' ;
 export 'widgets/widgets.dart';
 export 'bindings/bindings.dart';
 export 'controller/controller.dart';
