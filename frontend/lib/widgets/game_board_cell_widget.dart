@@ -23,7 +23,7 @@ class GameBoardCellWidget extends StatelessWidget {
     final color = switch (symbol) {
       PlayerSymbol.x => theme.primary,
       PlayerSymbol.o => theme.secondary,
-      null => Themes.textSecondary,
+      null => AppColors.textSecondary,
     };
 
     return GestureDetector(
@@ -36,7 +36,7 @@ class GameBoardCellWidget extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         decoration: BoxDecoration(
-          color: symbol == null ? Themes.card : color.withValues(alpha: 0.07),
+          color: symbol == null ? AppColors.card : color.withValues(alpha: 0.07),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: symbol == null

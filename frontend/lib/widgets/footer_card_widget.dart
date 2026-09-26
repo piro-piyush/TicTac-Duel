@@ -15,7 +15,7 @@ class FooterCardWidget extends StatelessWidget {
           height: Dimens.two,
           margin: Dimens.edgeInsetsB6,
           decoration: BoxDecoration(
-            color: Themes.neonCyan.withValues(alpha: 0.6),
+            color: AppColors.neonCyan.withValues(alpha: 0.6),
             borderRadius: Dimens.radius10,
           ),
         ),

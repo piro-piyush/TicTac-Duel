@@ -5,22 +5,22 @@ enum RoomTheme {
     value: 'classic',
     name: 'Classic',
     subtitle: 'Cyan & Purple',
-    primary: Themes.neonCyan,
-    secondary: Themes.neonPurple,
+    primary: AppColors.neonCyan,
+    secondary: AppColors.neonPurple,
   ),
   inferno(
     value: 'inferno',
     name: 'Inferno',
     subtitle: 'Pink & Red',
-    primary: Themes.neonPink,
+    primary: AppColors.neonPink,
     secondary: Color(0xFFFF4D4D),
   ),
   cyber(
     value: 'cyber',
     name: 'Cyber',
     subtitle: 'Green & Cyan',
-    primary: Themes.neonGreen,
-    secondary: Themes.neonCyan,
+    primary: AppColors.neonGreen,
+    secondary: AppColors.neonCyan,
   );
 
   const RoomTheme({
@@ -36,8 +36,6 @@ enum RoomTheme {
   final String subtitle;
   final Color primary;
   final Color secondary;
-
-
 }
 
 enum PlayerSymbol {

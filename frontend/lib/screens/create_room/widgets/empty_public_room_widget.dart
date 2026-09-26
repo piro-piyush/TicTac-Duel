@@ -9,18 +9,18 @@ class EmptyPublicRoomWidget extends StatelessWidget {
       width: double.infinity,
       padding: Dimens.edgeInsets20_24,
       decoration: BoxDecoration(
-        color: Themes.card,
+        color: AppColors.card,
         borderRadius: Dimens.radius14,
-        border: Border.all(color: Themes.border),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         children: [
-          Icon(Icons.sports_esports_outlined, color: Themes.textSecondary),
+          Icon(Icons.sports_esports_outlined, color: AppColors.textSecondary),
           SizedBox(height: Dimens.ten),
           Text(
             'No public rooms available',
             style: TextStyle(
-              color: Themes.textPrimary,
+              color: AppColors.textPrimary,
               fontSize: 12,
               fontWeight: FontWeight.w600,
             ),
@@ -29,7 +29,7 @@ class EmptyPublicRoomWidget extends StatelessWidget {
           Text(
             'Create a room and wait for an opponent.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: Themes.textSecondary, fontSize: 10),
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 10),
           ),
         ],
       ),

@@ -10,7 +10,7 @@ class DividerWidget extends StatelessWidget {
       thickness: 1,
       indent: 50,
       endIndent: 14,
-      color: Themes.border.withValues(alpha: 0.7),
+      color: AppColors.border.withValues(alpha: 0.7),
     );
   }
 }

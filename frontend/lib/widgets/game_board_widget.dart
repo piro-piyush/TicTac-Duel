@@ -23,9 +23,9 @@ class GameBoardWidget extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Themes.surface,
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: Themes.border, width: 1.5),
+          border: Border.all(color: AppColors.border, width: 1.5),
           boxShadow: [
             BoxShadow(
               color: roomTheme.primary.withValues(alpha: 0.10),
