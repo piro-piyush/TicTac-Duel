@@ -9,18 +9,20 @@ class NeonBackgroundWidget extends StatefulWidget {
     this.title,
     this.actions,
     this.padding,
+    this.bottomNavigationBar,
     this.showGrid = true,
     this.showParticles = true,
     this.needScroll = true,
   });
 
   final Widget child;
-  final EdgeInsetsGeometry? padding;
+  final EdgeInsets? padding;
   final String? title;
   final bool showGrid;
   final bool needScroll;
   final bool showParticles;
   final List<Widget>? actions;
+  final Widget? bottomNavigationBar;
 
   @override
   State<NeonBackgroundWidget> createState() => _NeonBackgroundWidgetState();
@@ -61,7 +63,7 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
   }
 
   Color _randomNeonColor() {
-    final colors = [Themes.neonCyan, Themes.neonPink, Themes.neonPurple];
+    final colors = [AppColors.neonCyan, AppColors.neonPink, AppColors.neonPurple];
 
     return colors[math.Random().nextInt(colors.length)];
   }
@@ -78,33 +80,33 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Themes.background,
+      backgroundColor: AppColors.background,
       body: Listener(
         onPointerDown: _handleTap,
         child: Stack(
           fit: StackFit.expand,
           children: [
             // Base background
-            const ColoredBox(color: Themes.background),
+            const ColoredBox(color: AppColors.background),
 
             // Ambient neon glows
             const Positioned(
               top: -140,
               right: -100,
-              child: _NeonGlow(color: Themes.neonPurple, size: 300),
+              child: _NeonGlow(color: AppColors.neonPurple, size: 300),
             ),
 
             const Positioned(
               bottom: -150,
               left: -120,
-              child: _NeonGlow(color: Themes.neonCyan, size: 320),
+              child: _NeonGlow(color: AppColors.neonCyan, size: 320),
             ),
 
             const Positioned(
               top: 260,
               left: -180,
               child: _NeonGlow(
-                color: Themes.neonPink,
+                color: AppColors.neonPink,
                 size: 260,
                 opacity: 0.025,
               ),
@@ -173,7 +175,8 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
                         Expanded(
                           child: widget.needScroll
                               ? SingleChildScrollView(
-                                  padding: widget.padding?? Dimens.defaultPadding ,
+                                  padding:
+                                      widget.padding ?? Dimens.defaultPadding,
                                   child: widget.child,
                                 )
                               : Padding(
@@ -182,6 +185,13 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
                                   child: widget.child,
                                 ),
                         ),
+
+                        if (widget.bottomNavigationBar != null)
+                          Padding(
+                            padding: (widget.padding ?? Dimens.defaultPadding)
+                                .copyWith(top: 0, bottom: 0),
+                            child: widget.bottomNavigationBar!,
+                          ),
                       ],
                     ),
                   ),
@@ -195,32 +205,22 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
   }
 
   Widget _buildAppBar(BuildContext context) {
-    return SizedBox(
-      height: kToolbarHeight,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          BackButton(color: Themes.textPrimary),
+    if (widget.title == null) {
+      return const SizedBox.shrink();
+    }
 
-          Text(
-            widget.title!,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Themes.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 3,
-            ),
-          ),
+    final textTheme = Theme.of(context).textTheme;
 
-          if (widget.actions != null)
-            Row(children: widget.actions!)
-          else
-            const SizedBox(),
-        ],
+    return AppBar(
+      leading: const BackButton(),
+      title: Text(
+        widget.title!,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        textAlign: TextAlign.center,
+        style: textTheme.labelLarge?.copyWith(letterSpacing: 3),
       ),
+      actions: widget.actions,
     );
   }
 }
@@ -321,7 +321,7 @@ class _NeonGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Themes.neonCyan.withValues(alpha: 0.025)
+      ..color = AppColors.neonCyan.withValues(alpha: 0.025)
       ..strokeWidth = 1;
 
     const spacing = 42.0;
@@ -346,7 +346,7 @@ class _NeonParticlePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final random = math.Random(42);
 
-    final colors = [Themes.neonCyan, Themes.neonPurple, Themes.neonPink];
+    final colors = [AppColors.neonCyan, AppColors.neonPurple, AppColors.neonPink];
 
     for (var i = 0; i < 35; i++) {
       final x = random.nextDouble() * size.width;

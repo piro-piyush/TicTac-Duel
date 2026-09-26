@@ -9,7 +9,7 @@ Future<void> main() async {
 
   await _initCore();
 
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 // =============================================================================
@@ -31,29 +31,19 @@ Future<void> _initCore() async {
 // APP
 // =============================================================================
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider<RoomDataProvider>(
-          create: (_) => RoomDataProvider(),
-        ),
-        ChangeNotifierProvider<MusicProvider>(
-          create: (_) => MusicProvider(musicService),
-        ),
-      ],
-      child: MaterialApp.router(
-        debugShowCheckedModeBanner: false,
-        title: 'Tic Tac Duel',
-        theme: Themes.darkTheme,
-        routerConfig: Routes.router,
-        builder: (context, child) => Listener(
-          onPointerDown: (_) => context.read<MusicProvider>().playTouch(),
-          child: child!,
-        ),
+  Widget build(BuildContext context, WidgetRef ref) {
+    return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
+      title: GameConstants.appName,
+      theme: AppTheme.darkTheme,
+      routerConfig: Routes.router,
+      builder: (context, child) => Listener(
+        onPointerDown: (_) => ref.read(musicProvider.notifier).playTouch(),
+        child: child ?? const SizedBox.shrink(),
       ),
     );
   }

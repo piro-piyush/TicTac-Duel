@@ -20,10 +20,10 @@ class MenuButtonWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     return Material(
-      color: Themes.surface,
+      color: AppColors.surface,
       shape: RoundedRectangleBorder(
         borderRadius: Dimens.radius16,
-        side: const BorderSide(color: Themes.border),
+        side: const BorderSide(color: AppColors.border),
       ),
       clipBehavior: Clip.antiAlias,
       child: ListTile(
@@ -46,7 +46,7 @@ class MenuButtonWidget extends StatelessWidget {
         ),
         trailing: const Icon(
           Icons.arrow_forward_rounded,
-          color: Themes.textSecondary,
+          color: AppColors.textSecondary,
         ),
       ),
     );
