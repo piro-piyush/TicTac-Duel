@@ -1,4 +1,4 @@
-import { NODE_ENV } from '../../config/env';
+import { NODE_ENV } from '../../config/env.js';
 
 type LogLevel =
   | 'INFO'

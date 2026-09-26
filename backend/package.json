@@ -4,10 +4,12 @@
   "description": "Backend API for TicTac Duel",
   "main": "dist/index.js",
   "scripts": {
-    "start": "node dist/index.js",
-    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
-    "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "tsx src/index.ts",
+       "dev": "nodemon --exec tsx src/index.ts",
+
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push --config=./drizzle.config.ts"
   },
   "keywords": [
     "tictactoe",
@@ -16,18 +18,24 @@
   ],
   "author": "Piyush Vishwakarma",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "dependencies": {
     "dotenv": "^18.0.2",
+    "drizzle-orm": "^0.45.3",
     "express": "^5.2.1",
-    "mongoose": "^9.10.1",
-    "socket.io": "^4.8.3"
+    "helmet": "^8.3.0",
+    "pg": "^8.23.0",
+    "socket.io": "^4.8.3",
+    "zod": "^4.5.4"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",
-    "@types/node": "^24.13.6",
+    "@types/node": "^24.19.0",
+    "@types/pg": "^8.23.1",
+    "drizzle-kit": "^0.31.11",
     "nodemon": "^3.1.14",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.9.2"
+    "tsx": "^4.23.12",
+    "typescript": "^7.0.2"
   }
 }
