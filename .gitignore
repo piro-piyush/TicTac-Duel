@@ -101,6 +101,25 @@ Desktop.ini
 # Backend editor settings
 /backend/.vscode/launch.json
 
+# ============================================================
+# Backend - Drizzle ORM
+# ============================================================
+
+# Drizzle migration metadata
+/backend/drizzle/meta/
+
+# Temporary Drizzle files
+/backend/drizzle/*.sql.bak
+/backend/drizzle/*.tmp
+
+# ============================================================
+# Test / Temporary files
+# ============================================================
+
+/backend/.nyc_output/
+/backend/.eslintcache
+/backend/.stylelintcache
+
 
 # ============================================================
 # Test / Temporary files
