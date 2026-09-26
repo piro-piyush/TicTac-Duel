@@ -1,20 +1,13 @@
 import 'package:tictac_duel/lib.dart';
 
 class SectionTitleWidget extends StatelessWidget {
-  final String title;
-
   const SectionTitleWidget({super.key, required this.title});
 
+  final String title;
+
   @override
-  Widget build(BuildContext context) {
-    return Text(
-      title.toUpperCase(),
-      style: const TextStyle(
-        color: Themes.textSecondary,
-        fontSize: 11,
-        fontWeight: FontWeight.bold,
-        letterSpacing: 2,
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Text(
+    title.toUpperCase(),
+    style: Theme.of(context).textTheme.labelSmall?.copyWith(letterSpacing: 2),
+  );
 }

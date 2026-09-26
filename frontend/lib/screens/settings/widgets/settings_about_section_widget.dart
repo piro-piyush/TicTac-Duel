@@ -22,32 +22,27 @@ class SettingsAboutSectionWidget extends StatelessWidget {
           title: 'Privacy Policy',
           subtitle: 'How your data is handled',
           color: Themes.textSecondary,
-          onTap: () => _showPrivacyPolicy(context),
+          onTap: Routes.pushPrivacyPolicy,
         ),
       ],
     );
   }
 
   void _showAbout(BuildContext context) {
-    showAboutDialog(
+    return showAboutDialog(
       context: context,
-      applicationName: 'Tic Tac Duel',
-      applicationVersion: _version,
+      applicationName: GameConstants.appName,
+      applicationVersion: 'Version ${GameConstants.appVersion}',
       applicationIcon: const Icon(
         Icons.grid_3x3_rounded,
         color: Themes.neonCyan,
-        size: 32,
       ),
-      children: const [
+      children: [
         Text(
-          'A simple multiplayer Tic Tac Toe experience.',
-          style: TextStyle(color: Themes.textSecondary, height: 1.4),
+          GameConstants.appDescription,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.5),
         ),
       ],
     );
-  }
-
-  void _showPrivacyPolicy(BuildContext context) {
-    // TODO: Navigate to privacy policy.
   }
 }

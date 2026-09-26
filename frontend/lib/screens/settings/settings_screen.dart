@@ -9,11 +9,12 @@ class SettingsScreen extends StatelessWidget {
     return NeonBackgroundWidget(
       title: 'SETTINGS',
       child: Column(
-
-        spacing: 32,
+        spacing: Dimens.thirtySix,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Column(
-            spacing: 28,
+            spacing: Dimens.twentyEight,
+            mainAxisSize: MainAxisSize.min,
             children: [
               const HeaderSectionWidget(
                 title: 'Game Settings',
