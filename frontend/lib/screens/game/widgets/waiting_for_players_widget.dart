@@ -281,7 +281,6 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
     );
 
     SnackbarUtils.showSuccess(
-      context,
       'Room code copied',
     );
   }

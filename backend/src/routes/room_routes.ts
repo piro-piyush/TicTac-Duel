@@ -1,12 +1,52 @@
-import { Router } from 'express';
+import { Router } from "express";
 
-import RoomController from '../controllers/room_controller';
+import RoomController from "../controllers/room_controller.js";
 
-const router = Router();
+const roomRoutes = Router();
 
-router.get(
-  '/:roomCode',
-  RoomController.getRoom,
+// ============================================================================
+// GET ROOMS
+// ============================================================================
+
+roomRoutes.get(
+  "/",
+  RoomController.getRooms.bind(RoomController),
 );
 
-export default router;
+// ============================================================================
+// GET ROOM
+// ============================================================================
+
+roomRoutes.get(
+  "/:id",
+  RoomController.getRoom.bind(RoomController),
+);
+
+// ============================================================================
+// CREATE ROOM
+// ============================================================================
+
+roomRoutes.post(
+  "/",
+  RoomController.createRoom.bind(RoomController),
+);
+
+// ============================================================================
+// JOIN ROOM
+// ============================================================================
+
+roomRoutes.post(
+  "/join",
+  RoomController.joinRoom.bind(RoomController),
+);
+
+// ============================================================================
+// DELETE ROOM
+// ============================================================================
+
+roomRoutes.delete(
+  "/:id",
+  RoomController.deleteRoom.bind(RoomController),
+);
+
+export default roomRoutes;

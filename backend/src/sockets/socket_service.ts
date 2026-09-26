@@ -4,8 +4,8 @@ import {
   Socket,
 } from 'socket.io';
 
-import Logger from '../core/utils/logger';
-import registerRoomSocket from './room_socket';
+import Logger from '../core/utils/logger.js';
+import registerRoomSocket from './room_socket.js';
 
 class SocketService {
   private readonly io: Server;

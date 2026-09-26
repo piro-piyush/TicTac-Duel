@@ -1,12 +1,10 @@
 import 'package:tictac_duel/lib.dart';
 
-class SettingsScreen extends ConsumerWidget {
+class SettingsScreen extends GetView<MusicController> {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final musicState = ref.watch(musicProvider);
-
+  Widget build(BuildContext context) {
     return NeonBackgroundWidget(
       title: 'SETTINGS',
       child: Column(
@@ -23,25 +21,15 @@ class SettingsScreen extends ConsumerWidget {
                 icon: Icons.settings_rounded,
               ),
 
-              SettingsAudioSectionWidget(
-                soundEnabled: musicState.effectsEnabled,
-                musicEnabled: musicState.isEnabled,
-                vibrationEnabled: musicState.vibrationEnabled,
-                onSoundChanged: (enabled) {
-                  ref
-                      .read(musicProvider.notifier)
-                      .setEffectsEnabled(enabled);
-                },
-                onMusicChanged: (enabled) {
-                  ref
-                      .read(musicProvider.notifier)
-                      .setMusicEnabled(enabled);
-                },
-                onVibrationChanged: (enabled) {
-                  ref
-                      .read(musicProvider.notifier)
-                      .setVibrationEnabled(enabled);
-                },
+              Obx(
+                () => SettingsAudioSectionWidget(
+                  soundEnabled: controller.effectsEnabled,
+                  musicEnabled: controller.isEnabled,
+                  vibrationEnabled: controller.vibrationEnabled,
+                  onSoundChanged: controller.setEffectsEnabled,
+                  onMusicChanged: controller.setEnabled,
+                  onVibrationChanged: controller.setVibrationEnabled,
+                ),
               ),
 
               const SettingsAboutSectionWidget(),
