@@ -10,7 +10,7 @@ class SnackbarUtils {
     _show(
       context,
       message: message,
-      color: Themes.neonCyan,
+      color: AppColors.neonCyan,
       icon: Icons.info_outline_rounded,
     );
   }
@@ -34,7 +34,7 @@ class SnackbarUtils {
     _show(
       context,
       message: message,
-      color: Themes.neonPurple,
+      color: AppColors.neonPurple,
       icon: Icons.warning_amber_rounded,
     );
   }
@@ -46,7 +46,7 @@ class SnackbarUtils {
     _show(
       context,
       message: message,
-      color: Themes.neonPink,
+      color: AppColors.neonPink,
       icon: Icons.error_outline_rounded,
     );
   }
@@ -68,8 +68,8 @@ class SnackbarUtils {
       ..showSnackBar(
         SnackBar(
           duration: const Duration(seconds: 3),
-          backgroundColor: Themes.surface,
-          showCloseIcon: true,closeIconColor: Themes.textPrimary,
+          backgroundColor: AppColors.surface,
+          showCloseIcon: true,closeIconColor: AppColors.textPrimary,
           dismissDirection: DismissDirection.horizontal,
           margin: Dimens.edgeInsets8.copyWith(
             bottom: 12
@@ -90,7 +90,7 @@ class SnackbarUtils {
                 child: Text(
                   message,
                   style: const TextStyle(
-                    color: Themes.textPrimary,
+                    color: AppColors.textPrimary,
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
                   ),

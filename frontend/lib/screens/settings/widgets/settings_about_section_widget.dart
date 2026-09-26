@@ -14,14 +14,14 @@ class SettingsAboutSectionWidget extends StatelessWidget {
           icon: Icons.info_outline_rounded,
           title: 'About',
           subtitle: 'Tic Tac Duel • Version $_version',
-          color: Themes.neonCyan,
+          color: AppColors.neonCyan,
           onTap: () => _showAbout(context),
         ),
         SectionTileWidget.withAction(
           icon: Icons.privacy_tip_outlined,
           title: 'Privacy Policy',
           subtitle: 'How your data is handled',
-          color: Themes.textSecondary,
+          color: AppColors.textSecondary,
           onTap: Routes.pushPrivacyPolicy,
         ),
       ],
@@ -35,7 +35,7 @@ class SettingsAboutSectionWidget extends StatelessWidget {
       applicationVersion: 'Version ${GameConstants.appVersion}',
       applicationIcon: const Icon(
         Icons.grid_3x3_rounded,
-        color: Themes.neonCyan,
+        color: AppColors.neonCyan,
       ),
       children: [
         Text(

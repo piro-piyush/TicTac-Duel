@@ -49,12 +49,12 @@ class SelectRoomThemeWidget extends StatelessWidget {
             decoration: BoxDecoration(
               color: isSelected
                   ? theme.primary.withValues(alpha: 0.09)
-                  : Themes.surface,
+                  : AppColors.surface,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
                 color: isSelected
                     ? theme.primary.withValues(alpha: 0.75)
-                    : Themes.border,
+                    : AppColors.border,
               ),
               boxShadow: isSelected
                   ? [
@@ -78,7 +78,7 @@ class SelectRoomThemeWidget extends StatelessWidget {
                         style: TextStyle(
                           color: isSelected
                               ? theme.primary
-                              : Themes.textPrimary,
+                              : AppColors.textPrimary,
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
                         ),
@@ -104,7 +104,7 @@ class SelectRoomThemeWidget extends StatelessWidget {
                 Text(
                   theme.subtitle,
                   style: const TextStyle(
-                    color: Themes.textSecondary,
+                    color: AppColors.textSecondary,
                     fontSize: 9,
                   ),
                 ),
@@ -130,7 +130,7 @@ class SelectRoomThemeWidget extends StatelessWidget {
       duration: const Duration(milliseconds: 220),
       padding: Dimens.edgeInsets16,
       decoration: BoxDecoration(
-        color: Themes.surface,
+        color: AppColors.surface,
         borderRadius: Dimens.radius18,
         border: Border.all(color: theme.primary.withValues(alpha: 0.25)),
       ),
@@ -155,7 +155,7 @@ class SelectRoomThemeWidget extends StatelessWidget {
                 Text(
                   theme.name,
                   style: const TextStyle(
-                    color: Themes.textPrimary,
+                    color: AppColors.textPrimary,
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
                   ),
@@ -163,7 +163,7 @@ class SelectRoomThemeWidget extends StatelessWidget {
                 Text(
                   theme.subtitle,
                   style: const TextStyle(
-                    color: Themes.textSecondary,
+                    color: AppColors.textSecondary,
                     fontSize: 10,
                   ),
                 ),
@@ -213,7 +213,7 @@ class SelectRoomThemeWidget extends StatelessWidget {
 
           return Container(
             decoration: BoxDecoration(
-              color: Themes.card,
+              color: AppColors.card,
               borderRadius: Dimens.radius6,
               border: Border.all(color: theme.primary.withValues(alpha: 0.07)),
             ),

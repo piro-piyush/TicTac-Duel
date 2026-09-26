@@ -25,9 +25,9 @@ class RoundSelectorWidget extends StatelessWidget {
         Container(
           padding: Dimens.edgeInsets6,
           decoration: BoxDecoration(
-            color: Themes.card,
+            color: AppColors.card,
             borderRadius: Dimens.radius14,
-            border: Border.all(color: Themes.border),
+            border: Border.all(color: AppColors.border),
           ),
           child: Row(
             children: roundOptions.map((rounds) {
@@ -41,12 +41,12 @@ class RoundSelectorWidget extends StatelessWidget {
                     padding: Dimens.edgeInsets0_12,
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? Themes.neonPurple.withValues(alpha: 0.18)
+                          ? AppColors.neonPurple.withValues(alpha: 0.18)
                           : Colors.transparent,
                       borderRadius: Dimens.radius10,
                       border: Border.all(
                         color: isSelected
-                            ? Themes.neonPurple
+                            ? AppColors.neonPurple
                             : Colors.transparent,
                       ),
                     ),
@@ -57,8 +57,8 @@ class RoundSelectorWidget extends StatelessWidget {
                           '$rounds',
                           style: textTheme.titleMedium?.copyWith(
                             color: isSelected
-                                ? Themes.textPrimary
-                                : Themes.textSecondary,
+                                ? AppColors.textPrimary
+                                : AppColors.textSecondary,
                             fontWeight: FontWeight.w900,
                           ),
                         ),
@@ -66,8 +66,8 @@ class RoundSelectorWidget extends StatelessWidget {
                           rounds == 1 ? 'ROUND' : 'ROUNDS',
                           style: textTheme.labelSmall?.copyWith(
                             color: isSelected
-                                ? Themes.neonPurple
-                                : Themes.textSecondary,
+                                ? AppColors.neonPurple
+                                : AppColors.textSecondary,
                             letterSpacing: 1,
                             fontWeight: FontWeight.w700,
                           ),
