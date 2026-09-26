@@ -13,15 +13,15 @@ class VersusWidget extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: Themes.card,
+        color: AppColors.card,
         shape: BoxShape.circle,
-        border: Border.all(color: Themes.border),
+        border: Border.all(color: AppColors.border),
       ),
       child: Center(
         child: Text(
           'VS',
           style: TextStyle(
-            color: Themes.textSecondary,
+            color: AppColors.textSecondary,
             fontSize: compact ? 7 : 8,
             fontWeight: FontWeight.w800,
           ),

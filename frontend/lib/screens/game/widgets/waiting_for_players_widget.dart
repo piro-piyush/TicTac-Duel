@@ -73,8 +73,8 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
 
   Widget _buildPlayerName(PlayerModel player) {
     final color = player.symbol == PlayerSymbol.x
-        ? Themes.neonCyan
-        : Themes.neonPink;
+        ? AppColors.neonCyan
+        : AppColors.neonPink;
 
     return Column(
       children: [
@@ -84,7 +84,7 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
           overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
           style: const TextStyle(
-            color: Themes.textPrimary,
+            color: AppColors.textPrimary,
             fontSize: 20,
             fontWeight: FontWeight.w800,
           ),
@@ -119,7 +119,7 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
         },
         child: Icon(
           _waitingIcon,
-          color: Themes.neonPurple,
+          color: AppColors.neonPurple,
           size: 21,
         ),
       ),
@@ -160,7 +160,7 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
           title,
           textAlign: TextAlign.center,
           style: const TextStyle(
-            color: Themes.textPrimary,
+            color: AppColors.textPrimary,
             fontSize: 13,
             fontWeight: FontWeight.w800,
             letterSpacing: 1.6,
@@ -171,7 +171,7 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
           subtitle,
           textAlign: TextAlign.center,
           style: const TextStyle(
-            color: Themes.textSecondary,
+            color: AppColors.textSecondary,
             fontSize: 11,
           ),
         ),
@@ -234,7 +234,7 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
         const Text(
           'ROOM CODE',
           style: TextStyle(
-            color: Themes.textSecondary,
+            color: AppColors.textSecondary,
             fontSize: 9,
             fontWeight: FontWeight.w700,
             letterSpacing: 2,
@@ -247,24 +247,24 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
               horizontal: 16,
               vertical: 10,
             ),
-            backgroundColor: Themes.surface,
+            backgroundColor: AppColors.surface,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
               side: const BorderSide(
-                color: Themes.border,
+                color: AppColors.border,
               ),
             ),
           ),
           onPressed: _copyRoomCode,
           icon: const Icon(
             Icons.copy_rounded,
-            color: Themes.neonCyan,
+            color: AppColors.neonCyan,
             size: 18,
           ),
           label: Text(
             widget.room.code,
             style: const TextStyle(
-              color: Themes.neonCyan,
+              color: AppColors.neonCyan,
               fontSize: 20,
               fontWeight: FontWeight.w800,
               letterSpacing: 4,
@@ -306,7 +306,7 @@ class _WaitingIndicatorPainter extends CustomPainter {
     final backgroundPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1
-      ..color = Themes.border;
+      ..color = AppColors.border;
 
     canvas.drawCircle(
       center,
@@ -318,7 +318,7 @@ class _WaitingIndicatorPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2
       ..strokeCap = StrokeCap.round
-      ..color = Themes.neonPurple;
+      ..color = AppColors.neonPurple;
 
     canvas.drawArc(
       Rect.fromCircle(
