@@ -1,5 +1,6 @@
-import { Response as ExpressResponse } from 'express';
-
+import type {
+  Response as ExpressResponse
+} from "express";
 interface SuccessOptions<T = null> {
   message?: string;
   data?: T;
