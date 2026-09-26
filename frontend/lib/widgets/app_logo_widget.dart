@@ -1,8 +1,8 @@
 import 'package:tictac_duel/lib.dart';
 
 class AppLogoWidget extends StatelessWidget {
-  const AppLogoWidget({super.key, this.size = 120});
-
+  AppLogoWidget({super.key, double? size})
+    : size = size ?? Dimens.oneHundredTwenty;
   final double size;
 
   @override
@@ -86,13 +86,15 @@ class _LogoCell extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.07),
-        borderRadius: BorderRadius.circular(9),
+        borderRadius: Dimens.radius10,
         border: Border.all(color: color.withValues(alpha: 0.12)),
         boxShadow: [
           BoxShadow(color: color.withValues(alpha: 0.08), blurRadius: 10),
         ],
       ),
-      child: Center(child: Icon(icon, color: color, size: 26)),
+      child: Center(
+        child: Icon(icon, color: color, size: Dimens.iconLg),
+      ),
     );
   }
 }

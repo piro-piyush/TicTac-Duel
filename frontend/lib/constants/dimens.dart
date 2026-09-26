@@ -344,7 +344,17 @@ class Dimens {
       EdgeInsets.symmetric(horizontal: twelve, vertical: eight);
 
   static EdgeInsets get edgeInsets12_10 =>
-      EdgeInsets.symmetric(horizontal: twelve, vertical: ten);
+      EdgeInsets.symmetric(horizontal: twelve, vertical: ten);  static EdgeInsets get edgeInsets12_16 =>
+      EdgeInsets.symmetric(horizontal: twelve, vertical: sixteen);
+
+
+  static EdgeInsets get edgeInsetsB2 => EdgeInsets.only(bottom: two);
+  static EdgeInsets get edgeInsetsB4 => EdgeInsets.only(bottom: four);
+  static EdgeInsets get edgeInsetsB6 => EdgeInsets.only(bottom: six);
+  static EdgeInsets get edgeInsetsB8 => EdgeInsets.only(bottom: eight);
+  static EdgeInsets get edgeInsetsB10 => EdgeInsets.only(bottom: ten);
+  static EdgeInsets get edgeInsetsB12 => EdgeInsets.only(bottom: twelve);
+
 
 
 
