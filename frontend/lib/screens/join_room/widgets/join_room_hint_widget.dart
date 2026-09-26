@@ -13,7 +13,7 @@ class JoinRoomHintWidget extends StatelessWidget {
       children: [
         Icon(
           Icons.info_outline_rounded,
-          color: Themes.textSecondary,
+          color: AppColors.textSecondary,
           size: Dimens.iconSm,
         ),
         Text(

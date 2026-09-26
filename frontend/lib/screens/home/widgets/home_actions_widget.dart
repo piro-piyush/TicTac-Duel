@@ -16,7 +16,7 @@ class HomeActionsWidget extends StatelessWidget {
               title: 'Quick Start',
               subtitle: 'Find an opponent and play',
               icon: Icons.bolt_rounded,
-              color: Themes.neonCyan,
+              color: AppColors.neonCyan,
               onTap: () {
                 SnackbarUtils.showWarning(context, 'Coming soon...');
               },
@@ -27,7 +27,7 @@ class HomeActionsWidget extends StatelessWidget {
               title: 'Local Game',
               subtitle: 'Play against a friend on this device',
               icon: Icons.smartphone_rounded,
-              color: Themes.neonPurple,
+              color: AppColors.neonPurple,
               onTap: () {
                 SnackbarUtils.showWarning(context, 'Coming soon...');
               },

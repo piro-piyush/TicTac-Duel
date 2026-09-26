@@ -51,7 +51,7 @@ class JoinRoomContentWidget extends StatelessWidget {
         NeonOutlinedButtonWidget(
           label: 'CREATE YOUR OWN ROOM',
           icon: Icons.add_rounded,
-          color: Themes.neonPurple,
+          color: AppColors.neonPurple,
           onPressed: Routes.replaceCreateRoom,
         ),
       ],

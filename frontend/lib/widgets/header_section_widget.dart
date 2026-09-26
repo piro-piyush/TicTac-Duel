@@ -21,11 +21,11 @@ class HeaderSectionWidget extends StatelessWidget {
           width: Dimens.fortyEight,
           height: Dimens.fortyEight,
           decoration: BoxDecoration(
-            color: Themes.neonCyan.withValues(alpha: 0.08),
+            color: AppColors.neonCyan.withValues(alpha: 0.08),
             borderRadius: Dimens.radius14,
-            border: Border.all(color: Themes.neonCyan.withValues(alpha: 0.18)),
+            border: Border.all(color: AppColors.neonCyan.withValues(alpha: 0.18)),
           ),
-          child: Icon(icon, color: Themes.neonCyan),
+          child: Icon(icon, color: AppColors.neonCyan),
         ),
         Expanded(
           child: Column(
