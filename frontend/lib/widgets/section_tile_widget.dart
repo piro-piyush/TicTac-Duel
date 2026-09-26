@@ -47,15 +47,14 @@ class SectionTileWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
     return ListTile(
       onTap: onTap ?? () {},
       contentPadding: Dimens.edgeInsets16_4,
       leading: Icon(icon, color: color),
-      title: Text(title),
-      subtitle: Text(
-        subtitle,
-        style: const TextStyle(color: Themes.textSecondary, fontSize: 10),
-      ),
+      title: Text(title, style: textTheme.labelLarge),
+      subtitle: Text(subtitle, style: textTheme.bodySmall),
       trailing: _buildTrailing(),
     );
   }

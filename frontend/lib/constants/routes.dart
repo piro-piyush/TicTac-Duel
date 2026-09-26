@@ -15,6 +15,7 @@ abstract final class Routes {
   static const String result = 'result';
   static const String game = 'game';
   static const String settings = 'settings';
+  static const String privacyPolicy = 'privacy-policy';
   static const String help = 'help';
 
   // ---------------------------------------------------------------------------
@@ -28,6 +29,7 @@ abstract final class Routes {
   static const String joinRoomName = 'joinRoom';
   static const String gameName = 'game';
   static const String settingsName = 'settings';
+  static const String privacyPolicyName = 'privacy-policy';
   static const String helpName = 'help';
 
   // ---------------------------------------------------------------------------
@@ -100,7 +102,10 @@ abstract final class Routes {
   static void pushSettings() => router.pushNamed(settingsName);
 
   static void pushHelp() => router.pushNamed(helpName);
+
   static void pushResult() => router.pushNamed(resultName);
+
+  static void pushPrivacyPolicy() => router.pushNamed(privacyPolicyName);
 
   static void pushCreateRoom() => router.pushNamed(createRoomName);
 

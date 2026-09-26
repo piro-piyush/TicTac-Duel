@@ -5,6 +5,8 @@ class ReadyIndicatorWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       spacing: Dimens.ten,
@@ -20,10 +22,8 @@ class ReadyIndicatorWidget extends StatelessWidget {
         ),
         Text(
           'READY TO DUEL',
-          style: TextStyle(
+          style: textTheme.labelSmall?.copyWith(
             color: Themes.neonGreen.withValues(alpha: 0.75),
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
             letterSpacing: 2,
           ),
         ),

@@ -17,12 +17,15 @@ class SectionTitleAndOptionsWidget extends StatelessWidget {
     return Column(
       spacing: Dimens.ten,
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         SectionTitleWidget(title: title),
         Card(
           color: Themes.surface,
           clipBehavior: Clip.antiAlias,
           child: Column(
+            mainAxisSize: MainAxisSize.min,
+
             children: List.generate(
               children.length * 2 - 1,
               (index) =>
