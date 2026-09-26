@@ -22,11 +22,11 @@ class RoundCardWidget extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 13),
           decoration: BoxDecoration(
             color: isSelected
-                ? Themes.neonPurple.withValues(alpha: 0.18)
+                ? AppColors.neonPurple.withValues(alpha: 0.18)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: isSelected ? Themes.neonPurple : Colors.transparent,
+              color: isSelected ? AppColors.neonPurple : Colors.transparent,
             ),
           ),
           child: Column(
@@ -35,7 +35,7 @@ class RoundCardWidget extends StatelessWidget {
               Text(
                 '$rounds',
                 style: TextStyle(
-                  color: isSelected ? Themes.textPrimary : Themes.textSecondary,
+                  color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
                   fontSize: 18,
                   fontWeight: FontWeight.w900,
                 ),
@@ -43,7 +43,7 @@ class RoundCardWidget extends StatelessWidget {
               Text(
                 rounds == 1 ? 'ROUND' : 'ROUNDS',
                 style: TextStyle(
-                  color: isSelected ? Themes.neonPurple : Themes.textSecondary,
+                  color: isSelected ? AppColors.neonPurple : AppColors.textSecondary,
                   fontSize: 8,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1,

@@ -67,8 +67,8 @@ class SectionTileWidget extends StatelessWidget {
           onChanged: onChanged,
           activeTrackColor: color.withValues(alpha: 0.35),
           activeThumbColor: color,
-          inactiveTrackColor: Themes.card,
-          inactiveThumbColor: Themes.disabled,
+          inactiveTrackColor: AppColors.card,
+          inactiveThumbColor: AppColors.disabled,
         );
       case SectionTileType.action:
         return Icon(Icons.chevron_right_rounded, color: color);

@@ -21,7 +21,7 @@ class SectionTitleAndOptionsWidget extends StatelessWidget {
       children: [
         SectionTitleWidget(title: title),
         Card(
-          color: Themes.surface,
+          color: AppColors.surface,
           clipBehavior: Clip.antiAlias,
           child: Column(
             mainAxisSize: MainAxisSize.min,
