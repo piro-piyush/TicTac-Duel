@@ -16,14 +16,14 @@ class ReadyIndicatorWidget extends StatelessWidget {
           height: Dimens.six,
           decoration: const BoxDecoration(
             shape: BoxShape.circle,
-            color: Themes.neonGreen,
-            boxShadow: [BoxShadow(color: Themes.neonGreen, blurRadius: 8)],
+            color: AppColors.neonGreen,
+            boxShadow: [BoxShadow(color: AppColors.neonGreen, blurRadius: 8)],
           ),
         ),
         Text(
           'READY TO DUEL',
           style: textTheme.labelSmall?.copyWith(
-            color: Themes.neonGreen.withValues(alpha: 0.75),
+            color: AppColors.neonGreen.withValues(alpha: 0.75),
             letterSpacing: 2,
           ),
         ),

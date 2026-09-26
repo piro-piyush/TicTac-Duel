@@ -6,7 +6,7 @@ class QuickActionWidget extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.onTap,
-    this.color = Themes.textSecondary,
+    this.color = AppColors.textSecondary,
   });
 
   final IconData icon;

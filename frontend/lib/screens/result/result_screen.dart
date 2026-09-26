@@ -1,14 +1,14 @@
 import 'package:tictac_duel/constants/animation_constants.dart';
 import 'package:tictac_duel/lib.dart';
 
-class ResultScreen extends StatefulWidget {
+class ResultScreen extends ConsumerStatefulWidget {
   const ResultScreen({super.key});
 
   @override
-  State<ResultScreen> createState() => _ResultScreenState();
+  ConsumerState<ResultScreen> createState() => _ResultScreenState();
 }
 
-class _ResultScreenState extends State<ResultScreen> {
+class _ResultScreenState extends ConsumerState<ResultScreen> {
   @override
   void initState() {
     super.initState();
@@ -18,126 +18,67 @@ class _ResultScreenState extends State<ResultScreen> {
         return;
       }
 
-      _playResultFeedback();
+      ref.read(resultProvider.notifier).playResultFeedback();
     });
-  }
-
-  void _playResultFeedback() {
-    final room = context.read<RoomDataProvider>().room;
-
-    if (room == null || room.players.length < 2) {
-      return;
-    }
-
-    final players = room.players;
-    final playerOne = players[0];
-    final playerTwo = players[1];
-
-    final isDraw = playerOne.points == playerTwo.points;
-
-    if (isDraw) {
-      context.read<MusicProvider>().mediumVibration();
-      return;
-    }
-
-    final gameWinner = playerOne.points > playerTwo.points
-        ? playerOne
-        : playerTwo;
-
-    final mySocketId = SocketService.instance.socketId;
-    final hasWon = gameWinner.socketId == mySocketId;
-
-    final musicProvider = context.read<MusicProvider>();
-
-    if (hasWon) {
-      musicProvider.playWin();
-      _showConfetti();
-    } else {
-      musicProvider.playLose();
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final room = context.watch<RoomDataProvider>().room;
+    final state = ref.watch(resultProvider);
 
-    if (room == null || room.players.length < 2) {
+    ref.listen<bool>(resultProvider.select((state) => state.showConfetti), (
+      _,
+      showConfetti,
+    ) {
+      if (showConfetti) {
+        _showConfetti();
+
+        ref.read(resultProvider.notifier).dismissConfetti();
+      }
+    });
+
+    if (!state.isValid) {
       return const SizedBox.shrink();
     }
-
-    final players = room.players;
-
-    final playerOne = players[0];
-    final playerTwo = players[1];
-
-    // final isDraw = playerOne.points == playerTwo.points;
-
-    final gameWinner = playerOne.points > playerTwo.points
-        ? playerOne
-        : playerTwo;
-
-    final mySocketId = SocketService.instance.socketId;
-
-    final myPlayer = players.firstWhere(
-      (player) => player.socketId == mySocketId,
-    );
-
-    final hasWon = gameWinner.socketId == myPlayer.socketId;
 
     return NeonBackgroundWidget(
       needScroll: false,
       title: 'Game Result',
-      child: _buildContent(
-        room: room,
-        playerOne: playerOne,
-        playerTwo: playerTwo,
-        gameWinner: gameWinner,
-        myPlayer: myPlayer,
-        hasWon: hasWon,
-      ),
+      child: _buildContent(state),
     );
   }
 
-  void _showConfetti() {
-    Confetti.launch(
-      context,
-      options: const ConfettiOptions(particleCount: 100, spread: 70, y: 0.55),
-    );
-  }
-
-  Widget _buildContent({
-    required RoomModel room,
-    required PlayerModel playerOne,
-    required PlayerModel playerTwo,
-    required PlayerModel? gameWinner,
-    required PlayerModel myPlayer,
-    required bool hasWon,
-  }) {
+  Widget _buildContent(ResultState state) {
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _buildResultIcon(hasWon: hasWon),
+          _buildResultIcon(hasWon: state.hasWon),
           const SizedBox(height: 24),
-          _buildTitle(hasWon: hasWon),
+          _buildTitle(hasWon: state.hasWon),
           const SizedBox(height: 8),
           Text(
-            '${gameWinner!.name} wins the game!',
+            state.isDraw
+                ? 'The game ended in a draw!'
+                : '${state.gameWinner!.name} wins the game!',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Themes.textSecondary, fontSize: 13),
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 13,
+            ),
           ),
           const SizedBox(height: 32),
           _buildScoreCard(
-            playerOne: playerOne,
-            playerTwo: playerTwo,
-            winner: gameWinner,
+            playerOne: state.playerOne!,
+            playerTwo: state.playerTwo!,
+            winner: state.gameWinner,
           ),
           const SizedBox(height: 24),
           Text(
-            'ROUND ${room.currentRound} / ${room.maxRounds}',
+            'ROUND ${state.room!.currentRound} / ${state.room!.maxRounds}',
             style: const TextStyle(
-              color: Themes.textSecondary,
+              color: AppColors.textSecondary,
               fontSize: 10,
               fontWeight: FontWeight.w700,
               letterSpacing: 2,
@@ -162,13 +103,11 @@ class _ResultScreenState extends State<ResultScreen> {
   }
 
   Widget _buildTitle({required bool hasWon}) {
-    final title = hasWon ? 'YOU WON!' : 'YOU LOSE';
-
     return Text(
-      title,
+      hasWon ? 'YOU WON!' : 'YOU LOSE',
       textAlign: TextAlign.center,
       style: const TextStyle(
-        color: Themes.textPrimary,
+        color: AppColors.textPrimary,
         fontSize: 26,
         fontWeight: FontWeight.w900,
         letterSpacing: 3,
@@ -184,15 +123,15 @@ class _ResultScreenState extends State<ResultScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Themes.surface,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Themes.border),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         children: [
           _buildPlayerScore(player: playerOne, winner: winner),
           const SizedBox(height: 14),
-          const Divider(color: Themes.border, height: 1),
+          const Divider(color: AppColors.border, height: 1),
           const SizedBox(height: 14),
           _buildPlayerScore(player: playerTwo, winner: winner),
         ],
@@ -205,7 +144,6 @@ class _ResultScreenState extends State<ResultScreen> {
     required PlayerModel? winner,
   }) {
     final isWinner = winner?.socketId == player.socketId;
-
     final isMe = player.socketId == SocketService.instance.socketId;
 
     return Row(
@@ -216,7 +154,7 @@ class _ResultScreenState extends State<ResultScreen> {
               if (isWinner) ...[
                 const Icon(
                   Icons.emoji_events_rounded,
-                  color: Themes.neonPurple,
+                  color: AppColors.neonPurple,
                   size: 18,
                 ),
                 const SizedBox(width: 8),
@@ -226,7 +164,9 @@ class _ResultScreenState extends State<ResultScreen> {
                   isMe ? '${player.name} (You)' : player.name,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: isWinner ? Themes.textPrimary : Themes.textSecondary,
+                    color: isWinner
+                        ? AppColors.textPrimary
+                        : AppColors.textSecondary,
                     fontWeight: isWinner ? FontWeight.w800 : FontWeight.w600,
                   ),
                 ),
@@ -237,7 +177,7 @@ class _ResultScreenState extends State<ResultScreen> {
         Text(
           '${player.points}',
           style: const TextStyle(
-            color: Themes.neonCyan,
+            color: AppColors.neonCyan,
             fontSize: 22,
             fontWeight: FontWeight.w900,
           ),
@@ -251,26 +191,29 @@ class _ResultScreenState extends State<ResultScreen> {
       spacing: 12,
       children: [
         Expanded(
-          child: NeonOutlinedButtonWidget(label: 'HOME', onPressed: _goHome),
+          child: NeonOutlinedButtonWidget(
+            label: 'HOME',
+            onPressed: () {
+              ref.read(resultProvider.notifier).goHome();
+            },
+          ),
         ),
         Expanded(
-          child: NeonElevatedButton(label: 'NEW GAME', onPressed: _newGame),
+          child: NeonElevatedButton(
+            label: 'NEW GAME',
+            onPressed: () {
+              ref.read(resultProvider.notifier).newGame();
+            },
+          ),
         ),
       ],
     );
   }
 
-  void _goHome() {
-    _clearRoom();
-    Routes.goToHome();
-  }
-
-  void _newGame() {
-    _clearRoom();
-    Routes.goToCreateRoom();
-  }
-
-  void _clearRoom() {
-    context.read<RoomDataProvider>().clearRoom();
+  void _showConfetti() {
+    Confetti.launch(
+      context,
+      options: const ConfettiOptions(particleCount: 100, spread: 70, y: 0.55),
+    );
   }
 }
