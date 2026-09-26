@@ -1,199 +1,285 @@
-import type { Socket } from 'socket.io';
-
 import {
-  PLAYER_SYMBOL,
-  Room,
-  ROOM_STATUS,
-} from '../models/room_model';
+  and,
+  eq,
+  sql,
+} from "drizzle-orm";
 
+import Logger from "../core/utils/logger.js";
+import { db } from "../db/index.js";
 import type {
-  IPlayer,
   PlayerSymbol,
   RoomTheme,
-} from '../models/room_model';
+} from "../db/schema.js";
+import {
+  players,
+  roomPlayers,
+  rooms,
+} from "../db/schema.js";
+import type {
+  NewRoom,
+} from "../db/types.js";
 
-import Logger from '../core/utils/logger';
+// -----------------------------------------------------------------------------
+// Types
+// -----------------------------------------------------------------------------
 
 interface CreateRoomParams {
+  playerId: string;
   playerName: string;
   symbol: PlayerSymbol;
   theme: RoomTheme;
   maxRounds: number;
-  socket: Socket;
+  isPrivate: boolean;
 }
 
 interface JoinRoomParams {
+  playerId: string;
   playerName: string;
   roomCode: string;
-  socket: Socket;
 }
 
 interface MakeMoveParams {
   roomCode: string;
   index: number;
-  socket: Socket;
+  playerId: string;
 }
 
 interface SubmitGameResultParams {
   roomCode: string;
-  winnerSocketId: string | null;
+  winnerPlayerId: string | null;
   winningIndexes: number[];
-  socket: Socket;
+  playerId: string;
 }
 
 interface SetPlayerReadyParams {
   roomCode: string;
   isReady: boolean;
-  socket: Socket;
+  playerId: string;
 }
 
-interface GameResult {
-  room: InstanceType<typeof Room>;
-  winnerSocketId: string | null;
-  winningIndexes: number[];
-  completedRound: number;
-  gameFinished: boolean;
+interface RoomPlayer {
+  id: string;
+  name: string;
+  symbol: PlayerSymbol;
+  points: number;
+  isReady: boolean;
+}
+
+interface Room {
+  id: string;
+  code: string;
+  hostPlayerId: string;
+  theme: RoomTheme;
+  maxRounds: number;
+  currentRound: number;
+  roundStatus: string;
+  turnPlayerId: string | null;
+  turnIndex: number;
+  boardSize: number;
+  players: RoomPlayer[];
+  occupancy: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 interface MoveResult {
-  room: InstanceType<typeof Room>;
+  room: Room;
   move: {
     index: number;
     symbol: PlayerSymbol;
   };
 }
 
+interface GameResult {
+  room: Room;
+  winnerPlayerId: string | null;
+  winningIndexes: number[];
+  completedRound: number;
+  gameFinished: boolean;
+}
+
+// -----------------------------------------------------------------------------
+// Room Service
+// -----------------------------------------------------------------------------
+
 class RoomService {
+  // ---------------------------------------------------------------------------
+  // Create Room
+  // ---------------------------------------------------------------------------
+
   async createRoom({
+    playerId,
     playerName,
     symbol,
     theme,
     maxRounds,
-    socket,
-  }: CreateRoomParams): Promise<
-    InstanceType<typeof Room>
-  > {
+    isPrivate,
+  }: CreateRoomParams): Promise<Room> {
     try {
       const roomCode =
         await this._generateUniqueRoomCode();
 
-      const player: IPlayer = {
-        name: playerName,
-        symbol,
-        socketId: socket.id,
-        points: 0,
-        isReady: false,
+      const newRoom: NewRoom = {
+        code: roomCode,
+        hostPlayerId: playerId,
+        theme,
+        maxRounds,
+        isPrivate,
+        currentRound: 0,
+        roundStatus: "waiting",
+        turnPlayerId: playerId,
+        turnIndex: 0,
+        boardSize: 9,
       };
 
-      const room = await Room.create({
-        code: roomCode,
-        theme,
-        players: [player],
-        occupancy: 1,
-        currentRound: 0,
-        roundStatus: ROOM_STATUS.WAITING,
-        maxRounds: maxRounds,
-        turn: player,
-        turnIndex: 0,
+      return await db.transaction(async (tx) => {
+        await tx
+          .insert(players)
+          .values({
+            id: playerId,
+          })
+          .onConflictDoNothing({
+            target: players.id,
+          });
+
+        const [room] = await tx
+          .insert(rooms)
+          .values(newRoom)
+          .returning();
+
+        if (!room) {
+          throw new Error("Failed to create room");
+        }
+
+        await tx
+          .insert(roomPlayers)
+          .values({
+            roomId: room.id,
+            playerId,
+            name: playerName.trim(),
+            symbol,
+            points: 0,
+            isReady: false,
+          });
+
+        return this._getRoomById(room.id, tx);
       });
-
-      socket.join(room.code);
-
-      return room;
     } catch (error: unknown) {
-      Logger.error('Failed to create room', error);
+      Logger.error(
+        "Failed to create room",
+        error,
+      );
+
       throw error;
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // Join Room
+  // ---------------------------------------------------------------------------
+
   async joinRoom({
+    playerId,
     playerName,
     roomCode,
-    socket,
-  }: JoinRoomParams): Promise<
-    InstanceType<typeof Room>
-  > {
+  }: JoinRoomParams): Promise<Room> {
     try {
-      const code = roomCode
-        .trim()
-        .toUpperCase();
+      const code =
+        this._normalizeRoomCode(roomCode);
 
       const room = await this.getRoom(code);
 
       if (!room) {
-        throw new Error('Room not found');
+        throw new Error("Room not found");
       }
 
-      if (
-        room.roundStatus === ROOM_STATUS.PLAYING
-      ) {
+      if (room.roundStatus === "playing") {
         throw new Error(
-          'Game is already in progress',
+          "Game is already in progress",
         );
       }
 
       if (room.players.length >= 2) {
-        throw new Error('Room is full');
+        throw new Error("Room is full");
+      }
+
+      const existingPlayer = room.players.find(
+        (player) => player.id === playerId,
+      );
+
+      if (existingPlayer) {
+        throw new Error(
+          "Player is already in this room",
+        );
       }
 
       const hostPlayer = room.players[0];
 
       if (!hostPlayer) {
         throw new Error(
-          'Room does not have a host player',
+          "Room has no host player",
         );
       }
 
       const guestSymbol =
-        hostPlayer.symbol === PLAYER_SYMBOL.X
-          ? PLAYER_SYMBOL.O
-          : PLAYER_SYMBOL.X;
+        hostPlayer.symbol === "x"
+          ? "o"
+          : "x";
 
-      room.players.push({
-        name: playerName,
-        symbol: guestSymbol,
-        socketId: socket.id,
-        points: 0,
-        isReady: false,
+      return await db.transaction(async (tx) => {
+        await tx
+          .insert(players)
+          .values({
+            id: playerId,
+          })
+          .onConflictDoNothing({
+            target: players.id,
+          });
+
+        await tx
+          .insert(roomPlayers)
+          .values({
+            roomId: room.id,
+            playerId,
+            name: playerName.trim(),
+            symbol: guestSymbol,
+            points: 0,
+            isReady: false,
+          });
+
+        return this._getRoomById(room.id, tx);
       });
-
-      room.occupancy = room.players.length;
-
-      // Joining the room does NOT start the round.
-      room.roundStatus = ROOM_STATUS.WAITING;
-      room.currentRound = 0;
-
-      await room.save();
-
-      socket.join(room.code);
-
-      return room;
     } catch (error: unknown) {
-      Logger.error('Failed to join room', error);
+      Logger.error(
+        "Failed to join room",
+        error,
+      );
+
       throw error;
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // Make Move
+  // ---------------------------------------------------------------------------
+
   async makeMove({
     roomCode,
     index,
-    socket,
+    playerId,
   }: MakeMoveParams): Promise<MoveResult> {
     try {
-      const code = roomCode
-        .trim()
-        .toUpperCase();
+      const code =
+        this._normalizeRoomCode(roomCode);
 
       const room = await this.getRoom(code);
 
       if (!room) {
-        throw new Error('Room not found');
+        throw new Error("Room not found");
       }
 
-      if (
-        room.roundStatus !== ROOM_STATUS.PLAYING
-      ) {
-        throw new Error('Round is not active');
+      if (room.roundStatus !== "playing") {
+        throw new Error("Round is not active");
       }
 
       if (
@@ -202,179 +288,65 @@ class RoomService {
         index >= room.boardSize
       ) {
         throw new Error(
-          'Invalid board position',
+          "Invalid board position",
         );
       }
 
-      const playerIndex =
-        room.players.findIndex(
-          (player) =>
-            player.socketId === socket.id,
-        );
-
-      if (playerIndex === -1) {
-        throw new Error(
-          'Player is not part of this room',
-        );
-      }
-
-      if (room.turnIndex !== playerIndex) {
-        throw new Error('Not your turn');
-      }
-
-      const player = room.players[playerIndex];
-
-      if (!player) {
-        throw new Error('Player not found');
-      }
-
-      const move = {
-        index,
-        symbol: player.symbol,
-      };
-
-      room.turnIndex =
-        room.turnIndex === 0 ? 1 : 0;
-
-      room.turn =
-        room.players[room.turnIndex] ?? null;
-
-      await room.save();
-
-      return {
-        room,
-        move,
-      };
-    } catch (error: unknown) {
-      Logger.error('Failed to make move', error);
-      throw error;
-    }
-  }
-
-  async submitGameResult({
-    roomCode,
-    winnerSocketId,
-    winningIndexes,
-    socket,
-  }: SubmitGameResultParams): Promise<GameResult> {
-    try {
-      const code = roomCode.trim().toUpperCase();
-
-      const room = await this.getRoom(code);
-
-      if (!room) {
-        throw new Error('Room not found');
-      }
-
-      if (room.roundStatus !== ROOM_STATUS.PLAYING) {
-        throw new Error('Round is not active');
-      }
-
-      if (room.players.length !== 2) {
-        throw new Error('Room does not have two players');
-      }
-
-      if (!Array.isArray(winningIndexes)) {
-        throw new Error('Invalid winning indexes');
-      }
-
-      // --------------------------------------------------
-      // DRAW
-      // --------------------------------------------------
-      if (winnerSocketId === null) {
-        // The player submitting the draw must belong to the room.
-        const player = room.players.find(
-          (player) => player.socketId === socket.id,
-        );
-
-        if (!player) {
-          throw new Error('Player is not in this room');
-        }
-
-        // Round has finished.
-        room.roundStatus = ROOM_STATUS.RESULT;
-
-        // In a draw, there is no winner.
-        // Keep the current turnIndex/turn unchanged.
-        room.turn = null;
-
-        // Players must ready up before the next round.
-        room.players.forEach((player) => {
-          player.isReady = false;
-        });
-
-        const completedRound = room.currentRound;
-
-        const gameFinished =
-          completedRound >= room.maxRounds;
-
-        await room.save();
-
-        return {
-          room,
-          winnerSocketId: null,
-          winningIndexes: [],
-          completedRound,
-          gameFinished,
-        };
-      }
-
-      // --------------------------------------------------
-      // WIN
-      // --------------------------------------------------
-
-      // Only the player who made the winning move
-      // can submit themselves as the winner.
-      if (socket.id !== winnerSocketId) {
-        throw new Error('Invalid winner');
-      }
-
-      const winnerIndex = room.players.findIndex(
-        (player) => player.socketId === winnerSocketId,
+      const player = room.players.find(
+        (roomPlayer) =>
+          roomPlayer.id === playerId,
       );
 
-      if (winnerIndex === -1) {
-        throw new Error('Winner is not part of this room');
+      if (!player) {
+        throw new Error(
+          "Player is not part of this room",
+        );
       }
 
-      const winner = room.players[winnerIndex];
-
-      if (!winner) {
-        throw new Error('Winner not found');
+      if (room.turnPlayerId !== player.id) {
+        throw new Error("Not your turn");
       }
 
-      // Round has finished.
-      room.roundStatus = ROOM_STATUS.RESULT;
+      const nextTurnIndex =
+        room.turnIndex === 0 ? 1 : 0;
 
-      // Winner starts the next round.
-      room.turnIndex = winnerIndex;
-      room.turn = winner;
+      const nextPlayer =
+        room.players[nextTurnIndex];
 
-      // Players must ready up before the next round.
-      room.players.forEach((player) => {
-        player.isReady = false;
-      });
+      if (!nextPlayer) {
+        throw new Error(
+          "Unable to determine next player",
+        );
+      }
 
-      // Award one point to the winner.
-      winner.points = (winner.points ?? 0) + 1;
+      await db
+        .update(rooms)
+        .set({
+          turnIndex: nextTurnIndex,
+          turnPlayerId: nextPlayer.id,
+          updatedAt: new Date(),
+        })
+        .where(eq(rooms.id, room.id));
 
-      const completedRound = room.currentRound;
+      const updatedRoom =
+        await this.getRoom(code);
 
-      const gameFinished =
-        completedRound >= room.maxRounds;
-
-      await room.save();
+      if (!updatedRoom) {
+        throw new Error(
+          "Failed to retrieve updated room",
+        );
+      }
 
       return {
-        room,
-        winnerSocketId,
-        winningIndexes,
-        completedRound,
-        gameFinished,
+        room: updatedRoom,
+        move: {
+          index,
+          symbol: player.symbol,
+        },
       };
     } catch (error: unknown) {
       Logger.error(
-        'Failed to submit game result',
+        "Failed to make move",
         error,
       );
 
@@ -382,88 +354,570 @@ class RoomService {
     }
   }
 
-  async setPlayerReady({
+  // ---------------------------------------------------------------------------
+  // Submit Game Result
+  // ---------------------------------------------------------------------------
+
+  async submitGameResult({
     roomCode,
-    isReady,
-    socket,
-  }: SetPlayerReadyParams): Promise<InstanceType<typeof Room>> {
-    if (typeof isReady !== 'boolean') {
-      throw new Error('isReady must be a boolean');
-    }
-
-    const code = roomCode.trim().toUpperCase();
-
-    const room = await this.getRoom(code);
-
-    if (!room) {
-      throw new Error('Room not found');
-    }
-
-    const player = room.players.find(
-      (player) => player.socketId === socket.id,
-    );
-
-    if (!player) {
-      throw new Error('Player is not in this room');
-    }
-
-    if (room.roundStatus === ROOM_STATUS.PLAYING) {
-      throw new Error('Round is already active');
-    }
-
-    if (
-      room.currentRound >= room.maxRounds &&
-      room.roundStatus === ROOM_STATUS.RESULT
-    ) {
-      throw new Error('Game has finished');
-    }
-
-    // Update this player's ready state.
-    player.isReady = isReady;
-
-    // Do not start a round until the room has all required players.
-    const hasAllPlayers =
-      room.occupancy === 2 &&
-      room.players.length === room.occupancy;
-
-    const allReady =
-      hasAllPlayers &&
-      room.players.every((player) => player.isReady);
-
-    if (allReady) {
-      room.currentRound += 1;
-      room.roundStatus = ROOM_STATUS.PLAYING;
-
-      room.turn =
-        room.players[room.turnIndex] ?? null;
-
-      // Reset ready state once the round starts.
-      room.players.forEach((player) => {
-        player.isReady = false;
-      });
-    }
-
-    await room.save();
-
-    return room;
-  }
-
-  async getRoom(
-    roomCode: string,
-  ): Promise<
-    InstanceType<typeof Room> | null
-  > {
+    winnerPlayerId,
+    winningIndexes,
+    playerId,
+  }: SubmitGameResultParams): Promise<GameResult> {
     try {
-      return await Room.findOne({
-        code: roomCode
-          .trim()
-          .toUpperCase(),
+      const code =
+        this._normalizeRoomCode(roomCode);
+
+      const room = await this.getRoom(code);
+
+      if (!room) {
+        throw new Error("Room not found");
+      }
+
+      if (room.roundStatus !== "playing") {
+        throw new Error("Round is not active");
+      }
+
+      if (room.players.length !== 2) {
+        throw new Error(
+          "Room does not have two players",
+        );
+      }
+
+      if (!Array.isArray(winningIndexes)) {
+        throw new Error(
+          "Invalid winning indexes",
+        );
+      }
+
+      const submittingPlayer =
+        room.players.find(
+          (player) => player.id === playerId,
+        );
+
+      if (!submittingPlayer) {
+        throw new Error(
+          "Player is not in this room",
+        );
+      }
+
+      // -----------------------------------------------------------------------
+      // Draw
+      // -----------------------------------------------------------------------
+
+      if (winnerPlayerId === null) {
+        await db
+          .update(roomPlayers)
+          .set({
+            isReady: false,
+          })
+          .where(
+            eq(
+              roomPlayers.roomId,
+              room.id,
+            ),
+          );
+
+        await db
+          .update(rooms)
+          .set({
+            roundStatus: "result",
+            turnPlayerId: null,
+            updatedAt: new Date(),
+          })
+          .where(eq(rooms.id, room.id));
+
+        const completedRound =
+          room.currentRound;
+
+        const gameFinished =
+          completedRound >= room.maxRounds;
+
+        const updatedRoom =
+          await this.getRoom(code);
+
+        if (!updatedRoom) {
+          throw new Error(
+            "Failed to retrieve updated room",
+          );
+        }
+
+        return {
+          room: updatedRoom,
+          winnerPlayerId: null,
+          winningIndexes: [],
+          completedRound,
+          gameFinished,
+        };
+      }
+
+      // -----------------------------------------------------------------------
+      // Win
+      // -----------------------------------------------------------------------
+
+      if (
+        submittingPlayer.id !== winnerPlayerId
+      ) {
+        throw new Error("Invalid winner");
+      }
+
+      const winner = room.players.find(
+        (player) =>
+          player.id === winnerPlayerId,
+      );
+
+      if (!winner) {
+        throw new Error(
+          "Winner is not part of this room",
+        );
+      }
+
+      const winnerIndex =
+        room.players.findIndex(
+          (player) =>
+            player.id === winnerPlayerId,
+        );
+
+      if (winnerIndex === -1) {
+        throw new Error(
+          "Winner not found",
+        );
+      }
+
+      await db.transaction(async (tx) => {
+        await tx
+          .update(roomPlayers)
+          .set({
+            points: sql`${roomPlayers.points} + 1`,
+            isReady: false,
+          })
+          .where(
+            eq(
+              roomPlayers.id,
+              winner.id,
+            ),
+          );
+
+        await tx
+          .update(roomPlayers)
+          .set({
+            isReady: false,
+          })
+          .where(
+            eq(
+              roomPlayers.roomId,
+              room.id,
+            ),
+          );
+
+        await tx
+          .update(rooms)
+          .set({
+            roundStatus: "result",
+            turnIndex: winnerIndex,
+            turnPlayerId: winnerPlayerId,
+            updatedAt: new Date(),
+          })
+          .where(eq(rooms.id, room.id));
       });
+
+      const completedRound =
+        room.currentRound;
+
+      const gameFinished =
+        completedRound >= room.maxRounds;
+
+      const updatedRoom =
+        await this.getRoom(code);
+
+      if (!updatedRoom) {
+        throw new Error(
+          "Failed to retrieve updated room",
+        );
+      }
+
+      return {
+        room: updatedRoom,
+        winnerPlayerId,
+        winningIndexes,
+        completedRound,
+        gameFinished,
+      };
     } catch (error: unknown) {
-      Logger.error('Failed to get room', error);
+      Logger.error(
+        "Failed to submit game result",
+        error,
+      );
+
       throw error;
     }
   }
+
+  // ---------------------------------------------------------------------------
+  // Set Player Ready
+  // ---------------------------------------------------------------------------
+
+  async setPlayerReady({
+    roomCode,
+    isReady,
+    playerId,
+  }: SetPlayerReadyParams): Promise<Room> {
+    try {
+      if (typeof isReady !== "boolean") {
+        throw new Error(
+          "isReady must be a boolean",
+        );
+      }
+
+      const code =
+        this._normalizeRoomCode(roomCode);
+
+      const room = await this.getRoom(code);
+
+      if (!room) {
+        throw new Error("Room not found");
+      }
+
+      const player = room.players.find(
+        (roomPlayer) =>
+          roomPlayer.id === playerId,
+      );
+
+      if (!player) {
+        throw new Error(
+          "Player is not in this room",
+        );
+      }
+
+      if (room.roundStatus === "playing") {
+        throw new Error(
+          "Round is already active",
+        );
+      }
+
+      if (
+        room.currentRound >= room.maxRounds &&
+        room.roundStatus === "result"
+      ) {
+        throw new Error(
+          "Game has finished",
+        );
+      }
+
+      await db
+        .update(roomPlayers)
+        .set({
+          isReady,
+        })
+        .where(
+          and(
+            eq(
+              roomPlayers.roomId,
+              room.id,
+            ),
+            eq(
+              roomPlayers.playerId,
+              player.id,
+            ),
+          ),
+        );
+
+      const updatedRoom =
+        await this.getRoom(code);
+
+      if (!updatedRoom) {
+        throw new Error(
+          "Failed to retrieve updated room",
+        );
+      }
+
+      const hasAllPlayers =
+        updatedRoom.players.length === 2;
+
+      const allReady =
+        hasAllPlayers &&
+        updatedRoom.players.every(
+          (roomPlayer) =>
+            roomPlayer.isReady,
+        );
+
+      if (allReady) {
+        const currentTurnIndex =
+          updatedRoom.turnIndex;
+
+        const startingPlayer =
+          updatedRoom.players[
+          currentTurnIndex
+          ];
+
+        if (!startingPlayer) {
+          throw new Error(
+            "Unable to determine starting player",
+          );
+        }
+
+        await db.transaction(async (tx) => {
+          await tx
+            .update(rooms)
+            .set({
+              currentRound:
+                updatedRoom.currentRound + 1,
+              roundStatus: "playing",
+              turnPlayerId:
+                startingPlayer.id,
+              updatedAt: new Date(),
+            })
+            .where(
+              eq(
+                rooms.id,
+                updatedRoom.id,
+              ),
+            );
+
+          await tx
+            .update(roomPlayers)
+            .set({
+              isReady: false,
+            })
+            .where(
+              eq(
+                roomPlayers.roomId,
+                updatedRoom.id,
+              ),
+            );
+        });
+      }
+
+      const finalRoom =
+        await this.getRoom(code);
+
+      if (!finalRoom) {
+        throw new Error(
+          "Failed to retrieve final room state",
+        );
+      }
+
+      return finalRoom;
+    } catch (error: unknown) {
+      Logger.error(
+        "Failed to update player ready status",
+        error,
+      );
+
+      throw error;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Get Room By Code
+  // ---------------------------------------------------------------------------
+
+  async getRoom(
+    roomCode: string,
+  ): Promise<Room | null> {
+    try {
+      const code =
+        this._normalizeRoomCode(roomCode);
+
+      return await this._getRoomByCode(
+        code,
+        db,
+      );
+    } catch (error: unknown) {
+      Logger.error(
+        "Failed to get room",
+        error,
+      );
+
+      throw error;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Get Room By ID
+  // ---------------------------------------------------------------------------
+
+  async getRoomById(
+    roomId: string,
+  ): Promise<Room | null> {
+    return this._getRoomById(
+      roomId,
+      db,
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Get Rooms
+  // ---------------------------------------------------------------------------
+
+  async getRooms() {
+    const roomRows = await db
+      .select()
+      .from(rooms);
+
+    return roomRows;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Delete Room
+  // ---------------------------------------------------------------------------
+
+  async deleteRoom(id: string) {
+    const [room] = await db
+      .delete(rooms)
+      .where(eq(rooms.id, id.trim()))
+      .returning();
+
+    return room ?? null;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Private: Get Room By Code
+  // ---------------------------------------------------------------------------
+
+  private async _getRoomByCode(
+    code: string,
+    database: typeof db,
+  ): Promise<Room | null> {
+    const result = await database
+      .select({
+        room: rooms,
+        roomPlayer: roomPlayers,
+      })
+      .from(rooms)
+      .leftJoin(
+        roomPlayers,
+        eq(
+          roomPlayers.roomId,
+          rooms.id,
+        ),
+      )
+      .where(eq(rooms.code, code));
+
+    if (result.length === 0) {
+      return null;
+    }
+
+    const first = result[0];
+
+    if (!first) {
+      return null;
+    }
+
+    return this._mapRoom(
+      first.room,
+      result
+        .map((row) => row.roomPlayer)
+        .filter(
+          (
+            player,
+          ): player is NonNullable<
+            typeof player
+          > => player !== null,
+        ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Private: Get Room By ID
+  // ---------------------------------------------------------------------------
+
+  private async _getRoomById(
+    roomId: string,
+    database: Pick<typeof db, "select">,
+  ): Promise<Room> {
+    const result = await database
+      .select({
+        room: rooms,
+        roomPlayer: roomPlayers,
+      })
+      .from(rooms)
+      .leftJoin(
+        roomPlayers,
+        eq(
+          roomPlayers.roomId,
+          rooms.id,
+        ),
+      )
+      .where(eq(rooms.id, roomId));
+
+    if (result.length === 0) {
+      throw new Error("Room not found");
+    }
+
+    const first = result[0];
+
+    if (!first) {
+      throw new Error("Room not found");
+    }
+
+    return this._mapRoom(
+      first.room,
+      result
+        .map((row) => row.roomPlayer)
+        .filter(
+          (
+            player,
+          ): player is NonNullable<
+            typeof player
+          > => player !== null,
+        ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Private: Map Database Result
+  // ---------------------------------------------------------------------------
+
+  private _mapRoom(
+    room: typeof rooms.$inferSelect,
+    roomPlayerRows: Array<
+      typeof roomPlayers.$inferSelect
+    >,
+  ): Room {
+    const mappedPlayers: RoomPlayer[] =
+      roomPlayerRows.map((player) => ({
+        id: player.playerId,
+        name: player.name,
+        symbol:
+          player.symbol as PlayerSymbol,
+        points: player.points,
+        isReady: player.isReady,
+      }));
+
+    return {
+      id: room.id,
+      code: room.code,
+      hostPlayerId: room.hostPlayerId,
+      theme: room.theme as RoomTheme,
+      maxRounds: room.maxRounds,
+      currentRound: room.currentRound,
+      roundStatus: room.roundStatus,
+      turnPlayerId: room.turnPlayerId,
+      turnIndex: room.turnIndex,
+      boardSize: room.boardSize,
+      players: mappedPlayers,
+      occupancy: mappedPlayers.length,
+      createdAt: room.createdAt,
+      updatedAt: room.updatedAt,
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Private: Normalize Room Code
+  // ---------------------------------------------------------------------------
+
+  private _normalizeRoomCode(
+    roomCode: string,
+  ): string {
+    return roomCode
+      .trim()
+      .toUpperCase();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Private: Generate Unique Room Code
+  // ---------------------------------------------------------------------------
 
   private async _generateUniqueRoomCode(): Promise<string> {
     try {
@@ -477,31 +931,41 @@ class RoomService {
         const code =
           this._generateRoomCode();
 
-        const existingRoom =
-          await Room.exists({ code });
+        const existingRoom = await db
+          .select({
+            id: rooms.id,
+          })
+          .from(rooms)
+          .where(eq(rooms.code, code))
+          .limit(1);
 
-        if (!existingRoom) {
+        if (existingRoom.length === 0) {
           return code;
         }
       }
 
       throw new Error(
-        'Unable to generate a unique room code. Please try again.',
+        "Unable to generate a unique room code. Please try again.",
       );
     } catch (error: unknown) {
       Logger.error(
-        'Failed to generate unique room code',
+        "Failed to generate unique room code",
         error,
       );
+
       throw error;
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // Private: Generate Room Code
+  // ---------------------------------------------------------------------------
+
   private _generateRoomCode(): string {
     const characters =
-      'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
-    let code = '';
+    let code = "";
 
     for (let i = 0; i < 6; i++) {
       const index = Math.floor(

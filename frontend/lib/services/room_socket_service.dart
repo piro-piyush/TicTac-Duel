@@ -1,15 +1,13 @@
 import 'package:tictac_duel/lib.dart';
 
 class RoomSocketService {
-  RoomSocketService._();
+  RoomSocketService(this._socket);
 
-  static final RoomSocketService instance = RoomSocketService._();
+  final SocketService _socket;
 
-  final SocketService _socket = SocketService.instance;
-
-  // ---------------------------------------------------------------------------
-  // Requests
-  // ---------------------------------------------------------------------------
+  // ===========================================================================
+  // ROOM REQUESTS
+  // ===========================================================================
 
   void createRoom({
     required String playerName,
@@ -32,59 +30,13 @@ class RoomSocketService {
     });
   }
 
-
-
   void leaveRoom({required String roomCode}) {
     _socket.emit(RoomSocketEvents.leaveRoom, {'roomCode': roomCode});
   }
 
-  // ---------------------------------------------------------------------------
-  // Room Events
-  // ---------------------------------------------------------------------------
-
-  void onRoomCreated(void Function(RoomModel room) callback) {
-    _listenToRoomEvent(RoomSocketEvents.roomCreated, callback);
-  }
-
-  void onRoomJoined(void Function(RoomModel room) callback) {
-    _listenToRoomEvent(RoomSocketEvents.roomJoined, callback);
-  }
-
-  void onRoomUpdated(void Function(RoomModel room) callback) {
-    _listenToRoomEvent(RoomSocketEvents.roomUpdated, callback);
-  }
-
-  // ---------------------------------------------------------------------------
-  // Player Events
-  // ---------------------------------------------------------------------------
-
-  void onPlayerJoined(void Function(RoomModel room) callback) {
-    _listenToRoomEvent(RoomSocketEvents.playerJoined, callback);
-  }
-
-  void onPlayerLeft(void Function(RoomModel room) callback) {
-    _listenToRoomEvent(RoomSocketEvents.playerLeft, callback);
-  }
-
-  // void onReadyUpdated(void Function(RoomModel room) callback) {
-  //   _listenToRoomEvent(RoomSocketEvents.readyUpdated, callback);
-  // }
-
-  // ---------------------------------------------------------------------------
-  // Error Events
-  // ---------------------------------------------------------------------------
-
-  void onRoomError(void Function(String message) callback) {
-    _listenToMessageEvent(RoomSocketEvents.roomError, callback);
-  }
-
-  void onGameError(void Function(String message) callback) {
-    _listenToMessageEvent(RoomSocketEvents.gameError, callback);
-  }
-
-  // ---------------------------------------------------------------------------
-  // Game Requests
-  // ---------------------------------------------------------------------------
+  // ===========================================================================
+  // GAME REQUESTS
+  // ===========================================================================
 
   void makeMove({required String roomCode, required int index}) {
     _socket.emit(RoomSocketEvents.makeMove, {
@@ -98,14 +50,11 @@ class RoomSocketService {
     String? winnerSocketId,
     List<int> winningIndexes = const [],
   }) {
-    _socket.emit(
-      RoomSocketEvents.submitGameResult,
-      {
-        'roomCode': roomCode,
-        'winnerSocketId': winnerSocketId,
-        'winningIndexes': winningIndexes,
-      },
-    );
+    _socket.emit(RoomSocketEvents.submitGameResult, {
+      'roomCode': roomCode,
+      'winnerSocketId': winnerSocketId,
+      'winningIndexes': winningIndexes,
+    });
   }
 
   void setPlayerReady({required String roomCode}) {
@@ -115,9 +64,49 @@ class RoomSocketService {
     });
   }
 
-  // ---------------------------------------------------------------------------
-  // Game Events
-  // ---------------------------------------------------------------------------
+  // ===========================================================================
+  // ROOM EVENTS
+  // ===========================================================================
+
+  void onRoomCreated(void Function(RoomModel room) callback) {
+    _onRoomEvent(RoomSocketEvents.roomCreated, callback);
+  }
+
+  void onRoomJoined(void Function(RoomModel room) callback) {
+    _onRoomEvent(RoomSocketEvents.roomJoined, callback);
+  }
+
+  void onRoomUpdated(void Function(RoomModel room) callback) {
+    _onRoomEvent(RoomSocketEvents.roomUpdated, callback);
+  }
+
+  // ===========================================================================
+  // PLAYER EVENTS
+  // ===========================================================================
+
+  void onPlayerJoined(void Function(RoomModel room) callback) {
+    _onRoomEvent(RoomSocketEvents.playerJoined, callback);
+  }
+
+  void onPlayerLeft(void Function(RoomModel room) callback) {
+    _onRoomEvent(RoomSocketEvents.playerLeft, callback);
+  }
+
+  void onReadyUpdated(void Function(RoomModel room) callback) {
+    _onRoomEvent(RoomSocketEvents.readyUpdated, callback);
+  }
+
+  // ===========================================================================
+  // GAME EVENTS
+  // ===========================================================================
+
+  void onGameStarted(void Function(RoomModel room) callback) {
+    _onRoomEvent(RoomSocketEvents.gameStarted, callback);
+  }
+
+  void onGameEnded(void Function(RoomModel room) callback) {
+    _onRoomEvent(RoomSocketEvents.gameEnded, callback);
+  }
 
   void onMoveMade(
     void Function({
@@ -127,68 +116,117 @@ class RoomSocketService {
     })
     callback,
   ) {
-    _socket.off(RoomSocketEvents.moveMade);
     _socket.on(RoomSocketEvents.moveMade, (response) {
-      if (response is! Map) {
+      final result = _parseMove(response);
+
+      if (result == null) {
         return;
       }
-      if (response['success'] != true) {
-        return;
-      }
-      final data = response['data'];
-      if (data is! Map) {
-        return;
-      }
-      final roomData = data['room'];
-      final moveData = data['move'];
-      if (roomData is! Map || moveData is! Map) {
-        return;
-      }
-      final room = RoomModel.fromJson(Map<String, dynamic>.from(roomData));
-      final index = moveData['index'];
-      final symbolValue = moveData['symbol'];
-      if (index is! int || symbolValue is! String) {
-        return;
-      }
-      try {
-        final symbol = PlayerSymbol.fromValue(symbolValue);
-        callback(room: room, index: index, symbol: symbol);
-      } catch (_) {
-        return;
-      }
+
+      callback(room: result.room, index: result.index, symbol: result.symbol);
     });
   }
 
-  void onReadyUpdated(void Function(RoomModel room) callback) {
-    _socket.off(RoomSocketEvents.readyUpdated);
-
-    _socket.on(RoomSocketEvents.readyUpdated, (response) {
-      final room = _parseRoom(response);
-
-      if (room == null) {
-        return;
-      }
-
-      callback(room);
-    });
-  }
-
-  void onGameStarted(void Function(RoomModel room) callback) =>
-      _listenToRoomEvent(RoomSocketEvents.gameStarted, callback);
-
-  void onGameEnded(void Function(RoomModel room) callback) =>
-      _listenToRoomEvent(RoomSocketEvents.gameEnded, callback);
-
-  // ---------------------------------------------------------------------------
-  // Helpers
-  // ---------------------------------------------------------------------------
-
-  void _listenToRoomEvent(
-    String event,
-    void Function(RoomModel room) callback,
+  void onRoundResult(
+    void Function({
+      required RoomModel room,
+      required String winnerSocketId,
+      required List<int> winningIndexes,
+      required int completedRound,
+      required bool gameFinished,
+    })
+    callback,
   ) {
-    _socket.off(event);
+    _socket.on(RoomSocketEvents.roundResult, (response) {
+      final result = _parseRoundResult(response);
 
+      if (result == null) {
+        return;
+      }
+
+      callback(
+        room: result.room,
+        winnerSocketId: result.winnerSocketId,
+        winningIndexes: result.winningIndexes,
+        completedRound: result.completedRound,
+        gameFinished: result.gameFinished,
+      );
+    });
+  }
+
+  // ===========================================================================
+  // ERROR EVENTS
+  // ===========================================================================
+
+  void onRoomError(void Function(String message) callback) {
+    _onMessageEvent(RoomSocketEvents.roomError, callback);
+  }
+
+  void onGameError(void Function(String message) callback) {
+    _onMessageEvent(RoomSocketEvents.gameError, callback);
+  }
+
+  // ===========================================================================
+  // LISTENER MANAGEMENT
+  // ===========================================================================
+
+  void off(String event) {
+    _socket.off(event);
+  }
+
+  void offRoomCreated() {
+    off(RoomSocketEvents.roomCreated);
+  }
+
+  void offRoomJoined() {
+    off(RoomSocketEvents.roomJoined);
+  }
+
+  void offRoomUpdated() {
+    off(RoomSocketEvents.roomUpdated);
+  }
+
+  void offPlayerJoined() {
+    off(RoomSocketEvents.playerJoined);
+  }
+
+  void offPlayerLeft() {
+    off(RoomSocketEvents.playerLeft);
+  }
+
+  void offReadyUpdated() {
+    off(RoomSocketEvents.readyUpdated);
+  }
+
+  void offMoveMade() {
+    off(RoomSocketEvents.moveMade);
+  }
+
+  void offRoundResult() {
+    off(RoomSocketEvents.roundResult);
+  }
+
+  void offGameStarted() {
+    off(RoomSocketEvents.gameStarted);
+  }
+
+  void offGameEnded() {
+    off(RoomSocketEvents.gameEnded);
+  }
+
+  void offRoomError() {
+    off(RoomSocketEvents.roomError);
+  }
+
+  void offGameError() {
+    off(RoomSocketEvents.gameError);
+  }
+
+  // ===========================================================================
+  // ROOM PARSING
+  // ===========================================================================
+
+  void _onRoomEvent(String event, void Function(RoomModel room) callback) {
     _socket.on(event, (response) {
       final room = _parseRoom(response);
 
@@ -198,12 +236,7 @@ class RoomSocketService {
     });
   }
 
-  void _listenToMessageEvent(
-    String event,
-    void Function(String message) callback,
-  ) {
-    _socket.off(event);
-
+  void _onMessageEvent(String event, void Function(String message) callback) {
     _socket.on(event, (response) {
       if (response is! Map) {
         callback('Something went wrong.');
@@ -240,88 +273,119 @@ class RoomSocketService {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // Round Result Event
-  // ---------------------------------------------------------------------------
+  // ===========================================================================
+  // MOVE PARSING
+  // ===========================================================================
 
-  void onRoundResult(
-    void Function({
-      required RoomModel room,
-      required String winnerSocketId,
-      required List<int> winningIndexes,
-      required int completedRound,
-      required bool gameFinished,
-    })
-    callback,
-  ) {
-    _socket.off(RoomSocketEvents.roundResult);
+  _MoveResult? _parseMove(dynamic response) {
+    if (response is! Map || response['success'] != true) {
+      return null;
+    }
 
-    _socket.on(RoomSocketEvents.roundResult, (response) {
-      if (response is! Map) {
-        return;
-      }
+    final data = response['data'];
 
-      if (response['success'] != true) {
-        return;
-      }
+    if (data is! Map) {
+      return null;
+    }
 
-      final data = response['data'];
+    final roomData = data['room'];
+    final moveData = data['move'];
 
-      if (data is! Map) {
-        return;
-      }
+    if (roomData is! Map || moveData is! Map) {
+      return null;
+    }
 
-      final roomData = data['room'];
-      final winnerSocketId = data['winnerSocketId'];
-      final winningIndexesData = data['winningIndexes'];
-      final completedRound = data['completedRound'];
-      final gameFinished = data['gameFinished'];
+    final index = moveData['index'];
+    final symbolValue = moveData['symbol'];
 
-      if (roomData is! Map ||
-          winnerSocketId is! String ||
-          winningIndexesData is! List ||
-          completedRound is! int ||
-          gameFinished is! bool) {
-        return;
-      }
+    if (index is! int || symbolValue is! String) {
+      return null;
+    }
 
-      try {
-        final room = RoomModel.fromJson(Map<String, dynamic>.from(roomData));
+    try {
+      final room = RoomModel.fromJson(Map<String, dynamic>.from(roomData));
 
-        final winningIndexes = winningIndexesData.whereType<int>().toList();
+      final symbol = PlayerSymbol.fromValue(symbolValue);
 
-        callback(
-          room: room,
-          winnerSocketId: winnerSocketId,
-          winningIndexes: winningIndexes,
-          completedRound: completedRound,
-          gameFinished: gameFinished,
-        );
-      } catch (_) {
-        return;
-      }
-    });
+      return _MoveResult(room: room, index: index, symbol: symbol);
+    } catch (_) {
+      return null;
+    }
   }
 
-  // ---------------------------------------------------------------------------
-  // Dispose
-  // ---------------------------------------------------------------------------
+  // ===========================================================================
+  // ROUND RESULT PARSING
+  // ===========================================================================
 
-  void dispose() {
-    _socket.off(RoomSocketEvents.roomCreated);
-    _socket.off(RoomSocketEvents.roomJoined);
-    _socket.off(RoomSocketEvents.roomUpdated);
+  _RoundResult? _parseRoundResult(dynamic response) {
+    if (response is! Map || response['success'] != true) {
+      return null;
+    }
 
-    _socket.off(RoomSocketEvents.playerJoined);
-    _socket.off(RoomSocketEvents.playerLeft);
+    final data = response['data'];
 
-    _socket.off(RoomSocketEvents.roomError);
+    if (data is! Map) {
+      return null;
+    }
 
-    _socket.off(RoomSocketEvents.makeMove);
-    _socket.off(RoomSocketEvents.moveMade);
+    final roomData = data['room'];
+    final winnerSocketId = data['winnerSocketId'];
+    final winningIndexesData = data['winningIndexes'];
+    final completedRound = data['completedRound'];
+    final gameFinished = data['gameFinished'];
 
-    _socket.off(RoomSocketEvents.gameStarted);
-    _socket.off(RoomSocketEvents.gameEnded);
-    _socket.off(RoomSocketEvents.gameError);
+    if (roomData is! Map ||
+        winnerSocketId is! String ||
+        winningIndexesData is! List ||
+        completedRound is! int ||
+        gameFinished is! bool) {
+      return null;
+    }
+
+    try {
+      final room = RoomModel.fromJson(Map<String, dynamic>.from(roomData));
+
+      return _RoundResult(
+        room: room,
+        winnerSocketId: winnerSocketId,
+        winningIndexes: winningIndexesData.whereType<int>().toList(),
+        completedRound: completedRound,
+        gameFinished: gameFinished,
+      );
+    } catch (_) {
+      return null;
+    }
   }
+}
+
+// =============================================================================
+// INTERNAL RESULT TYPES
+// =============================================================================
+
+class _MoveResult {
+  const _MoveResult({
+    required this.room,
+    required this.index,
+    required this.symbol,
+  });
+
+  final RoomModel room;
+  final int index;
+  final PlayerSymbol symbol;
+}
+
+class _RoundResult {
+  const _RoundResult({
+    required this.room,
+    required this.winnerSocketId,
+    required this.winningIndexes,
+    required this.completedRound,
+    required this.gameFinished,
+  });
+
+  final RoomModel room;
+  final String winnerSocketId;
+  final List<int> winningIndexes;
+  final int completedRound;
+  final bool gameFinished;
 }

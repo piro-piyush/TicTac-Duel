@@ -29,4 +29,5 @@ class RoomSocketEvents {
   static const roundResult = 'round_result';
   static const toggleReady = 'toggle_ready';
   static const readyUpdated = 'ready_updated';
+  static const connectRoom = 'connect_room';
 }
