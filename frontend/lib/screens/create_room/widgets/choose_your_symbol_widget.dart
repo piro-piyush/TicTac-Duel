@@ -25,13 +25,13 @@ class ChooseYourSymbolWidget extends StatelessWidget {
             Expanded(
               child: _buildSymbolCard(
                 symbol: PlayerSymbol.x,
-                color: Themes.neonCyan,
+                color: AppColors.neonCyan,
               ),
             ),
             Expanded(
               child: _buildSymbolCard(
                 symbol: PlayerSymbol.o,
-                color: Themes.neonPink,
+                color: AppColors.neonPink,
               ),
             ),
           ],
@@ -59,12 +59,12 @@ class ChooseYourSymbolWidget extends StatelessWidget {
           decoration: BoxDecoration(
             color: isSelected
                 ? color.withValues(alpha: 0.10)
-                : Themes.surface,
+                : AppColors.surface,
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
               color: isSelected
                   ? color.withValues(alpha: 0.8)
-                  : Themes.border,
+                  : AppColors.border,
               width: isSelected ? 1.5 : 1,
             ),
             boxShadow: isSelected
@@ -90,7 +90,7 @@ class ChooseYourSymbolWidget extends StatelessWidget {
               Text(
                 symbol.name,
                 style: const TextStyle(
-                  color: Themes.textPrimary,
+                  color: AppColors.textPrimary,
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
                 ),
@@ -102,7 +102,7 @@ class ChooseYourSymbolWidget extends StatelessWidget {
                       ? Icons.check_circle_rounded
                       : Icons.radio_button_unchecked_rounded,
                   key: ValueKey(isSelected),
-                  color: isSelected ? color : Themes.disabled,
+                  color: isSelected ? color : AppColors.disabled,
                   size: 18,
                 ),
               ),

@@ -16,7 +16,6 @@ class CreateRoomContentWidget extends StatelessWidget {
     required this.rooms,
     required this.onRefresh,
     required this.onJoinRoom,
-    required this.createRoom,
   });
 
   final GlobalKey<FormState> formKey;
@@ -33,7 +32,6 @@ class CreateRoomContentWidget extends StatelessWidget {
   final ValueChanged<int> onRoundsChanged;
 
   final VoidCallback onGenerateRandomName;
-  final VoidCallback createRoom;
 
   final List<RoomModel> rooms;
   final VoidCallback onRefresh;
@@ -76,11 +74,6 @@ class CreateRoomContentWidget extends StatelessWidget {
         ),
 
         const CreateRoomInfoWidget(),
-        NeonElevatedButton(
-          label: 'CREATE ROOM',
-          icon: Icons.rocket_launch_rounded,
-          onPressed: createRoom,
-        ),
       ],
     );
   }
