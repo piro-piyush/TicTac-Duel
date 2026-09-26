@@ -18,9 +18,9 @@ class PublicRoomCardWidget extends StatelessWidget {
     return Container(
       padding: Dimens.edgeInsets14,
       decoration: BoxDecoration(
-        color: Themes.card,
+        color: AppColors.card,
         borderRadius: Dimens.radius14,
-        border: Border.all(color: Themes.border),
+        border: Border.all(color: AppColors.border),
       ),
       child: Row(
         children: [
@@ -48,7 +48,7 @@ class PublicRoomCardWidget extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: textTheme.titleSmall?.copyWith(
-                    color: Themes.textPrimary,
+                    color: AppColors.textPrimary,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -60,7 +60,7 @@ class PublicRoomCardWidget extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: textTheme.labelSmall?.copyWith(
-                    color: Themes.textSecondary,
+                    color: AppColors.textSecondary,
                     fontWeight: FontWeight.w500,
                   ),
                 ),

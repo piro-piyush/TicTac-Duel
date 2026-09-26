@@ -46,18 +46,18 @@ class PlayerNameAndRoomCodeFieldWidget extends StatelessWidget {
               roomCodeFocusNode.requestFocus();
             },
             style: textTheme.bodyLarge?.copyWith(
-              color: Themes.textPrimary,
+              color: AppColors.textPrimary,
               fontWeight: FontWeight.w600,
             ),
             decoration: _buildInputDecoration(
               hintText: 'ENTER YOUR NAME',
-              focusedColor: Themes.neonPurple,
+              focusedColor: AppColors.neonPurple,
               suffixIcon: IconButton(
                 onPressed: onGenerateRandomName,
                 tooltip: 'Random name',
                 icon: const Icon(
                   Icons.casino_outlined,
-                  color: Themes.neonPurple,
+                  color: AppColors.neonPurple,
                   size: 20,
                 ),
               ),
@@ -87,19 +87,19 @@ class PlayerNameAndRoomCodeFieldWidget extends StatelessWidget {
             },
             onFieldSubmitted: (_) => onJoinRoom(),
             style: textTheme.titleLarge?.copyWith(
-              color: Themes.textPrimary,
+              color: AppColors.textPrimary,
               fontWeight: FontWeight.w800,
               letterSpacing: 5,
             ),
             decoration: _buildInputDecoration(
               hintText: 'ENTER CODE',
-              focusedColor: Themes.neonCyan,
+              focusedColor: AppColors.neonCyan,
               suffixIcon: IconButton(
                 onPressed: onPasteCode,
                 tooltip: 'Paste code',
                 icon: const Icon(
                   Icons.content_paste_rounded,
-                  color: Themes.neonCyan,
+                  color: AppColors.neonCyan,
                   size: 20,
                 ),
               ),
@@ -120,14 +120,14 @@ class PlayerNameAndRoomCodeFieldWidget extends StatelessWidget {
       suffixIcon: suffixIcon,
       counterText: '',
       hintStyle: TextStyle(
-        color: Themes.textSecondary.withValues(alpha: 0.55),
+        color: AppColors.textSecondary.withValues(alpha: 0.55),
         fontSize: Dimens.fontXs,
         fontWeight: FontWeight.w600,
         letterSpacing: 1.2,
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(Dimens.radiusMd),
-        borderSide: const BorderSide(color: Themes.border),
+        borderSide: const BorderSide(color: AppColors.border),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(Dimens.radiusMd),
@@ -135,11 +135,11 @@ class PlayerNameAndRoomCodeFieldWidget extends StatelessWidget {
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(Dimens.radiusMd),
-        borderSide: const BorderSide(color: Themes.neonPink),
+        borderSide: const BorderSide(color: AppColors.neonPink),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(Dimens.radiusMd),
-        borderSide: const BorderSide(color: Themes.neonPink, width: 1.4),
+        borderSide: const BorderSide(color: AppColors.neonPink, width: 1.4),
       ),
     );
   }

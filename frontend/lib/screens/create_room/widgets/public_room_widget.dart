@@ -26,7 +26,7 @@ class PublicRoomWidget extends StatelessWidget {
               child: Text(
                 'PUBLIC ROOMS',
                 style: textTheme.labelSmall?.copyWith(
-                  color: Themes.textSecondary,
+                  color: AppColors.textSecondary,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 2,
                 ),
@@ -38,7 +38,7 @@ class PublicRoomWidget extends StatelessWidget {
               tooltip: 'Refresh',
               icon: const Icon(
                 Icons.refresh_rounded,
-                color: Themes.textSecondary,
+                color: AppColors.textSecondary,
                 size: 18,
               ),
             ),

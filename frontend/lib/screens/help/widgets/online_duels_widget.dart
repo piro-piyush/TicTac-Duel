@@ -10,7 +10,7 @@ class OnlineDuelsWidget extends StatelessWidget {
       children: [
         SectionTileWidget(
           icon: Icons.add_circle_outline_rounded,
-          color: Themes.neonPurple,
+          color: AppColors.neonPurple,
           title: 'Create a Game',
           subtitle:
               'Create a room, choose your symbol and game mode, then share '
@@ -19,7 +19,7 @@ class OnlineDuelsWidget extends StatelessWidget {
 
         SectionTileWidget(
           icon: Icons.login_rounded,
-          color: Themes.neonPink,
+          color: AppColors.neonPink,
           title: 'Join a Game',
           subtitle:
               'Enter your opponent’s room code to join their duel and get '
@@ -28,7 +28,7 @@ class OnlineDuelsWidget extends StatelessWidget {
 
         // SectionTileWidget(
         //   icon: Icons.lock_outline_rounded,
-        //   color: Themes.neonCyan,
+        //   color: AppColors.neonCyan,
         //   title: 'Private Rooms',
         //   subtitle:
         //       'Private rooms are accessible through their room code, making '

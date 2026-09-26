@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tictac_duel/lib.dart';
 
 class CreateRoomNotifier extends Notifier<CreateRoomState> {

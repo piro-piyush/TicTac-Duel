@@ -58,8 +58,8 @@ class _PlayerAvatarWidgetState extends State<PlayerAvatarWidget>
   @override
   Widget build(BuildContext context) {
     final color = widget.player.symbol == PlayerSymbol.x
-        ? Themes.neonCyan
-        : Themes.neonPink;
+        ? AppColors.neonCyan
+        : AppColors.neonPink;
 
     final padding = widget.size * 0.025;
     final imageSize = widget.size - (padding * 2);
@@ -118,7 +118,7 @@ class _PlayerAvatarWidgetState extends State<PlayerAvatarWidget>
         fit: BoxFit.cover,
         placeholderBuilder: (context) {
           return ColoredBox(
-            color: Themes.card,
+            color: AppColors.card,
             child: Center(
               child: SizedBox(
                 width: widget.size * 0.18,

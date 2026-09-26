@@ -6,7 +6,7 @@ class NeonElevatedButton extends StatelessWidget {
     required this.label,
     required this.onPressed,
     this.icon,
-    this.color = Themes.neonCyan,
+    this.color = AppColors.neonCyan,
   });
 
   final String label;

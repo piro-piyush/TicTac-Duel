@@ -37,7 +37,7 @@ class PlayerNameWidget extends StatelessWidget {
               tooltip: 'Random name',
               icon: const Icon(
                 Icons.casino_outlined,
-                color: Themes.neonPurple,
+                color: AppColors.neonPurple,
                 size: 20,
               ),
             ),
