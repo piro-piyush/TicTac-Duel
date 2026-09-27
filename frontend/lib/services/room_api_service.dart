@@ -23,11 +23,11 @@ class RoomApiService {
   // GET ROOM
   // ===========================================================================
 
-  Future<RoomModel> getRoom(String roomId) async {
-    final room = await _httpService.get<Map<String, dynamic>>('/rooms/$roomId');
-
-    return RoomModel.fromJson(room);
-  }
+  // Future<RoomModel> getRoom(String id) async {
+  //   final room = await _httpService.get<Map<String, dynamic>>('/rooms/$id');
+  //
+  //   return RoomModel.fromJson(room);
+  // }
 
   // ===========================================================================
   // CREATE ROOM
@@ -77,11 +77,5 @@ class RoomApiService {
     return RoomModel.fromJson(room);
   }
 
-  // ===========================================================================
-  // DELETE ROOM
-  // ===========================================================================
 
-  Future<void> deleteRoom(String roomId) async {
-    await _httpService.delete<void>('/rooms/$roomId');
-  }
 }

@@ -3,7 +3,7 @@ import 'package:tictac_duel/lib.dart';
 class RoomModel {
   const RoomModel({
     required this.id,
-    required this.code,
+    required this.roomCode,
     required this.hostPlayerId,
     required this.occupancy,
     required this.maxRounds,
@@ -18,7 +18,7 @@ class RoomModel {
 
   final String id;
   final String hostPlayerId;
-  final String code;
+  final String roomCode;
   final int occupancy;
   final int maxRounds;
   final int currentRound;
@@ -33,7 +33,7 @@ class RoomModel {
     try {
       return RoomModel(
         id: json['id'] as String,
-        code: json['code'] as String,
+        roomCode: json['roomCode'] as String,
         hostPlayerId: json['hostPlayerId'] as String,
         occupancy: json['occupancy'] as int,
         maxRounds: json['maxRounds'] as int,
@@ -65,7 +65,7 @@ class RoomModel {
     RoomModel(
       id: 'public-room-1',
       hostPlayerId: 'mock-alex',
-      code: 'ALEX01',
+      roomCode: 'ALEX01',
       occupancy: 1,
       maxRounds: 3,
       currentRound: 0,
@@ -87,7 +87,7 @@ class RoomModel {
     RoomModel(
       id: 'public-room-2',
       hostPlayerId: 'mock-shadow',
-      code: 'SHDW01',
+      roomCode: 'SHDW01',
       occupancy: 1,
       maxRounds: 5,
       currentRound: 0,
@@ -109,7 +109,7 @@ class RoomModel {
     RoomModel(
       id: 'public-room-3',
       hostPlayerId: 'mock-nova',
-      code: 'NOVA01',
+      roomCode: 'NOVA01',
       occupancy: 1,
       maxRounds: 7,
       currentRound: 0,

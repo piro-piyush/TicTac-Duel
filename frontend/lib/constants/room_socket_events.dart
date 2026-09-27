@@ -17,6 +17,9 @@ class RoomSocketEvents {
   static const toggleReady = 'toggle_ready';
   static const readyUpdated = 'ready_updated';
 
+  static const playerJoined = 'player_joined';
+  static const playerLeft = 'player_left';
+
   // Errors
   static const roomError = 'room_error';
 }
@@ -30,11 +33,11 @@ class SocketEvents {
   static const connectError = 'connect_error';
   static const error = 'error';
 
-  // Reconnection
-  static const reconnect = 'reconnect';
-  static const reconnectAttempt = 'reconnect_attempt';
-  static const reconnectError = 'reconnect_error';
-  static const reconnectFailed = 'reconnect_failed';
+  // // Reconnection
+  // static const reconnect = 'reconnect';
+  // static const reconnectAttempt = 'reconnect_attempt';
+  // static const reconnectError = 'reconnect_error';
+  // static const reconnectFailed = 'reconnect_failed';
 }
 
 class SocketConstants {

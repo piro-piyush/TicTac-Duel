@@ -35,6 +35,7 @@ class RoomController extends GetxController {
   final RxInt _selectedMaxRounds = 3.obs;
   final RxBool _isRoomPrivate = true.obs;
 
+  final RxList<RoomModel> _rooms = <RoomModel>[].obs;
   // ===========================================================================
   // REQUEST STATE
   // ===========================================================================
@@ -64,6 +65,8 @@ class RoomController extends GetxController {
 
   String? get errorMessage => _errorMessage.value;
 
+  List<RoomModel> get rooms => _rooms;
+
   // ===========================================================================
   // LIFECYCLE
   // ===========================================================================
@@ -83,6 +86,8 @@ class RoomController extends GetxController {
 
       clearError();
     });
+
+    fetchPublicRooms();
   }
 
   // ===========================================================================
@@ -172,7 +177,7 @@ class RoomController extends GetxController {
         isPrivate: isRoomPrivate,
       );
 
-      AppNavigation.replaceToGame(room.id);
+      AppNavigation.replaceToGame(room.roomCode);
     } catch (error) {
       _errorMessage.value = error.toString();
     } finally {
@@ -203,8 +208,7 @@ class RoomController extends GetxController {
         roomCode: roomCodeController.text.trim().toUpperCase(),
       );
 
-      AppNavigation.replaceToGame(room.id);
-
+      AppNavigation.replaceToGame(room.roomCode);
     } catch (error) {
       _errorMessage.value = error.toString();
     } finally {
@@ -233,7 +237,7 @@ class RoomController extends GetxController {
       final joinedRoom = await _roomApiService.joinRoom(
         playerId: _playerController.playerId,
         playerName: playerNameController.text.trim(),
-        roomCode: room.code,
+        roomCode: room.roomCode,
       );
 
       AppNavigation.replaceWaitingRoom(joinedRoom);
@@ -243,6 +247,15 @@ class RoomController extends GetxController {
       _isJoining.value = false;
     }
   }
+
+  void fetchPublicRooms() async {
+    try {
+      _rooms.assignAll(await _roomApiService.getRooms());
+    } catch (error) {
+      _errorMessage.value = error.toString();
+    }
+  }
+
 
   // ===========================================================================
   // PUBLIC ROOMS
