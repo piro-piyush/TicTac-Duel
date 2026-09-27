@@ -55,12 +55,11 @@ abstract final class AppNavigation {
   // GAME
   // ===========================================================================
 
-  static void goToGame(String id) {
-    Get.toNamed(AppRoutes.game.replaceFirst(':id', id), arguments: id);
-  }
-
-  static void replaceToGame(String id) {
-    Get.offNamed(AppRoutes.game.replaceFirst(':id', id), arguments: id);
+  static void replaceToGame(String roomCode) {
+    Get.offNamed(
+      AppRoutes.game.replaceFirst(':roomCode', roomCode),
+      arguments: roomCode,
+    );
   }
 
   // ===========================================================================

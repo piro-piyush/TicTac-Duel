@@ -2,13 +2,13 @@ import 'package:tictac_duel/lib.dart';
 
 class GameController extends GetxController {
   GameController({
-    required this.id,
+    required this.roomCode,
     required this._roomSocketService,
     required this._musicController,
     required this._playerController,
   });
 
-  final String id;
+  final String roomCode;
 
   // ===========================================================================
   // DEPENDENCIES
@@ -78,16 +78,21 @@ class GameController extends GetxController {
   }
 
   Future<void> _initialize() async {
-    try {
-      _isLoading.value = true;
-      _errorMessage.value = null;
+    _isLoading.value = true;
+    _errorMessage.value = null;
 
+    try {
       _listenToSocketEvents();
 
-      await _roomSocketService.connect(id: id, playerId: playerId);
+      await _roomSocketService.connect(
+        roomCode: roomCode,
+        playerId: playerId,
+        onConnected: _handleRoomConnected,
+      );
+
+      _isLoading.value = false;
     } catch (error) {
       _errorMessage.value = error.toString();
-    } finally {
       _isLoading.value = false;
     }
   }
@@ -97,7 +102,11 @@ class GameController extends GetxController {
   // ===========================================================================
 
   void _listenToSocketEvents() {
-    _roomSocketService.onRoomConnected(_handleRoomConnected);
+    // _roomSocketService.onRoomConnected(_handleRoomConnected);
+
+    _roomSocketService.onPlayerJoined(_handlePlayerJoined);
+    _roomSocketService.onPlayerLeft(_handlePlayerLeft);
+    _roomSocketService.onReadyUpdated(_handleReadyUpdated);
 
     _roomSocketService.onReadyUpdated(_handleReadyUpdated);
 
@@ -116,6 +125,14 @@ class GameController extends GetxController {
   }
 
   void _handleReadyUpdated(RoomModel updatedRoom) {
+    _setRoom(updatedRoom);
+  }
+
+  void _handlePlayerJoined(RoomModel updatedRoom) {
+    _setRoom(updatedRoom);
+  }
+
+  void _handlePlayerLeft(RoomModel updatedRoom) {
     _setRoom(updatedRoom);
   }
 
@@ -180,6 +197,8 @@ class GameController extends GetxController {
     return (room?.currentRound ?? 0) > 0;
   }
 
+  void startGame() {}
+
   bool get isMyTurn {
     final currentRoom = room;
 
@@ -202,7 +221,7 @@ class GameController extends GetxController {
     }
 
     _roomSocketService.toggleReady(
-      roomCode: currentRoom.code,
+      roomCode: currentRoom.roomCode,
       isReady: !amIReady,
     );
   }
@@ -230,7 +249,7 @@ class GameController extends GetxController {
       return;
     }
 
-    _roomSocketService.makeMove(roomCode: currentRoom.code, index: index);
+    _roomSocketService.makeMove(roomCode: currentRoom.roomCode, index: index);
   }
 
   // ===========================================================================
@@ -361,7 +380,7 @@ class GameController extends GetxController {
 
   @override
   void onClose() {
-    _roomSocketService.offRoomConnected();
+    // _roomSocketService.offRoomConnected();
     _roomSocketService.offReadyUpdated();
     _roomSocketService.offMoveMade();
     _roomSocketService.offRoundResult();

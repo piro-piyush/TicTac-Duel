@@ -7,99 +7,46 @@ class GameScreen extends GetView<GameController> {
   Widget build(BuildContext context) {
     return Obx(() {
       final room = controller.room;
-
-      if (controller.isLoading && room == null) {
-        return const Scaffold(
-          backgroundColor: AppColors.background,
-          body: Center(
-            child: CircularProgressIndicator(color: AppColors.neonCyan),
-          ),
-        );
-      }
-
-      if (room == null) {
-        return const Scaffold(
-          backgroundColor: AppColors.background,
-          body: Center(
-            child: Text(
-              'Room not found',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
-            ),
-          ),
-        );
-      }
-
       final myPlayer = controller.myPlayer;
 
-      if (myPlayer == null) {
-        return const Scaffold(
-          backgroundColor: AppColors.background,
-          body: Center(
-            child: Text(
-              'Player not found',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
-            ),
-          ),
-        );
+      Widget child;
+
+      if (controller.isLoading && room == null) {
+        child = const RoomStateWidget.connecting();
+      } else if (room == null) {
+        child = const RoomStateWidget.notFound();
+      } else if (myPlayer == null) {
+        child = const RoomStateWidget.playerNotFound();
+      } else {
+        child = controller.showGame
+            ? Stack(
+                alignment: Alignment.center,
+                children: [
+                  GameWidget(
+                    room: room,
+                    playerId: controller.playerId,
+                    board: controller.board,
+                    isMyTurn: controller.isMyTurn,
+                    winningIndexes: controller.winningIndexes,
+                    onCellTap: controller.makeMove,
+                  ),
+                  _buildRoundAnimation(room),
+                ],
+              )
+            : WaitingForPlayersWidget(
+                room: room,
+                playerId: controller.playerId,
+                waitingForNextRound: controller.waitingForNextRound,
+                onStartGame: controller.startGame,
+              );
       }
 
       return NeonBackgroundWidget(
         needScroll: true,
         title: 'Tic Tac Duel',
-        child: controller.showGame
-            ? Stack(
-                alignment: Alignment.center,
-                children: [_buildGame(room), _buildRoundAnimation(room)],
-              )
-            : WaitingForPlayersWidget(
-                room: room,
-                waitingForNextRound: controller.waitingForNextRound,
-              ),
+        child: child,
       );
     });
-  }
-
-  // ===========================================================================
-  // GAME
-  // ===========================================================================
-
-  Widget _buildGame(RoomModel room) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final width = constraints.maxWidth;
-        final isCompact = width < 380;
-        final isWide = width >= 600;
-
-        final horizontalPadding = isCompact ? 4.0 : 12.0;
-        final sectionSpacing = isCompact ? 12.0 : 18.0;
-
-        final playerId = controller.playerId;
-
-        return Padding(
-          padding: EdgeInsets.fromLTRB(
-            horizontalPadding,
-            8,
-            horizontalPadding,
-            16,
-          ),
-          child: Column(
-            children: [
-              GameRoundIndicatorWidget(room: room, compact: isCompact),
-              SizedBox(height: sectionSpacing),
-              _buildPlayers(room, playerId, compact: isCompact),
-              SizedBox(height: sectionSpacing),
-              _buildBoard(room, isWide: isWide),
-              SizedBox(height: sectionSpacing),
-              GameStatusWidget(
-                room: room,
-                playerId: playerId,
-                compact: isCompact,
-              ),
-            ],
-          ),
-        );
-      },
-    );
   }
 
   // ===========================================================================
@@ -153,61 +100,6 @@ class GameScreen extends GetView<GameController> {
                   ),
                 )
               : const SizedBox.shrink(),
-        ),
-      ),
-    );
-  }
-
-  // ===========================================================================
-  // PLAYERS
-  // ===========================================================================
-
-  Widget _buildPlayers(
-    RoomModel room,
-    String playerId, {
-    required bool compact,
-  }) {
-    return Row(
-      spacing: compact ? 6 : 10,
-      children: [
-        Expanded(
-          child: GamePlayerCardWidget(
-            player: room.players[0],
-            isTurn: room.turnIndex == 0,
-            theme: room.theme,
-            compact: compact,
-            isMe: playerId == room.players[0].id,
-          ),
-        ),
-        VersusWidget(compact: compact),
-        Expanded(
-          child: GamePlayerCardWidget(
-            player: room.players[1],
-            isTurn: room.turnIndex == 1,
-            theme: room.theme,
-            compact: compact,
-            isMe: playerId == room.players[1].id,
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ===========================================================================
-  // BOARD
-  // ===========================================================================
-
-  Widget _buildBoard(RoomModel room, {required bool isWide}) {
-    return Align(
-      alignment: Alignment.center,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: isWide ? 460 : 420),
-        child: GameBoardWidget(
-          roomTheme: room.theme,
-          values: controller.board,
-          isMyTurn: controller.isMyTurn,
-          winningIndexes: controller.winningIndexes,
-          onCellTap: controller.makeMove,
         ),
       ),
     );
