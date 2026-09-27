@@ -1,41 +1,17 @@
 import type { Server, Socket } from "socket.io";
 
-import { ROOM_SOCKET_EVENTS } from "../core/constants/socket_events.js";
+import {
+  ROOM_SOCKET_EVENTS,
+  SOCKET_EVENTS,
+} from "../core/constants/socket_events.js";
 import Logger from "../core/utils/logger.js";
 import SocketResponse from "../core/utils/socket_response.js";
 import RoomService from "../services/room_service.js";
-
-// -----------------------------------------------------------------------------
-// Socket Request Types
-// -----------------------------------------------------------------------------
-
-interface ConnectRoomData {
-  roomCode: string;
-  playerId: string;
-}
-
-interface MakeMoveData {
-  roomCode: string;
-  playerId: string;
-  index: number;
-}
-
-interface SubmitGameResultData {
-  roomCode: string;
-  playerId: string;
-  winnerPlayerId: string | null;
-  winningIndexes: number[];
-}
-
-interface ToggleReadyData {
-  roomCode: string;
-  playerId: string;
-  isReady: boolean;
-}
-
-// -----------------------------------------------------------------------------
-// Room Socket
-// -----------------------------------------------------------------------------
+import {
+  connectRoomValidator,
+  makeMoveValidator,
+  submitGameResultValidator,
+} from "../validators/room_validator.js";
 
 function registerRoomSocket(
   io: Server,
@@ -45,58 +21,37 @@ function registerRoomSocket(
   // Connect Player To Room
   // ---------------------------------------------------------------------------
 
-  interface ConnectRoomData {
-    roomId: string;
-    playerId: string;
-  }
-
   socket.on(
     ROOM_SOCKET_EVENTS.CONNECT_ROOM,
-    async (
-      data: ConnectRoomData,
-    ): Promise<void> => {
+    async (data: unknown): Promise<void> => {
       try {
-        const {
-          roomId,
+        const result = connectRoomValidator.safeParse(data);
+
+        if (!result.success) {
+          emitValidationError(
+            socket,
+            result.error.issues[0]?.message ??
+            "Invalid room connection data",
+          );
+          return;
+        }
+
+        const { roomCode, playerId } = result.data;
+
+        Logger.info("Connect room request received", {
+          roomCode,
           playerId,
-        } = data;
+          socketId: socket.id,
+        });
 
-        if (
-          typeof roomId !== "string" ||
-          !roomId.trim()
-        ) {
-          throw new Error("Room ID is required");
-        }
-
-        if (
-          typeof playerId !== "string" ||
-          !playerId.trim()
-        ) {
-          throw new Error("Player ID is required");
-        }
-
-        const normalizedRoomId = roomId.trim();
-        const normalizedPlayerId = playerId.trim();
-
-        Logger.info(
-          "Connect room request received",
-          {
-            roomId: normalizedRoomId,
-            playerId: normalizedPlayerId,
-          },
-        );
-
-        const room = await RoomService.getRoomById(
-          normalizedRoomId,
-        );
+        const room = await RoomService.getRoomByCode(roomCode);
 
         if (!room) {
           throw new Error("Room not found");
         }
 
         const player = room.players.find(
-          (player) =>
-            player.id === normalizedPlayerId,
+          (player) => player.id === playerId,
         );
 
         if (!player) {
@@ -105,49 +60,51 @@ function registerRoomSocket(
           );
         }
 
-        // Leave any previously joined Socket.IO room.
-        for (const joinedRoom of socket.rooms) {
-          if (joinedRoom !== socket.id) {
-            socket.leave(joinedRoom);
-          }
+        const isAlreadyConnected = socket.rooms.has(
+          room.id,
+        );
+
+        if (!isAlreadyConnected) {
+          leaveOtherRooms(socket);
+
+          await socket.join(room.id);
+
+          Logger.success(
+            `Player connected to room: ${room.roomCode}`,
+          );
         }
 
-        // Join the database room ID.
-        socket.join(room.id);
+        // Store socket identity on the server.
+        socket.data.playerId = playerId;
+        socket.data.roomId = room.id;
 
-        Logger.success(
-          `Player connected to room: ${room.code}`,
-        );
+        Logger.info("Room socket joined", {
+          roomId: room.id,
+          roomCode: room.roomCode,
+          playerId: player.id,
+          socketId: socket.id,
+        });
 
-        Logger.info(
-          "Room socket joined",
-          {
-            roomId: room.id,
-            roomCode: room.code,
-            playerId: normalizedPlayerId,
-          },
-        );
-
+        // Send the current room state to the player who connected.
         socket.emit(
           ROOM_SOCKET_EVENTS.ROOM_CONNECTED,
-          SocketResponse.success({
-            room,
-            playerId: normalizedPlayerId,
-          }),
-        );
-      } catch (error: unknown) {
-        Logger.error(
-          "Failed to connect player to room",
-          error,
+          SocketResponse.success(room),
         );
 
-        socket.emit(
-          ROOM_SOCKET_EVENTS.ROOM_ERROR,
-          SocketResponse.error(
-            error instanceof Error
-              ? error.message
-              : "Failed to connect to room",
-          ),
+        // Notify existing players only when this socket
+        // actually joined the room for the first time.
+        if (!isAlreadyConnected) {
+          socket.to(room.id).emit(
+            ROOM_SOCKET_EVENTS.PLAYER_JOINED,
+            SocketResponse.success(room),
+          );
+        }
+      } catch (error: unknown) {
+        handleSocketError(
+          socket,
+          "Failed to connect player to room",
+          error,
+          "Failed to connect to room",
         );
       }
     },
@@ -159,80 +116,60 @@ function registerRoomSocket(
 
   socket.on(
     ROOM_SOCKET_EVENTS.MAKE_MOVE,
-    async (
-      data: MakeMoveData,
-    ): Promise<void> => {
+    async (data: unknown): Promise<void> => {
       try {
-        const {
+        const result = makeMoveValidator.safeParse(data);
+
+        if (!result.success) {
+          emitValidationError(
+            socket,
+            result.error.issues[0]?.message ??
+            "Invalid move data",
+          );
+          return;
+        }
+
+        const { roomCode, playerId, index } = result.data;
+
+        Logger.info("Make move request received", {
           roomCode,
           playerId,
           index,
-        } = data;
+          socketId: socket.id,
+        });
 
-        if (
-          typeof roomCode !== "string" ||
-          !roomCode.trim()
-        ) {
-          throw new Error("Room code is required");
-        }
+        validateSocketPlayer(socket, playerId);
+        validateSocketRoom(socket, roomCode);
 
-        if (
-          typeof playerId !== "string" ||
-          !playerId.trim()
-        ) {
-          throw new Error("Player ID is required");
-        }
-
-        Logger.info(
-          "Make move request received",
-          {
-            roomCode,
-            playerId,
-            index,
-          },
-        );
-
-        const result = await RoomService.makeMove({
-          roomCode: roomCode.trim().toUpperCase(),
-          playerId: playerId.trim(),
+        const moveResult = await RoomService.makeMove({
+          roomCode,
+          playerId,
           index,
         });
 
         Logger.success(
-          `Move made in room: ${result.room.code}`,
+          `Move made in room: ${moveResult.room.roomCode}`,
         );
 
-        Logger.info(
-          "Move details",
-          {
-            roomCode: result.room.code,
-            playerId: playerId.trim(),
-            index: result.move.index,
-            symbol: result.move.symbol,
-            turnPlayerId:
-              result.room.turnPlayerId,
-            turnIndex:
-              result.room.turnIndex,
-          },
-        );
+        Logger.info("Move details", {
+          roomCode: moveResult.room.roomCode,
+          playerId,
+          index: moveResult.move.index,
+          symbol: moveResult.move.symbol,
+          turnPlayerId: moveResult.room.turnPlayerId,
+          turnIndex: moveResult.room.turnIndex,
+        });
 
-        io.to(result.room.id).emit(
+        io.to(moveResult.room.id).emit(
           ROOM_SOCKET_EVENTS.MOVE_MADE,
-          SocketResponse.success(result),
+          SocketResponse.success(moveResult),
         );
       } catch (error: unknown) {
-        Logger.error(
+        handleSocketError(
+          socket,
           "Failed to make move",
           error,
-        );
-
-        socket.emit(
-          ROOM_SOCKET_EVENTS.ROOM_ERROR,
-          SocketResponse.error(
-            error instanceof Error
-              ? error.message
-              : "Failed to make move",
-          ),
+          "Failed to make move",
         );
       }
     },
@@ -244,30 +181,26 @@ function registerRoomSocket(
 
   socket.on(
     ROOM_SOCKET_EVENTS.SUBMIT_GAME_RESULT,
-    async (
-      data: SubmitGameResultData,
-    ): Promise<void> => {
+    async (data: unknown): Promise<void> => {
       try {
+        const result =
+          submitGameResultValidator.safeParse(data);
+
+        if (!result.success) {
+          emitValidationError(
+            socket,
+            result.error.issues[0]?.message ??
+            "Invalid game result data",
+          );
+          return;
+        }
+
         const {
           roomCode,
           playerId,
           winnerPlayerId,
           winningIndexes,
-        } = data;
-
-        if (
-          typeof roomCode !== "string" ||
-          !roomCode.trim()
-        ) {
-          throw new Error("Room code is required");
-        }
-
-        if (
-          typeof playerId !== "string" ||
-          !playerId.trim()
-        ) {
-          throw new Error("Player ID is required");
-        }
+        } = result.data;
 
         Logger.info(
           "Submit game result request received",
@@ -276,147 +209,272 @@ function registerRoomSocket(
             playerId,
             winnerPlayerId,
             winningIndexes,
+            socketId: socket.id,
           },
         );
 
-        const result =
+        validateSocketPlayer(socket, playerId);
+        validateSocketRoom(socket, roomCode);
+
+        const gameResult =
           await RoomService.submitGameResult({
-            roomCode: roomCode.trim().toUpperCase(),
-            playerId: playerId.trim(),
+            roomCode,
+            playerId,
             winnerPlayerId,
             winningIndexes,
           });
 
         Logger.success(
-          `Round result submitted for room: ${result.room.code}`,
+          `Round result submitted for room: ${gameResult.room.roomCode}`,
         );
 
-        Logger.info(
-          "Round result",
-          {
-            roomCode: result.room.code,
-            round: result.completedRound,
-            roundStatus:
-              result.room.roundStatus,
-            playerId: playerId.trim(),
-            winnerPlayerId:
-              result.winnerPlayerId,
-            winningIndexes:
-              result.winningIndexes,
-            gameFinished:
-              result.gameFinished,
-          },
-        );
+        Logger.info("Round result", {
+          roomCode: gameResult.room.roomCode,
+          round: gameResult.completedRound,
+          roundStatus: gameResult.room.roundStatus,
+          playerId,
+          winnerPlayerId: gameResult.winnerPlayerId,
+          winningIndexes: gameResult.winningIndexes,
+          gameFinished: gameResult.gameFinished,
+        });
 
-        io.to(result.room.id).emit(
+        io.to(gameResult.room.id).emit(
           ROOM_SOCKET_EVENTS.ROUND_RESULT,
-          SocketResponse.success(result),
+          SocketResponse.success(gameResult),
         );
       } catch (error: unknown) {
-        Logger.error(
+        handleSocketError(
+          socket,
           "Failed to submit game result",
           error,
-        );
-
-        socket.emit(
-          ROOM_SOCKET_EVENTS.ROOM_ERROR,
-          SocketResponse.error(
-            error instanceof Error
-              ? error.message
-              : "Failed to submit game result",
-          ),
+          "Failed to submit game result",
         );
       }
     },
   );
 
   // ---------------------------------------------------------------------------
-  // Toggle Player Ready Status
+  // Disconnect Player
   // ---------------------------------------------------------------------------
 
   socket.on(
-    ROOM_SOCKET_EVENTS.TOGGLE_READY,
-    async (
-      data: ToggleReadyData,
-    ): Promise<void> => {
-      try {
-        const {
-          roomCode,
+    SOCKET_EVENTS.DISCONNECT,
+    async (reason: string): Promise<void> => {
+      const roomId = socket.data.roomId;
+      const playerId = socket.data.playerId;
+
+      Logger.info(
+        `Player disconnected: ${socket.id}`,
+        {
+          reason,
+          roomId,
           playerId,
-          isReady,
-        } = data;
+        },
+      );
 
-        if (
-          typeof roomCode !== "string" ||
-          !roomCode.trim()
-        ) {
-          throw new Error("Room code is required");
-        }
+      if (!roomId || !playerId) {
+        return;
+      }
 
-        if (
-          typeof playerId !== "string" ||
-          !playerId.trim()
-        ) {
-          throw new Error("Player ID is required");
-        }
+      try {
+        // -----------------------------------------------------------------------
+        // Get remaining connected players
+        // -----------------------------------------------------------------------
 
-        if (typeof isReady !== "boolean") {
-          throw new Error(
-            "Ready status must be a boolean",
+        const remainingSockets =
+          await io.in(roomId).fetchSockets();
+
+        const remainingPlayerIds = [
+          ...new Set(
+            remainingSockets
+              .map(
+                (connectedSocket) =>
+                  connectedSocket.data.playerId,
+              )
+              .filter(
+                (id): id is string =>
+                  typeof id === "string",
+              ),
+          ),
+        ];
+
+        // -----------------------------------------------------------------------
+        // No players remain → delete room
+        // -----------------------------------------------------------------------
+
+        if (remainingPlayerIds.length === 0) {
+          await RoomService.deleteRoom(roomId);
+
+          Logger.info(
+            `Room deleted because all players disconnected: ${roomId}`,
           );
+
+          return;
         }
 
+        // -----------------------------------------------------------------------
+        // Get current room state
+        // -----------------------------------------------------------------------
+
+        const room = await RoomService.getRoom(roomId);
+
+        if (!room) {
+          Logger.info(
+            `Room already deleted: ${roomId}`,
+          );
+
+          return;
+        }
+
+        const remainingPlayerId = remainingPlayerIds[0];
+
+        if (!remainingPlayerId) {
+          Logger.error(
+            `No remaining player found for room: ${roomId}`,
+          );
+
+          return;
+        }
+
+        // -----------------------------------------------------------------------
+        // Active game → remaining player wins
+        // -----------------------------------------------------------------------
+
+        if (room.roundStatus === "playing") {
+          const gameResult = {
+            room,
+            winnerPlayerId: remainingPlayerId,
+            winningIndexes: [],
+            completedRound: room.currentRound,
+            gameFinished: true,
+          };
+
+          // Delete room from DB first.
+          await RoomService.deleteRoom(roomId);
+
+          // Send calculated result to the remaining player.
+          socket.to(roomId).emit(
+            ROOM_SOCKET_EVENTS.ROUND_RESULT,
+            SocketResponse.success(gameResult),
+          );
+
+          Logger.success(
+            `Player ${remainingPlayerId} won because ${playerId} disconnected`,
+          );
+
+          return;
+        }
+
+        // -----------------------------------------------------------------------
+        // Game has not started → player left
+        // -----------------------------------------------------------------------
+
+
+        // Delete only if you want the room removed when the remaining player
+        // should no longer keep the room.
+        //
+        // If the remaining player should be able to continue waiting,
+        // DO NOT delete here.
+        await RoomService.deleteRoom(roomId);
+
+        socket.to(roomId).emit(
+          ROOM_SOCKET_EVENTS.PLAYER_LEFT,
+          SocketResponse.success(playerId),
+        );
+
         Logger.info(
-          "Toggle ready request received",
-          {
-            roomCode,
-            playerId,
-            isReady,
-          },
-        );
-
-        const room =
-          await RoomService.setPlayerReady({
-            roomCode: roomCode.trim().toUpperCase(),
-            playerId: playerId.trim(),
-            isReady,
-          });
-
-        Logger.success(
-          `Player ${isReady ? "ready" : "unready"
-          } in room: ${room.code}`,
-        );
-
-        Logger.info(
-          "Ready status updated",
-          {
-            roomCode: room.code,
-            playerId: playerId.trim(),
-            currentRound: room.currentRound,
-            roundStatus: room.roundStatus,
-          },
-        );
-
-        io.to(room.id).emit(
-          ROOM_SOCKET_EVENTS.READY_UPDATED,
-          SocketResponse.success(room),
+          `Player ${playerId} left room: ${roomId}`,
         );
       } catch (error: unknown) {
         Logger.error(
-          "Failed to update player ready status",
+          "Failed to handle player disconnect",
           error,
-        );
-
-        socket.emit(
-          ROOM_SOCKET_EVENTS.ROOM_ERROR,
-          SocketResponse.error(
-            error instanceof Error
-              ? error.message
-              : "Failed to update ready status",
-          ),
         );
       }
     },
+  );
+}
+
+// -----------------------------------------------------------------------------
+// Helpers
+// -----------------------------------------------------------------------------
+
+function leaveOtherRooms(socket: Socket): void {
+  for (const roomId of socket.rooms) {
+    if (roomId !== socket.id) {
+      socket.leave(roomId);
+    }
+  }
+}
+
+function validateSocketPlayer(
+  socket: Socket,
+  playerId: string,
+): void {
+  const connectedPlayerId = socket.data.playerId;
+
+  if (
+    connectedPlayerId &&
+    connectedPlayerId !== playerId
+  ) {
+    throw new Error(
+      "Player identity does not match the connected socket",
+    );
+  }
+}
+
+function validateSocketRoom(
+  socket: Socket,
+  roomCode: string,
+): void {
+  const roomId = socket.data.roomId;
+
+  if (!roomId) {
+    throw new Error(
+      "Socket is not connected to a room",
+    );
+  }
+
+  if (!socket.rooms.has(roomId)) {
+    throw new Error(
+      "Socket is no longer connected to the room",
+    );
+  }
+
+  const normalizedRoomCode = roomCode
+    .trim()
+    .toUpperCase();
+
+  if (normalizedRoomCode.length !== 6) {
+    throw new Error("Invalid room code");
+  }
+}
+
+function emitValidationError(
+  socket: Socket,
+  message: string,
+): void {
+  socket.emit(
+    ROOM_SOCKET_EVENTS.ROOM_ERROR,
+    SocketResponse.error(message),
+  );
+}
+
+function handleSocketError(
+  socket: Socket,
+  logMessage: string,
+  error: unknown,
+  fallbackMessage: string,
+): void {
+  Logger.error(logMessage, error);
+
+  socket.emit(
+    ROOM_SOCKET_EVENTS.ROOM_ERROR,
+    SocketResponse.error(
+      error instanceof Error
+        ? error.message
+        : fallbackMessage,
+    ),
   );
 }
 

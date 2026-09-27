@@ -64,7 +64,7 @@ export const rooms = pgTable("rooms", {
     .defaultRandom()
     .primaryKey(),
 
-  code: varchar("code", {
+  roomCode: varchar("room_code", {
     length: 6,
   })
     .notNull()
