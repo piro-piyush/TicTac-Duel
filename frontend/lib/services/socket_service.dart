@@ -2,25 +2,22 @@ import 'package:socket_io_client/socket_io_client.dart' as io;
 import 'package:tictac_duel/lib.dart';
 
 class SocketService {
-  SocketService({required this._url}) {
-    _socket = io.io(
-      _url,
-      io.OptionBuilder()
-          .setTransports([SocketConstants.websocketTransport])
-          .disableAutoConnect()
-          .enableReconnection()
-          .setReconnectionAttempts(SocketConstants.maxReconnectionAttempts)
-          .setReconnectionDelay(SocketConstants.reconnectionDelay)
-          .setReconnectionDelayMax(SocketConstants.maxReconnectionDelay)
-          .build(),
-    );
-
+  SocketService({required String url})
+      : _socket = io.io(
+    url,
+    io.OptionBuilder()
+        .setTransports([SocketConstants.websocketTransport])
+        .disableAutoConnect()
+        .enableReconnection()
+        .setReconnectionAttempts(SocketConstants.maxReconnectionAttempts)
+        .setReconnectionDelay(SocketConstants.reconnectionDelay)
+        .setReconnectionDelayMax(SocketConstants.maxReconnectionDelay)
+        .build(),
+  ) {
     _registerListeners();
   }
 
-  final String _url;
-
-  late final io.Socket _socket;
+  final io.Socket _socket;
 
   bool _disposed = false;
 
@@ -52,17 +49,12 @@ class SocketService {
     _ensureNotDisposed();
 
     if (isConnected) {
-      LoggerUtils.debug(SocketConstants.alreadyConnectedMessage);
       return;
     }
-
-    LoggerUtils.info(SocketConstants.connectingMessage);
 
     _socket.connect();
 
     await _waitForConnection();
-
-    LoggerUtils.success(SocketConstants.connectedMessage, _socket.id);
   }
 
   Future<void> _waitForConnection() {
@@ -73,31 +65,29 @@ class SocketService {
     final completer = Completer<void>();
 
     late final void Function(dynamic) onConnect;
-    late final void Function(dynamic) onConnectError;
+    late final void Function(dynamic) onError;
 
     void cleanup() {
       _socket.off(SocketEvents.connect, onConnect);
-      _socket.off(SocketEvents.connectError, onConnectError);
+      _socket.off(SocketEvents.connectError, onError);
     }
 
     onConnect = (_) {
       cleanup();
-
       if (!completer.isCompleted) {
         completer.complete();
       }
     };
 
-    onConnectError = (error) {
+    onError = (error) {
       cleanup();
-
       if (!completer.isCompleted) {
         completer.completeError(error);
       }
     };
 
     _socket.once(SocketEvents.connect, onConnect);
-    _socket.once(SocketEvents.connectError, onConnectError);
+    _socket.once(SocketEvents.connectError, onError);
 
     return completer.future;
   }
@@ -122,33 +112,15 @@ class SocketService {
     _socket.onError((error) {
       LoggerUtils.error(SocketConstants.socketErrorMessage, error);
     });
-
-    _socket.onReconnect((attempt) {
-      LoggerUtils.info(SocketConstants.reconnectedMessage, attempt);
-    });
-
-    _socket.onReconnectAttempt((attempt) {
-      LoggerUtils.debug(SocketConstants.reconnectAttemptMessage, attempt);
-    });
-
-    _socket.onReconnectError((error) {
-      LoggerUtils.error(SocketConstants.reconnectionErrorMessage, error);
-    });
-
-    _socket.onReconnectFailed((_) {
-      LoggerUtils.error(SocketConstants.reconnectionFailedMessage);
-    });
   }
 
   void on(String event, void Function(dynamic data) callback) {
     _ensureNotDisposed();
-
     _socket.on(event, callback);
   }
 
   void once(String event, void Function(dynamic data) callback) {
     _ensureNotDisposed();
-
     _socket.once(event, callback);
   }
 
@@ -168,21 +140,7 @@ class SocketService {
     _ensureNotDisposed();
 
     if (!isConnected) {
-      LoggerUtils.warning(
-        '${SocketConstants.cannotEmitMessage} "$event": '
-        '${SocketConstants.notConnectedMessage}',
-      );
-      return;
-    }
-
-    LoggerUtils.debug(SocketConstants.emitMessage, {
-      'event': event,
-      'data': data,
-    });
-
-    if (data == null) {
-      _socket.emit(event);
-      return;
+      throw StateError(SocketConstants.notConnectedMessage);
     }
 
     _socket.emit(event, data);
@@ -197,8 +155,6 @@ class SocketService {
       return;
     }
 
-    LoggerUtils.info(SocketConstants.disconnectingMessage);
-
     _socket.disconnect();
   }
 
@@ -211,10 +167,7 @@ class SocketService {
       return;
     }
 
-    LoggerUtils.info(SocketConstants.disposingMessage);
-
     _disposed = true;
-
     _socket.dispose();
   }
 

@@ -9,10 +9,28 @@ class RoomSocketService {
   // CONNECTION
   // ===========================================================================
 
-  Future<void> connect({required String id, required String playerId}) async {
+  Future<void> connect({
+    required String roomCode,
+    required String playerId,
+    required void Function(RoomModel room) onConnected,
+  }) async {
+    _socket.on(
+      RoomSocketEvents.roomConnected,
+          (response) {
+        final room = _parseRoom(response);
+
+        if (room == null) return;
+
+        onConnected(room);
+      },
+    );
+
     await _socket.connect();
 
-    connectRoom(id: id,playerId:playerId);
+    connectRoom(
+      roomCode: roomCode,
+      playerId: playerId,
+    );
   }
 
   void disconnect() {
@@ -23,10 +41,10 @@ class RoomSocketService {
   // ROOM REQUESTS
   // ===========================================================================
 
-  void connectRoom({required String id, required String playerId}) {
+  void connectRoom({required String roomCode, required String playerId}) {
     _socket.emit(RoomSocketEvents.connectRoom, {
-      'roomId': id.trim().toUpperCase(),
-      'playerId': playerId.trim().toUpperCase(),
+      'roomCode': roomCode,
+      'playerId': playerId,
     });
   }
 
@@ -36,7 +54,7 @@ class RoomSocketService {
 
   void makeMove({required String roomCode, required int index}) {
     _socket.emit(RoomSocketEvents.makeMove, {
-      'roomCode': roomCode.trim().toUpperCase(),
+      'roomCode': roomCode,
       'index': index,
     });
   }
@@ -47,7 +65,7 @@ class RoomSocketService {
     List<int> winningIndexes = const [],
   }) {
     _socket.emit(RoomSocketEvents.submitGameResult, {
-      'roomCode': roomCode.trim().toUpperCase(),
+      'roomCode': roomCode,
       'winnerSocketId': winnerSocketId,
       'winningIndexes': winningIndexes,
     });
@@ -55,7 +73,7 @@ class RoomSocketService {
 
   void toggleReady({required String roomCode, required bool isReady}) {
     _socket.emit(RoomSocketEvents.toggleReady, {
-      'roomCode': roomCode.trim().toUpperCase(),
+      'roomCode': roomCode,
       'isReady': isReady,
     });
   }
@@ -64,9 +82,9 @@ class RoomSocketService {
   // ROOM EVENTS
   // ===========================================================================
 
-  void onRoomConnected(void Function(RoomModel room) callback) {
-    _onRoomEvent(RoomSocketEvents.roomConnected, callback);
-  }
+  // void onRoomConnected(void Function(RoomModel room) callback) {
+  //   _onRoomEvent(RoomSocketEvents.roomConnected, callback);
+  // }
 
   // ===========================================================================
   // READY EVENTS
@@ -75,6 +93,19 @@ class RoomSocketService {
   void onReadyUpdated(void Function(RoomModel room) callback) {
     _onRoomEvent(RoomSocketEvents.readyUpdated, callback);
   }
+
+
+
+  void onPlayerJoined(void Function(RoomModel room) callback) {
+    _onRoomEvent(RoomSocketEvents.playerJoined, callback);
+  }
+
+  void onPlayerLeft(void Function(RoomModel room) callback) {
+    _onRoomEvent(RoomSocketEvents.playerLeft, callback);
+  }
+
+
+
 
   // ===========================================================================
   // MOVE EVENTS
@@ -146,9 +177,9 @@ class RoomSocketService {
     _socket.off(event);
   }
 
-  void offRoomConnected() {
-    off(RoomSocketEvents.roomConnected);
-  }
+  // void offRoomConnected() {
+  //   off(RoomSocketEvents.roomConnected);
+  // }
 
   void offReadyUpdated() {
     off(RoomSocketEvents.readyUpdated);

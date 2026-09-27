@@ -5,11 +5,15 @@ class WaitingForPlayersWidget extends StatefulWidget {
   const WaitingForPlayersWidget({
     super.key,
     required this.room,
+    required this.playerId,
     required this.waitingForNextRound,
+    required this.onStartGame,
   });
 
   final RoomModel room;
+  final String playerId;
   final bool waitingForNextRound;
+  final VoidCallback onStartGame;
 
   @override
   State<WaitingForPlayersWidget> createState() =>
@@ -17,53 +21,121 @@ class WaitingForPlayersWidget extends StatefulWidget {
 }
 
 class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _animationController;
+    with TickerProviderStateMixin {
+  static const _waitingAnimationDuration = Duration(seconds: 2);
+  static const _opponentAnimationDuration = Duration(milliseconds: 600);
+
+  late final AnimationController _waitingAnimationController;
+  late final AnimationController _opponentAnimationController;
+
+  late final Animation<double> _opponentScale;
+  late final Animation<double> _opponentFade;
+  late final Animation<Offset> _opponentSlide;
+
+  List<PlayerModel> get _players => widget.room.players;
+
+  int get _playerCount => _players.length;
+
+  bool get _isHost => widget.room.hostPlayerId == widget.playerId;
+
+  bool get _hasOpponent =>
+      _playerCount == GameConstants.maxPlayers && _opponent != null;
+
+  PlayerModel? get _myPlayer {
+    for (final player in _players) {
+      if (player.id == widget.playerId) {
+        return player;
+      }
+    }
+
+    return null;
+  }
+
+  PlayerModel? get _opponent {
+    for (final player in _players) {
+      if (player.id != widget.playerId) {
+        return player;
+      }
+    }
+
+    return null;
+  }
 
   @override
   void initState() {
     super.initState();
 
-    _animationController = AnimationController(
+    _waitingAnimationController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
+      duration: _waitingAnimationDuration,
     )..repeat();
+
+    _opponentAnimationController = AnimationController(
+      vsync: this,
+      duration: _opponentAnimationDuration,
+    );
+
+    _opponentScale = CurvedAnimation(
+      parent: _opponentAnimationController,
+      curve: Curves.easeOutBack,
+    );
+
+    _opponentFade = CurvedAnimation(
+      parent: _opponentAnimationController,
+      curve: Curves.easeOut,
+    );
+
+    _opponentSlide =
+        Tween<Offset>(begin: const Offset(0.35, 0), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _opponentAnimationController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
+
+    if (_hasOpponent) {
+      _opponentAnimationController.value = 1;
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant WaitingForPlayersWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    final hadOpponent =
+        oldWidget.room.players.length == GameConstants.maxPlayers;
+
+    if (!hadOpponent && _hasOpponent) {
+      _opponentAnimationController.forward(from: 0);
+    }
   }
 
   @override
   void dispose() {
-    _animationController.dispose();
+    _waitingAnimationController.dispose();
+    _opponentAnimationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final player = widget.room.players.first;
+    final player = _myPlayer;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 20,
-        vertical: 24,
-      ),
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          minHeight: MediaQuery.sizeOf(context).height - 120,
-        ),
+    if (player == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Center(
+      child: SingleChildScrollView(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            PlayerAvatarWidget(
-              player: player,
-              isMe: true,
-              isTurn: false,
-            ),
-            const SizedBox(height: 16),
-            _buildPlayerName(player),
-            const SizedBox(height: 36),
-            _buildWaitingIndicator(),
-            const SizedBox(height: 18),
-            _buildWaitingInfo(),
-            const SizedBox(height: 32),
+            _buildPlayers(player),
+            SizedBox(height: Dimens.spaceBtwSections),
+            _buildStatus(),
+            SizedBox(height: Dimens.spaceBtwItems),
+            _buildAction(),
+            SizedBox(height: Dimens.spaceBtwSections),
             _buildRoomCode(),
           ],
         ),
@@ -71,32 +143,129 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
     );
   }
 
+  Widget _buildPlayers(PlayerModel myPlayer) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 400),
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.easeInCubic,
+      child: _hasOpponent
+          ? _buildConnectedPlayers(myPlayer)
+          : _buildWaitingPlayer(myPlayer),
+    );
+  }
+
+  Widget _buildWaitingPlayer(PlayerModel player) {
+    return Column(
+      key: const ValueKey('waiting-player'),
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        PlayerAvatarWidget(player: player, isMe: true, isTurn: false),
+        SizedBox(height: Dimens.spaceBtwItems),
+        _buildPlayerName(player),
+      ],
+    );
+  }
+
+  Widget _buildConnectedPlayers(PlayerModel myPlayer) {
+    final opponent = _opponent;
+
+    if (opponent == null) {
+      return _buildWaitingPlayer(myPlayer);
+    }
+
+    return Row(
+      key: const ValueKey('connected-players'),
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _buildPlayerColumn(player: myPlayer, isMe: true),
+        SizedBox(width: Dimens.spaceBtwSections),
+        _buildOpponentColumn(opponent),
+      ],
+    );
+  }
+
+  Widget _buildPlayerColumn({required PlayerModel player, required bool isMe}) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        PlayerAvatarWidget(player: player, isMe: isMe, isTurn: false),
+        SizedBox(height: Dimens.spaceBtwItems),
+        _buildPlayerName(player),
+      ],
+    );
+  }
+
+  Widget _buildOpponentColumn(PlayerModel player) {
+    return FadeTransition(
+      opacity: _opponentFade,
+      child: SlideTransition(
+        position: _opponentSlide,
+        child: ScaleTransition(
+          scale: _opponentScale,
+          child: _buildPlayerColumn(player: player, isMe: false),
+        ),
+      ),
+    );
+  }
+
   Widget _buildPlayerName(PlayerModel player) {
-    final color = player.symbol == PlayerSymbol.x
-        ? AppColors.neonCyan
-        : AppColors.neonPink;
+    final textTheme = Theme.of(context).textTheme;
 
     return Column(
+      mainAxisSize: MainAxisSize.min,
+      spacing: Dimens.four,
       children: [
         Text(
           player.name,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: textTheme.titleMedium?.copyWith(
             color: AppColors.textPrimary,
-            fontSize: 20,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
           ),
         ),
-        const SizedBox(height: 4),
         Text(
           'PLAYER ${player.symbol.value.toUpperCase()}',
-          style: TextStyle(
-            color: color,
-            fontSize: 9,
+          style: textTheme.labelSmall?.copyWith(
+            color: _symbolColor(player.symbol),
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.8,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatus() {
+    final textTheme = Theme.of(context).textTheme;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      spacing: Dimens.six,
+      children: [
+        if (!_hasOpponent)
+          _buildWaitingIndicator()
+        else
+          Icon(
+            Icons.check_circle_outline_rounded,
+            color: AppColors.neonGreen,
+            size: Dimens.iconLg,
+          ),
+        Text(
+          _statusTitle,
+          textAlign: TextAlign.center,
+          style: textTheme.titleMedium?.copyWith(
+            color: AppColors.textPrimary,
             fontWeight: FontWeight.w700,
-            letterSpacing: 2,
+          ),
+        ),
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 300),
+          child: Text(
+            _statusSubtitle,
+            textAlign: TextAlign.center,
+            style: textTheme.bodySmall?.copyWith(
+              color: AppColors.textSecondary,
+            ),
           ),
         ),
       ],
@@ -104,170 +273,136 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
   }
 
   Widget _buildWaitingIndicator() {
-    return SizedBox(
-      width: 54,
-      height: 54,
+    return SizedBox.square(
+      dimension: Dimens.sixtyFour,
       child: AnimatedBuilder(
-        animation: _animationController,
+        animation: _waitingAnimationController,
         builder: (context, child) {
           return CustomPaint(
-            painter: _WaitingIndicatorPainter(
-              progress: _animationController.value,
+            painter: WaitingIndicatorPainter(
+              progress: _waitingAnimationController.value,
             ),
             child: child,
           );
         },
         child: Icon(
-          _waitingIcon,
+          Icons.people_outline_rounded,
           color: AppColors.neonPurple,
-          size: 21,
+          size: Dimens.iconMd,
         ),
       ),
     );
   }
 
-  IconData get _waitingIcon {
-    if (widget.waitingForNextRound) {
-      return Icons.replay_rounded;
+  Widget _buildAction() {
+    // Nobody should have an action while waiting for the second player.
+    if (!_hasOpponent) {
+      return const SizedBox.shrink();
     }
 
-    if (widget.room.players.length < 2) {
-      return Icons.people_outline_rounded;
+    // Only the host can start the game.
+    if (_isHost) {
+      return _buildStartButton();
     }
 
-    final readyPlayers = widget.room.players
-        .where((player) => player.isReady)
-        .length;
-
-    if (readyPlayers == 2) {
-      return Icons.play_arrow_rounded;
-    }
-
-    if (readyPlayers == 1) {
-      return Icons.person_outline_rounded;
-    }
-
-    return Icons.sports_esports_outlined;
+    // Joiner waits for the host.
+    return _buildWaitingForHost();
   }
 
-  Widget _buildWaitingInfo() {
-    final title = _waitingTitle;
-    final subtitle = _waitingSubtitle;
-
-    return Column(
-      children: [
-        Text(
-          title,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 13,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 1.6,
-          ),
+  Widget _buildStartButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: FilledButton.icon(
+        onPressed: widget.onStartGame,
+        icon: const Icon(Icons.play_arrow_rounded),
+        label: Text(
+          widget.waitingForNextRound ? 'START NEXT ROUND' : 'START GAME',
         ),
-        const SizedBox(height: 6),
-        Text(
-          subtitle,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 11,
-          ),
+        style: FilledButton.styleFrom(
+          backgroundColor: AppColors.neonPurple,
+          foregroundColor: AppColors.textPrimary,
+          padding: Dimens.edgeInsets16,
+          shape: RoundedRectangleBorder(borderRadius: Dimens.radius12),
         ),
-      ],
+      ),
     );
   }
 
-  String get _waitingTitle {
-    if (widget.waitingForNextRound) {
-      return 'WAITING FOR NEXT ROUND';
-    }
-
-    if (widget.room.players.length < 2) {
-      return 'WAITING FOR PLAYER';
-    }
-
-    final readyPlayers = widget.room.players
-        .where((player) => player.isReady)
-        .length;
-
-    if (readyPlayers == 2) {
-      return 'STARTING ROUND';
-    }
-
-    if (readyPlayers == 1) {
-      return 'WAITING FOR PLAYER TO READY';
-    }
-
-    return 'READY UP TO START';
-  }
-
-  String get _waitingSubtitle {
-    if (widget.waitingForNextRound) {
-      return 'Both players need to ready up for the next round';
-    }
-
-    if (widget.room.players.length < 2) {
-      return 'Share your room code to invite a player';
-    }
-
-    final readyPlayers = widget.room.players
-        .where((player) => player.isReady)
-        .length;
-
-    if (readyPlayers == 2) {
-      return 'Both players are ready';
-    }
-
-    if (readyPlayers == 1) {
-      return 'Waiting for the other player to ready up';
-    }
-
-    return 'Both players must ready up to begin';
-  }
-
-  Widget _buildRoomCode() {
-    return Column(
-      spacing: 8,
-      children: [
-        const Text(
-          'ROOM CODE',
-          style: TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 9,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 2,
+  Widget _buildWaitingForHost() {
+    return Container(
+      width: double.infinity,
+      padding: Dimens.edgeInsets14,
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        borderRadius: Dimens.radius12,
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.hourglass_top_rounded,
+            color: AppColors.neonCyan,
+            size: Dimens.iconSm,
           ),
-        ),
-        TextButton.icon(
-          style: TextButton.styleFrom(
-            iconAlignment: IconAlignment.end,
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 10,
-            ),
-            backgroundColor: AppColors.surface,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: const BorderSide(
-                color: AppColors.border,
+          SizedBox(width: Dimens.eight),
+          Flexible(
+            child: Text(
+              'WAITING FOR HOST TO START',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
-          onPressed: _copyRoomCode,
-          icon: const Icon(
-            Icons.copy_rounded,
-            color: AppColors.neonCyan,
-            size: 18,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRoomCode() {
+    final textTheme = Theme.of(context).textTheme;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      spacing: Dimens.eight,
+      children: [
+        Text(
+          'ROOM CODE',
+          style: textTheme.labelMedium?.copyWith(
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 1.2,
           ),
-          label: Text(
-            widget.room.code,
-            style: const TextStyle(
-              color: AppColors.neonCyan,
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 4,
+        ),
+        Material(
+          color: AppColors.card,
+          borderRadius: Dimens.radius12,
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: _copyRoomCode,
+            child: Padding(
+              padding: Dimens.edgeInsets12,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    widget.room.roomCode,
+                    style: textTheme.titleLarge?.copyWith(
+                      color: AppColors.neonCyan,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 4,
+                    ),
+                  ),
+                  SizedBox(width: Dimens.eight),
+                  Icon(
+                    Icons.copy_rounded,
+                    color: AppColors.neonCyan,
+                    size: Dimens.iconSm,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -275,66 +410,49 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
     );
   }
 
+  String get _statusTitle {
+    // Host has created the room and is waiting for someone to join.
+    if (!_hasOpponent) {
+      return _isHost ? 'WAITING FOR PLAYER' : 'WAITING FOR HOST';
+    }
+
+    // Both players are connected.
+    if (widget.waitingForNextRound) {
+      return _isHost ? 'READY FOR NEXT ROUND' : 'WAITING FOR NEXT ROUND';
+    }
+
+    // Initial game: opponent has joined.
+    return _isHost ? 'PLAYER JOINED' : 'WAITING FOR HOST';
+  }
+
+  String get _statusSubtitle {
+    // Only the host can be alone in the room.
+    if (!_hasOpponent) {
+      return _isHost
+          ? 'Share your room code to invite a player'
+          : 'Waiting for the host to start the game';
+    }
+
+    // Next round.
+    if (widget.waitingForNextRound) {
+      return _isHost
+          ? 'Both players are back. Start when you are ready.'
+          : 'Waiting for the host to start the next round';
+    }
+
+    // Initial game.
+    return _isHost
+        ? 'Your opponent has joined. Start the game when ready.'
+        : 'Your opponent has joined. Waiting for the host to start.';
+  }
+
+  Color _symbolColor(PlayerSymbol symbol) {
+    return symbol == PlayerSymbol.x ? AppColors.neonCyan : AppColors.neonPink;
+  }
+
   void _copyRoomCode() {
-    Clipboard.setData(
-      ClipboardData(text: widget.room.code),
-    );
+    Clipboard.setData(ClipboardData(text: widget.room.roomCode));
 
-    SnackbarUtils.showSuccess(
-      'Room code copied',
-    );
-  }
-}
-
-class _WaitingIndicatorPainter extends CustomPainter {
-  const _WaitingIndicatorPainter({
-    required this.progress,
-  });
-
-  final double progress;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(
-      size.width / 2,
-      size.height / 2,
-    );
-
-    final radius = size.width / 2 - 3;
-
-    final backgroundPaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1
-      ..color = AppColors.border;
-
-    canvas.drawCircle(
-      center,
-      radius,
-      backgroundPaint,
-    );
-
-    final progressPaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2
-      ..strokeCap = StrokeCap.round
-      ..color = AppColors.neonPurple;
-
-    canvas.drawArc(
-      Rect.fromCircle(
-        center: center,
-        radius: radius,
-      ),
-      progress * 2 * 3.14159265359,
-      4.2,
-      false,
-      progressPaint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(
-      covariant _WaitingIndicatorPainter oldDelegate,
-      ) {
-    return oldDelegate.progress != progress;
+    SnackbarUtils.showSuccess('Room code copied');
   }
 }
