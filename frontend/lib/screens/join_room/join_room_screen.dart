@@ -6,7 +6,6 @@ class JoinRoomScreen extends GetView<RoomController> {
   @override
   Widget build(BuildContext context) {
     return NeonBackgroundWidget(
-      needScroll: false,
       title: 'JOIN ROOM',
       bottomNavigationBar: Obx(
         () => NeonElevatedButton(
@@ -25,6 +24,9 @@ class JoinRoomScreen extends GetView<RoomController> {
         onGenerateRandomName: controller.generateRandomName,
         onPasteCode: controller.pasteCode,
         onJoinRoom: controller.joinRoom,
+        onJoinPublicRoom: controller.joinPublicRoom,
+        onRefresh: controller.refreshRooms,
+        rooms: controller.rooms,
       ),
     );
   }

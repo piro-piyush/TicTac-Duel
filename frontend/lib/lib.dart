@@ -2,6 +2,7 @@ export 'dart:async' hide AsyncError;
 export 'dart:convert';
 
 export 'package:flutter/material.dart';
+export 'package:flutter_secure_storage/flutter_secure_storage.dart';
 export 'package:flutter_confetti/flutter_confetti.dart';
 export 'package:flutter_dotenv/flutter_dotenv.dart';
 export 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -14,7 +15,6 @@ export 'package:lottie/lottie.dart';
 export 'package:uuid/uuid.dart';
 export 'package:get/get.dart';
 
-export 'package:shared_preferences/shared_preferences.dart';
 
 export 'constants/constants.dart';
 export 'models/models.dart';

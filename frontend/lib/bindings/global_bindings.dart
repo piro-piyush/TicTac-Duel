@@ -17,12 +17,17 @@ class GlobalBindings extends Bindings {
       permanent: true,
     );
 
+    Get.put<LocalStorageService>(
+      LocalStorageService(storage: FlutterSecureStorage()),
+      permanent: true,
+    );
+
     // =========================================================================
     // PLAYER
     // =========================================================================
 
     Get.put<PlayerIdentityService>(
-      PlayerIdentityService(Get.find<SharedPreferences>()),
+      PlayerIdentityService(storage: Get.find<LocalStorageService>()),
       permanent: true,
     );
 
@@ -69,7 +74,11 @@ class GlobalBindings extends Bindings {
     // =========================================================================
 
     Get.put<MusicController>(
-      MusicController(player: AudioPlayer(), effectPlayer: AudioPlayer()),
+      MusicController(
+        player: AudioPlayer(),
+        effectPlayer: AudioPlayer(),
+        storage: Get.find<LocalStorageService>(),
+      ),
       permanent: true,
     );
   }
