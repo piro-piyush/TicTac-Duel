@@ -3,7 +3,6 @@ import 'package:tictac_duel/lib.dart';
 class GameScreen extends GetView<GameController> {
   const GameScreen({super.key});
 
-
   @override
   Widget build(BuildContext context) {
     return Obx(() {
@@ -74,7 +73,7 @@ class GameScreen extends GetView<GameController> {
         final horizontalPadding = isCompact ? 4.0 : 12.0;
         final sectionSpacing = isCompact ? 12.0 : 18.0;
 
-        final mySocketId = controller.socketId!;
+        final playerId = controller.playerId;
 
         return Padding(
           padding: EdgeInsets.fromLTRB(
@@ -87,13 +86,13 @@ class GameScreen extends GetView<GameController> {
             children: [
               GameRoundIndicatorWidget(room: room, compact: isCompact),
               SizedBox(height: sectionSpacing),
-              _buildPlayers(room, mySocketId, compact: isCompact),
+              _buildPlayers(room, playerId, compact: isCompact),
               SizedBox(height: sectionSpacing),
               _buildBoard(room, isWide: isWide),
               SizedBox(height: sectionSpacing),
               GameStatusWidget(
                 room: room,
-                webSocketId: mySocketId,
+                playerId: playerId,
                 compact: isCompact,
               ),
             ],
@@ -165,7 +164,7 @@ class GameScreen extends GetView<GameController> {
 
   Widget _buildPlayers(
     RoomModel room,
-    String mySocketId, {
+    String playerId, {
     required bool compact,
   }) {
     return Row(
@@ -173,23 +172,21 @@ class GameScreen extends GetView<GameController> {
       children: [
         Expanded(
           child: GamePlayerCardWidget(
-            webSocketId: mySocketId,
             player: room.players[0],
             isTurn: room.turnIndex == 0,
             theme: room.theme,
             compact: compact,
-            isMe: mySocketId == room.players[0].socketId,
+            isMe: playerId == room.players[0].id,
           ),
         ),
         VersusWidget(compact: compact),
         Expanded(
           child: GamePlayerCardWidget(
-            webSocketId: mySocketId,
             player: room.players[1],
             isTurn: room.turnIndex == 1,
             theme: room.theme,
             compact: compact,
-            isMe: mySocketId == room.players[1].socketId,
+            isMe: playerId == room.players[1].id,
           ),
         ),
       ],

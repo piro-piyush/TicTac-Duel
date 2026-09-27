@@ -3,11 +3,9 @@ import 'package:tictac_duel/lib.dart';
 class GameController extends GetxController {
   GameController({
     required this.id,
-    required this._socketService,
     required this._roomSocketService,
     required this._musicController,
     required this._playerController,
-    required this._roomApiService,
   });
 
   final String id;
@@ -16,15 +14,11 @@ class GameController extends GetxController {
   // DEPENDENCIES
   // ===========================================================================
 
-  final SocketService _socketService;
-
   final RoomSocketService _roomSocketService;
 
   final MusicController _musicController;
 
   final PlayerController _playerController;
-
-  final RoomApiService _roomApiService;
 
   // ===========================================================================
   // STATE
@@ -70,7 +64,7 @@ class GameController extends GetxController {
 
   int get animatedRound => _animatedRound.value;
 
-  String? get socketId => _socketService.socketId;
+  String get playerId => _playerController.playerId;
 
   // ===========================================================================
   // INITIALIZATION
@@ -88,14 +82,9 @@ class GameController extends GetxController {
       _isLoading.value = true;
       _errorMessage.value = null;
 
-      await _loadRoom();
-
       _listenToSocketEvents();
 
-      _socketService.connect(
-        roomCode: _room.value!.code,
-        playerId: _playerController.playerId,
-      );
+      await _roomSocketService.connect(id: id, playerId: playerId);
     } catch (error) {
       _errorMessage.value = error.toString();
     } finally {
@@ -103,25 +92,40 @@ class GameController extends GetxController {
     }
   }
 
-  Future<void> _loadRoom() async {
-    final loadedRoom = await _roomApiService.getRoom(id);
-
-    _setRoom(loadedRoom);
-  }
-
   // ===========================================================================
   // SOCKET
   // ===========================================================================
 
   void _listenToSocketEvents() {
-    // Connect the room/game socket listeners here.
-    //
-    // Example:
-    //
-    // roomSocketService.onRoomUpdated(_handleRoomUpdated);
-    // roomSocketService.onMoveMade(_handleMoveMade);
-    // roomSocketService.onRoundResult(_handleRoundResult);
+    _roomSocketService.onRoomConnected(_handleRoomConnected);
+
+    _roomSocketService.onReadyUpdated(_handleReadyUpdated);
+
+    _roomSocketService.onMoveMade(_handleMoveMade);
+
+    _roomSocketService.onRoundResult(_handleRoundResult);
+
+    _roomSocketService.onRoomError(_handleRoomError);
   }
+
+  void _handleRoomConnected(RoomModel connectedRoom) {
+    _setRoom(connectedRoom);
+
+    _infoMessage.value = null;
+    _errorMessage.value = null;
+  }
+
+  void _handleReadyUpdated(RoomModel updatedRoom) {
+    _setRoom(updatedRoom);
+  }
+
+  void _handleRoomError(String message) {
+    setError(message);
+  }
+
+  // ===========================================================================
+  // ROOM STATE
+  // ===========================================================================
 
   void _setRoom(RoomModel value) {
     final previousRound = _room.value?.currentRound;
@@ -178,13 +182,29 @@ class GameController extends GetxController {
 
   bool get isMyTurn {
     final currentRoom = room;
-    final currentSocketId = _socketService.socketId;
 
     if (currentRoom == null) {
       return false;
     }
 
-    return currentRoom.turn?.socketId == currentSocketId;
+    return currentRoom.turn?.id == _playerController.playerId;
+  }
+
+  // ===========================================================================
+  // READY
+  // ===========================================================================
+
+  void toggleReady() {
+    final currentRoom = room;
+
+    if (currentRoom == null) {
+      return;
+    }
+
+    _roomSocketService.toggleReady(
+      roomCode: currentRoom.code,
+      isReady: !amIReady,
+    );
   }
 
   // ===========================================================================
@@ -193,7 +213,6 @@ class GameController extends GetxController {
 
   void makeMove(int index) {
     final currentRoom = room;
-    final currentSocketId = _socketService.socketId;
 
     if (currentRoom == null) {
       return;
@@ -237,15 +256,30 @@ class GameController extends GetxController {
   // ROUND RESULT
   // ===========================================================================
 
+  void _handleRoundResult({
+    required RoomModel room,
+    required String winnerSocketId,
+    required List<int> winningIndexes,
+    required int completedRound,
+    required bool gameFinished,
+  }) {
+    _setRoom(room);
+
+    setWinningIndexes(winningIndexes.toSet());
+
+    /*
+     * Create GameRoundResultModel here once its constructor
+     * is available.
+     */
+
+    if (gameFinished) {
+      setInfo('Game completed.');
+    }
+  }
+
   void prepareNextRound() {
     _roundResult.value = null;
-
-    // Call the socket action responsible for preparing/starting
-    // the next round here.
-    //
-    // roomSocketService.prepareNextRound(
-    //   roomCode: roomCode,
-    // );
+    _winningIndexes.clear();
   }
 
   // ===========================================================================
@@ -269,7 +303,7 @@ class GameController extends GetxController {
   }
 
   // ===========================================================================
-  // STATE UPDATES
+  // BOARD STATE
   // ===========================================================================
 
   void updateBoardValue(int index, PlayerSymbol symbol) {
@@ -298,35 +332,27 @@ class GameController extends GetxController {
     final currentRoom = room;
 
     _board.assignAll(
-      List<PlayerSymbol?>.filled(currentRoom?.boardSize ?? 9, null),
+      List<PlayerSymbol?>.filled(
+        currentRoom?.boardSize ?? GameConstants.boardSize,
+        null,
+      ),
     );
 
     _winningIndexes.clear();
   }
 
   // ===========================================================================
-  // SOCKET RESPONSE HANDLERS
+  // MOVE RESPONSE
   // ===========================================================================
 
-  void handleRoomUpdated(RoomModel updatedRoom) {
-    _setRoom(updatedRoom);
-  }
-
-  void handleMoveMade({
-    required RoomModel updatedRoom,
+  void _handleMoveMade({
+    required RoomModel room,
     required int index,
     required PlayerSymbol symbol,
   }) {
-    _setRoom(updatedRoom);
+    _setRoom(room);
+
     updateBoardValue(index, symbol);
-  }
-
-  void handleRoundResult(GameRoundResultModel result) {
-    _roundResult.value = result;
-
-    if (result.winningIndexes.isNotEmpty) {
-      setWinningIndexes(result.winningIndexes);
-    }
   }
 
   // ===========================================================================
@@ -335,12 +361,13 @@ class GameController extends GetxController {
 
   @override
   void onClose() {
-    // Remove room/game socket listeners here if your
-    // RoomSocketService exposes listener removal.
-    //
-    // roomSocketService.removeListeners();
+    _roomSocketService.offRoomConnected();
+    _roomSocketService.offReadyUpdated();
+    _roomSocketService.offMoveMade();
+    _roomSocketService.offRoundResult();
+    _roomSocketService.offRoomError();
 
-    _socketService.disconnect();
+    _roomSocketService.disconnect();
 
     super.onClose();
   }

@@ -2,7 +2,6 @@ import 'package:tictac_duel/lib.dart';
 
 class GamePlayerCardWidget extends StatelessWidget {
   final PlayerModel player;
-  final String? webSocketId;
   final bool isMe;
   final bool isTurn;
   final RoomTheme theme;
@@ -11,7 +10,6 @@ class GamePlayerCardWidget extends StatelessWidget {
   const GamePlayerCardWidget({
     super.key,
     required this.player,
-    this.webSocketId,
     required this.isMe,
     required this.isTurn,
     required this.theme,

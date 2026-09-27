@@ -12,11 +12,10 @@ class GameBinding extends Bindings {
     Get.put<GameController>(
       GameController(
         id: id,
-        socketService: Get.find<SocketService>(),
+        playerController: Get.find<PlayerController>(),
         roomSocketService: Get.find<RoomSocketService>(),
         musicController: Get.find<MusicController>(),
-        playerController: Get.find<PlayerController>(),
-        roomApiService: Get.find<RoomApiService>(),
+        // roomApiService: Get.find<RoomApiService>(),
       ),
     );
   }
