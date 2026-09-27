@@ -14,23 +14,17 @@ class RoomSocketService {
     required String playerId,
     required void Function(RoomModel room) onConnected,
   }) async {
-    _socket.on(
-      RoomSocketEvents.roomConnected,
-          (response) {
-        final room = _parseRoom(response);
+    _socket.on(RoomSocketEvents.roomConnected, (response) {
+      final room = _parseRoom(response);
 
-        if (room == null) return;
+      if (room == null) return;
 
-        onConnected(room);
-      },
-    );
+      onConnected(room);
+    });
 
     await _socket.connect();
 
-    connectRoom(
-      roomCode: roomCode,
-      playerId: playerId,
-    );
+    connectRoom(roomCode: roomCode, playerId: playerId);
   }
 
   void disconnect() {
@@ -46,6 +40,10 @@ class RoomSocketService {
       'roomCode': roomCode,
       'playerId': playerId,
     });
+  }
+
+  void startGame({required String roomCode}) {
+    _socket.emit(RoomSocketEvents.startGame, {'roomCode': roomCode});
   }
 
   // ===========================================================================
@@ -71,8 +69,8 @@ class RoomSocketService {
     });
   }
 
-  void toggleReady({required String roomCode, required bool isReady}) {
-    _socket.emit(RoomSocketEvents.toggleReady, {
+  void setReady({required String roomCode, required bool isReady}) {
+    _socket.emit(RoomSocketEvents.setReady, {
       'roomCode': roomCode,
       'isReady': isReady,
     });
@@ -94,7 +92,63 @@ class RoomSocketService {
     _onRoomEvent(RoomSocketEvents.readyUpdated, callback);
   }
 
+  void onRoundStarted(void Function(RoomModel room) callback) {
+    _onRoomEvent(RoomSocketEvents.roundStarted, callback);
+  }
 
+  void onGameDismissed(
+    void Function({
+      required String winnerPlayerId,
+      required String disconnectedPlayerId,
+      required String reason,
+    })
+    callback,
+  ) {
+    _socket.on(RoomSocketEvents.gameDismissed, (response) {
+      final result = _parseGameDismissed(response);
+
+      if (result == null) return;
+
+      callback(
+        winnerPlayerId: result.winnerPlayerId,
+        disconnectedPlayerId: result.disconnectedPlayerId,
+        reason: result.reason,
+      );
+    });
+  }
+
+  // ===========================================================================
+  // GAME DISMISSED PARSING
+  // ===========================================================================
+
+  _GameDismissedResult? _parseGameDismissed(dynamic response) {
+    if (response is! Map || response['success'] != true) {
+      return null;
+    }
+
+    final data = response['data'];
+
+    if (data is! Map) {
+      return null;
+    }
+
+    final winnerPlayerId = data['winnerPlayerId'];
+    final disconnectedPlayerId = data['disconnectedPlayerId'];
+    final reason = data['reason'];
+
+    if (winnerPlayerId is! String ||
+        disconnectedPlayerId is! String ||
+        reason is! String ||
+        reason.isEmpty) {
+      return null;
+    }
+
+    return _GameDismissedResult(
+      winnerPlayerId: winnerPlayerId,
+      disconnectedPlayerId: disconnectedPlayerId,
+      reason: reason,
+    );
+  }
 
   void onPlayerJoined(void Function(RoomModel room) callback) {
     _onRoomEvent(RoomSocketEvents.playerJoined, callback);
@@ -104,8 +158,15 @@ class RoomSocketService {
     _onRoomEvent(RoomSocketEvents.playerLeft, callback);
   }
 
+  void onRoomClosed(void Function(String reason) callback) {
+    _socket.on(RoomSocketEvents.roomClosed, (response) {
+      final reason = _parseReason(response);
 
-
+      if (reason != null) {
+        callback(reason);
+      }
+    });
+  }
 
   // ===========================================================================
   // MOVE EVENTS
@@ -290,6 +351,26 @@ class RoomSocketService {
     }
   }
 
+  String? _parseReason(dynamic response) {
+    if (response is! Map || response['success'] != true) {
+      return null;
+    }
+
+    final data = response['data'];
+
+    if (data is! Map) {
+      return null;
+    }
+
+    final reason = data['reason'];
+
+    if (reason is! String || reason.isEmpty) {
+      return null;
+    }
+
+    return reason;
+  }
+
   // ===========================================================================
   // ROUND RESULT PARSING
   // ===========================================================================
@@ -365,4 +446,16 @@ class _RoundResult {
   final List<int> winningIndexes;
   final int completedRound;
   final bool gameFinished;
+}
+
+class _GameDismissedResult {
+  const _GameDismissedResult({
+    required this.winnerPlayerId,
+    required this.disconnectedPlayerId,
+    required this.reason,
+  });
+
+  final String winnerPlayerId;
+  final String disconnectedPlayerId;
+  final String reason;
 }

@@ -302,30 +302,17 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
 
     // Only the host can start the game.
     if (_isHost) {
-      return _buildStartButton();
-    }
-
-    // Joiner waits for the host.
-    return _buildWaitingForHost();
-  }
-
-  Widget _buildStartButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: FilledButton.icon(
+      return ElevatedButton.icon(
         onPressed: widget.onStartGame,
         icon: const Icon(Icons.play_arrow_rounded),
         label: Text(
           widget.waitingForNextRound ? 'START NEXT ROUND' : 'START GAME',
         ),
-        style: FilledButton.styleFrom(
-          backgroundColor: AppColors.neonPurple,
-          foregroundColor: AppColors.textPrimary,
-          padding: Dimens.edgeInsets16,
-          shape: RoundedRectangleBorder(borderRadius: Dimens.radius12),
-        ),
-      ),
-    );
+      );
+    }
+
+    // Joiner waits for the host.
+    return _buildWaitingForHost();
   }
 
   Widget _buildWaitingForHost() {
@@ -443,7 +430,7 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
     // Initial game.
     return _isHost
         ? 'Your opponent has joined. Start the game when ready.'
-        : 'Your opponent has joined. Waiting for the host to start.';
+        : 'Waiting for the host to start.';
   }
 
   Color _symbolColor(PlayerSymbol symbol) {

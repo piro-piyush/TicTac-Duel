@@ -2,6 +2,7 @@ class RoomSocketEvents {
   RoomSocketEvents._();
 
   // Room connection
+  static const startGame = 'start_game';
   static const connectRoom = 'connect_room';
   static const roomConnected = 'room_connected';
 
@@ -11,14 +12,18 @@ class RoomSocketEvents {
 
   // Game result
   static const submitGameResult = 'submit_game_result';
+  static const roundStarted = 'round_started';
   static const roundResult = 'round_result';
 
   // Ready state
-  static const toggleReady = 'toggle_ready';
+  static const setReady = 'set_ready';
   static const readyUpdated = 'ready_updated';
 
   static const playerJoined = 'player_joined';
   static const playerLeft = 'player_left';
+
+  static const gameDismissed = 'game_dismissed';
+  static const roomClosed = 'room_closed';
 
   // Errors
   static const roomError = 'room_error';

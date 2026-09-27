@@ -26,9 +26,7 @@ class PlayerModel {
     return PlayerModel(
       id: json['id'] as String? ?? '',
       name: json['name'] as String? ?? '',
-      symbol: PlayerSymbol.fromValue(
-        json['symbol'] as String? ?? '',
-      ),
+      symbol: PlayerSymbol.fromValue(json['symbol'] as String? ?? ''),
       // socketId: json['socketId'] as String? ?? '',
       points: (json['points'] as num?)?.toInt() ?? 0,
       isReady: json['isReady'] as bool? ?? false,
@@ -37,6 +35,5 @@ class PlayerModel {
 
   /// Avatar is based on the persistent player ID so it remains
   /// the same even if the player reconnects with a new socket ID.
-  String get imageUrl =>
-      'https://api.dicebear.com/10.x/pixelbot/svg?seed=$id';
+  String get imageUrl => 'https://api.dicebear.com/10.x/pixelbot/svg?seed=$id';
 }
