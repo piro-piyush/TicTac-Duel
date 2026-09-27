@@ -20,6 +20,7 @@ class AppColors {
 
   // Text
   static const Color textPrimary = Color(0xFFF5F7FF);
+  static const Color transparent = Colors.transparent;
   static const Color textSecondary = Color(0xFF929BB0);
 
   // UI

@@ -9,9 +9,11 @@ class CreateRoomContentWidget extends StatelessWidget {
     required this.selectedSymbol,
     required this.selectedTheme,
     required this.selectedMaxRounds,
+    required this.isRoomPrivate,
     required this.onSymbolChanged,
     required this.onThemeChanged,
     required this.onRoundsChanged,
+    required this.onPrivateRoomChanged,
     required this.onGenerateRandomName,
     required this.rooms,
     required this.onRefresh,
@@ -26,10 +28,12 @@ class CreateRoomContentWidget extends StatelessWidget {
   final PlayerSymbol selectedSymbol;
   final RoomTheme selectedTheme;
   final int selectedMaxRounds;
+  final bool isRoomPrivate;
 
   final ValueChanged<PlayerSymbol> onSymbolChanged;
   final ValueChanged<RoomTheme> onThemeChanged;
   final ValueChanged<int> onRoundsChanged;
+  final ValueChanged<bool> onPrivateRoomChanged;
 
   final VoidCallback onGenerateRandomName;
 
@@ -67,11 +71,17 @@ class CreateRoomContentWidget extends StatelessWidget {
           onThemeChanged: onThemeChanged,
         ),
 
-        PublicRoomWidget(
-          rooms: rooms,
-          onRefresh: onRefresh,
-          onJoinRoom: onJoinRoom,
+        RoomPrivacyWidget(
+          isPrivate: isRoomPrivate,
+          onChanged: onPrivateRoomChanged,
         ),
+
+        if (!isRoomPrivate)
+          PublicRoomWidget(
+            rooms: rooms,
+            onRefresh: onRefresh,
+            onJoinRoom: onJoinRoom,
+          ),
 
         const CreateRoomInfoWidget(),
       ],

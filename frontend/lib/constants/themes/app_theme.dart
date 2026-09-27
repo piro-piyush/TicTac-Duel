@@ -32,11 +32,20 @@ class AppTheme {
         surfaceContainerHighest: AppColors.card,
       ),
 
-      appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.background,
+      appBarTheme: AppBarTheme(
+        backgroundColor: AppColors.transparent,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
         centerTitle: true,
+        titleTextStyle: TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: Dimens.fontSm,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.5,
+          height: 1.2,
+        ),
       ),
 
       textTheme: TextTheme(
