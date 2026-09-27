@@ -11,3 +11,4 @@ export 'public_room_widget.dart';
 export 'public_room_card_widget.dart';
 export 'info_item_widget.dart';
 export 'create_room_info_widget.dart';
+export 'room_privacy_widget.dart';

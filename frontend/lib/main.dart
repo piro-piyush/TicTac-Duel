@@ -43,8 +43,7 @@ class MyApp extends StatelessWidget {
       getPages: AppPages.routes,
       builder: (context, child) {
         return Listener(
-          onPointerDown: (_) =>
-            Get.find<MusicController>().playTouch(),
+          onPointerDown: (_) => Get.find<MusicController>().playTouch(),
           child: child ?? const SizedBox.shrink(),
         );
       },

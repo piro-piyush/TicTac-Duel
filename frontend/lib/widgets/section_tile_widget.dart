@@ -7,6 +7,7 @@ class SectionTileWidget extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.color,
+     this.tileColor,
   }) : _type = SectionTileType.none,
        value = false,
        onChanged = null,
@@ -18,6 +19,7 @@ class SectionTileWidget extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.value,
+     this.tileColor,
     required this.color,
     required this.onChanged,
   }) : _type = SectionTileType.switchTile,
@@ -29,6 +31,7 @@ class SectionTileWidget extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.color,
+     this.tileColor,
     required this.onTap,
   }) : _type = SectionTileType.action,
        value = false,
@@ -38,6 +41,7 @@ class SectionTileWidget extends StatelessWidget {
   final String title;
   final String subtitle;
   final Color color;
+  final Color? tileColor;
 
   final bool value;
   final ValueChanged<bool>? onChanged;
@@ -51,6 +55,7 @@ class SectionTileWidget extends StatelessWidget {
 
     return ListTile(
       onTap: onTap ?? () {},
+      tileColor: tileColor,
       contentPadding: Dimens.edgeInsets16_4,
       leading: Icon(icon, color: color),
       title: Text(title, style: textTheme.labelLarge),

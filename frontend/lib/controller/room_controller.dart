@@ -141,6 +141,10 @@ class RoomController extends GetxController {
     _selectedMaxRounds.value = rounds;
   }
 
+  void setIsPrivateRoom(bool isPrivate) {
+    _isRoomPrivate.value = isPrivate;
+  }
+
   // ===========================================================================
   // CREATE ROOM
   // ===========================================================================

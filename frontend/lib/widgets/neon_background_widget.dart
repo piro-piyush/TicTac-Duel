@@ -63,7 +63,11 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
   }
 
   Color _randomNeonColor() {
-    final colors = [AppColors.neonCyan, AppColors.neonPink, AppColors.neonPurple];
+    final colors = [
+      AppColors.neonCyan,
+      AppColors.neonPink,
+      AppColors.neonPurple,
+    ];
 
     return colors[math.Random().nextInt(colors.length)];
   }
@@ -82,24 +86,33 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Listener(
+        behavior: HitTestBehavior.translucent,
         onPointerDown: _handleTap,
         child: Stack(
           fit: StackFit.expand,
           children: [
             // Base background
-            const ColoredBox(color: AppColors.background),
+            const ColoredBox(
+              color: AppColors.background,
+            ),
 
             // Ambient neon glows
             const Positioned(
               top: -140,
               right: -100,
-              child: _NeonGlow(color: AppColors.neonPurple, size: 300),
+              child: _NeonGlow(
+                color: AppColors.neonPurple,
+                size: 300,
+              ),
             ),
 
             const Positioned(
               bottom: -150,
               left: -120,
-              child: _NeonGlow(color: AppColors.neonCyan, size: 320),
+              child: _NeonGlow(
+                color: AppColors.neonCyan,
+                size: 320,
+              ),
             ),
 
             const Positioned(
@@ -116,7 +129,9 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
             if (widget.showGrid)
               const Positioned.fill(
                 child: IgnorePointer(
-                  child: CustomPaint(painter: _NeonGridPainter()),
+                  child: CustomPaint(
+                    painter: _NeonGridPainter(),
+                  ),
                 ),
               ),
 
@@ -124,7 +139,9 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
             if (widget.showParticles)
               const Positioned.fill(
                 child: IgnorePointer(
-                  child: CustomPaint(painter: _NeonParticlePainter()),
+                  child: CustomPaint(
+                    painter: _NeonParticlePainter(),
+                  ),
                 ),
               ),
 
@@ -134,7 +151,9 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
                 child: Stack(
                   children: [
                     for (final effect in _tapEffects)
-                      _TapEffectWidget(effect: effect),
+                      _TapEffectWidget(
+                        effect: effect,
+                      ),
                   ],
                 ),
               ),
@@ -153,7 +172,11 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
                         Color(0x22000000),
                         Color(0x66000000),
                       ],
-                      stops: [0.45, 0.78, 1.0],
+                      stops: [
+                        0.45,
+                        0.78,
+                        1.0,
+                      ],
                     ),
                   ),
                 ),
@@ -170,26 +193,31 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
                   child: SafeArea(
                     child: Column(
                       children: [
-                        if (widget.title != null) _buildAppBar(context),
+                        if (widget.title != null)
+                          _buildAppBar(context),
 
                         Expanded(
                           child: widget.needScroll
                               ? SingleChildScrollView(
-                                  padding:
-                                      widget.padding ?? Dimens.defaultPadding,
-                                  child: widget.child,
-                                )
+                            padding: widget.padding ??
+                                Dimens.defaultPadding,
+                            child: widget.child,
+                          )
                               : Padding(
-                                  padding:
-                                      widget.padding ?? Dimens.defaultPadding,
-                                  child: widget.child,
-                                ),
+                            padding: widget.padding ??
+                                Dimens.defaultPadding,
+                            child: widget.child,
+                          ),
                         ),
 
                         if (widget.bottomNavigationBar != null)
                           Padding(
-                            padding: (widget.padding ?? Dimens.defaultPadding)
-                                .copyWith(top: 0, bottom: 0),
+                            padding: (widget.padding ??
+                                Dimens.defaultPadding)
+                                .copyWith(
+                              top: 0,
+                              bottom: 0,
+                            ),
                             child: widget.bottomNavigationBar!,
                           ),
                       ],
@@ -204,25 +232,9 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
     );
   }
 
-  Widget _buildAppBar(BuildContext context) {
-    if (widget.title == null) {
-      return const SizedBox.shrink();
-    }
-
-    final textTheme = Theme.of(context).textTheme;
-
-    return AppBar(
-      leading: const BackButton(),
-      title: Text(
-        widget.title!,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        textAlign: TextAlign.center,
-        style: textTheme.labelLarge?.copyWith(letterSpacing: 3),
-      ),
-      actions: widget.actions,
-    );
-  }
+  Widget _buildAppBar(BuildContext context) => widget.title == null
+      ? const SizedBox.shrink()
+      : AppBar(title: Text(widget.title!), actions: widget.actions);
 }
 
 class _TapEffect {
@@ -346,7 +358,11 @@ class _NeonParticlePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final random = math.Random(42);
 
-    final colors = [AppColors.neonCyan, AppColors.neonPurple, AppColors.neonPink];
+    final colors = [
+      AppColors.neonCyan,
+      AppColors.neonPurple,
+      AppColors.neonPink,
+    ];
 
     for (var i = 0; i < 35; i++) {
       final x = random.nextDouble() * size.width;

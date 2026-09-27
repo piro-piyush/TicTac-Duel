@@ -139,3 +139,13 @@ Desktop.ini
 *.p12
 *.jks
 *.keystore
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+frontend/.env
+backend/.env
+frontend/.env.*
+backend/.env.*
