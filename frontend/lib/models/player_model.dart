@@ -5,7 +5,7 @@ class PlayerModel {
     required this.id,
     required this.name,
     required this.symbol,
-    required this.socketId,
+    // required this.socketId,
     required this.points,
     required this.isReady,
   });
@@ -17,7 +17,7 @@ class PlayerModel {
   final PlayerSymbol symbol;
 
   /// Current Socket.IO connection ID.
-  final String socketId;
+  // final String socketId;
 
   final int points;
   final bool isReady;
@@ -29,7 +29,7 @@ class PlayerModel {
       symbol: PlayerSymbol.fromValue(
         json['symbol'] as String? ?? '',
       ),
-      socketId: json['socketId'] as String? ?? '',
+      // socketId: json['socketId'] as String? ?? '',
       points: (json['points'] as num?)?.toInt() ?? 0,
       isReady: json['isReady'] as bool? ?? false,
     );

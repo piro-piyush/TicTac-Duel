@@ -2,13 +2,13 @@ import 'package:tictac_duel/lib.dart';
 
 class GameStatusWidget extends StatelessWidget {
   final RoomModel room;
-  final String? webSocketId;
+  final String playerId;
   final bool compact;
 
   const GameStatusWidget({
     super.key,
     required this.room,
-    this.webSocketId,
+    required this.playerId,
     required this.compact,
   });
 
@@ -18,7 +18,7 @@ class GameStatusWidget extends StatelessWidget {
     if (player == null) {
       return const SizedBox.shrink();
     }
-    final isMyTurn = player.socketId == webSocketId;
+    final isMyTurn = player.id == playerId;
     final color = player.symbol == PlayerSymbol.x
         ? room.theme.primary
         : room.theme.secondary;
