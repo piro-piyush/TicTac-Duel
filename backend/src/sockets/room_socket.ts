@@ -253,6 +253,130 @@ function registerRoomSocket(
     },
   );
 
+
+
+
+  socket.on(
+    ROOM_SOCKET_EVENTS.SET_READY,
+    async (): Promise<void> => {
+      try {
+        const playerId = socket.data.playerId;
+        const roomId = socket.data.roomId;
+
+        if (!playerId || !roomId) {
+          throw new Error("Player is not connected to a room");
+        }
+
+        const room = await RoomService.getRoom(roomId);
+
+        if (!room) {
+          throw new Error("Room not found");
+        }
+
+        const player = room.players.find(
+          (player) => player.id === playerId,
+        );
+
+        if (!player) {
+          throw new Error("Player is not a member of this room");
+        }
+
+        if (player.isReady) {
+          return;
+        }
+
+        await RoomService.setPlayerReady(
+          roomId,
+          playerId,
+          true,
+        );
+
+        const updatedRoom = await RoomService.getRoom(roomId);
+
+        if (!updatedRoom) {
+          throw new Error("Room not found");
+        }
+
+        io.to(roomId).emit(
+          ROOM_SOCKET_EVENTS.READY_UPDATED,
+          SocketResponse.success(updatedRoom),
+        );
+
+        const allReady = updatedRoom.players.length === 2 &&
+          updatedRoom.players.every(
+            (player) => player.isReady,
+          );
+
+        if (!allReady) {
+          return;
+        }
+
+        const startedRoom = await RoomService.startRound(roomId);
+
+        io.to(roomId).emit(
+          ROOM_SOCKET_EVENTS.ROUND_STARTED,
+          SocketResponse.success(startedRoom),
+        );
+      } catch (error: unknown) {
+        socket.emit(
+          ROOM_SOCKET_EVENTS.ROOM_ERROR,
+          SocketResponse.error(
+            error instanceof Error
+              ? error.message
+              : "Failed to set player ready",
+          ),
+        );
+      }
+    },
+  );
+
+  socket.on(
+    ROOM_SOCKET_EVENTS.START_GAME,
+    async (): Promise<void> => {
+      try {
+        const playerId = socket.data.playerId;
+        const roomId = socket.data.roomId;
+
+        if (!playerId || !roomId) {
+          throw new Error("Player is not connected to a room");
+        }
+
+        const room = await RoomService.getRoom(roomId);
+
+        if (!room) {
+          throw new Error("Room not found");
+        }
+
+        if (room.hostPlayerId !== playerId) {
+          throw new Error("Only the host can start the game");
+        }
+
+        if (room.players.length !== 2) {
+          throw new Error("Two players are required to start the game");
+        }
+
+        if (!room.players.every((player) => player.isReady)) {
+          throw new Error("Both players must be ready");
+        }
+
+        const startedRoom = await RoomService.startRound(roomId);
+
+        io.to(roomId).emit(
+          ROOM_SOCKET_EVENTS.ROUND_STARTED,
+          SocketResponse.success(startedRoom),
+        );
+      } catch (error: unknown) {
+        socket.emit(
+          ROOM_SOCKET_EVENTS.ROOM_ERROR,
+          SocketResponse.error(
+            error instanceof Error
+              ? error.message
+              : "Failed to start game",
+          ),
+        );
+      }
+    },
+  );
   // ---------------------------------------------------------------------------
   // Disconnect Player
   // ---------------------------------------------------------------------------
@@ -263,14 +387,11 @@ function registerRoomSocket(
       const roomId = socket.data.roomId;
       const playerId = socket.data.playerId;
 
-      Logger.info(
-        `Player disconnected: ${socket.id}`,
-        {
-          reason,
-          roomId,
-          playerId,
-        },
-      );
+      Logger.info(`Player disconnected: ${socket.id}`, {
+        reason,
+        roomId,
+        playerId,
+      });
 
       if (!roomId || !playerId) {
         return;
@@ -278,22 +399,28 @@ function registerRoomSocket(
 
       try {
         // -----------------------------------------------------------------------
+        // Get current room state
+        // -----------------------------------------------------------------------
+
+        const room = await RoomService.getRoom(roomId);
+
+        if (!room) {
+          Logger.info(`Room already deleted: ${roomId}`);
+          return;
+        }
+
+        // -----------------------------------------------------------------------
         // Get remaining connected players
         // -----------------------------------------------------------------------
 
-        const remainingSockets =
-          await io.in(roomId).fetchSockets();
+        const remainingSockets = await io.in(roomId).fetchSockets();
 
         const remainingPlayerIds = [
           ...new Set(
             remainingSockets
-              .map(
-                (connectedSocket) =>
-                  connectedSocket.data.playerId,
-              )
+              .map((connectedSocket) => connectedSocket.data.playerId)
               .filter(
-                (id): id is string =>
-                  typeof id === "string",
+                (id): id is string => typeof id === "string",
               ),
           ),
         ];
@@ -307,20 +434,6 @@ function registerRoomSocket(
 
           Logger.info(
             `Room deleted because all players disconnected: ${roomId}`,
-          );
-
-          return;
-        }
-
-        // -----------------------------------------------------------------------
-        // Get current room state
-        // -----------------------------------------------------------------------
-
-        const room = await RoomService.getRoom(roomId);
-
-        if (!room) {
-          Logger.info(
-            `Room already deleted: ${roomId}`,
           );
 
           return;
@@ -341,45 +454,71 @@ function registerRoomSocket(
         // -----------------------------------------------------------------------
 
         if (room.roundStatus === "playing") {
-          const gameResult = {
-            room,
+          const gameDismissed = {
             winnerPlayerId: remainingPlayerId,
-            winningIndexes: [],
-            completedRound: room.currentRound,
-            gameFinished: true,
+            disconnectedPlayerId: playerId,
+            reason: "opponent_disconnected",
           };
 
-          // Delete room from DB first.
           await RoomService.deleteRoom(roomId);
 
-          // Send calculated result to the remaining player.
           socket.to(roomId).emit(
-            ROOM_SOCKET_EVENTS.ROUND_RESULT,
-            SocketResponse.success(gameResult),
+            ROOM_SOCKET_EVENTS.GAME_DISMISSED,
+            SocketResponse.success(gameDismissed),
           );
 
           Logger.success(
-            `Player ${remainingPlayerId} won because ${playerId} disconnected`,
+            `Game dismissed: ${remainingPlayerId} won because ${playerId} disconnected`,
           );
 
           return;
         }
 
         // -----------------------------------------------------------------------
-        // Game has not started → player left
+        // Game has not started
         // -----------------------------------------------------------------------
 
+        const isHost = room.hostPlayerId === playerId;
 
-        // Delete only if you want the room removed when the remaining player
-        // should no longer keep the room.
-        //
-        // If the remaining player should be able to continue waiting,
-        // DO NOT delete here.
-        await RoomService.deleteRoom(roomId);
+        // -----------------------------------------------------------------------
+        // Host leaves → delete entire room
+        // -----------------------------------------------------------------------
+
+        if (isHost) {
+          await RoomService.deleteRoom(roomId);
+
+          socket.to(roomId).emit(
+            ROOM_SOCKET_EVENTS.ROOM_CLOSED,
+            SocketResponse.success({
+              reason: "The host has left the room.",
+            })
+          );
+
+          Logger.info(
+            `Room closed because host ${playerId} left: ${roomId}`,
+          );
+
+          return;
+        }
+        // -----------------------------------------------------------------------
+        // Guest leaves → remove only that player
+        // -----------------------------------------------------------------------
+
+        await RoomService.removePlayer(roomId, playerId);
+
+        const updatedRoom = await RoomService.getRoom(roomId);
+
+        if (!updatedRoom) {
+          Logger.info(
+            `Room was deleted after player ${playerId} left: ${roomId}`,
+          );
+
+          return;
+        }
 
         socket.to(roomId).emit(
           ROOM_SOCKET_EVENTS.PLAYER_LEFT,
-          SocketResponse.success(playerId),
+          SocketResponse.success(updatedRoom),
         );
 
         Logger.info(

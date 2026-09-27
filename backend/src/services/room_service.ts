@@ -1,4 +1,5 @@
 import {
+  and,
   eq,
   sql
 } from "drizzle-orm";
@@ -19,7 +20,6 @@ import type {
   RoomPlayer,
   SubmitGameResultParams,
 } from "../validators/room_validator.js";
-
 // -----------------------------------------------------------------------------
 // Types
 // -----------------------------------------------------------------------------
@@ -86,6 +86,7 @@ class RoomService {
           playerId,
           name: playerName,
           symbol,
+
         },
         tx,
       );
@@ -401,6 +402,89 @@ class RoomService {
     return deletedRoom !== undefined;
   }
 
+
+  async setPlayerReady(
+    roomId: string,
+    playerId: string,
+    isReady: boolean,
+  ): Promise<boolean> {
+    const [updatedPlayer] = await db
+      .update(roomPlayers)
+      .set({
+        isReady,
+      })
+      .where(
+        and(
+          eq(roomPlayers.roomId, roomId),
+          eq(roomPlayers.playerId, playerId),
+        ),
+      )
+      .returning({
+        id: roomPlayers.id,
+      });
+
+    return updatedPlayer !== undefined;
+  }
+
+  async startRound(roomId: string): Promise<Room> {
+    return db.transaction(async (tx) => {
+      const room = await this._getRoom(roomId, tx);
+
+      if (room.players.length !== 2) {
+        throw new Error("Two players are required to start the round");
+      }
+
+      const firstPlayer = room.players.find(
+        (player) => player.id === room.hostPlayerId,
+      );
+
+      if (!firstPlayer) {
+        throw new Error("Host player not found");
+      }
+
+      const nextRound = room.currentRound + 1;
+
+      await tx
+        .update(rooms)
+        .set({
+          currentRound: nextRound,
+          roundStatus: "playing",
+          turnPlayerId: firstPlayer.id,
+          turnIndex: 0,
+          updatedAt: new Date(),
+        })
+        .where(eq(rooms.id, roomId));
+
+      await tx
+        .update(roomPlayers)
+        .set({
+          isReady: false,
+        })
+        .where(eq(roomPlayers.roomId, roomId));
+
+      return this._getRoom(roomId, tx);
+    });
+  }
+
+  async removePlayer(
+    roomId: string,
+    playerId: string,
+  ): Promise<boolean> {
+    const [deletedPlayer] = await db
+      .delete(roomPlayers)
+      .where(
+        and(
+          eq(roomPlayers.roomId, roomId),
+          eq(roomPlayers.playerId, playerId),
+        ),
+      )
+      .returning({
+        id: roomPlayers.id,
+      });
+
+    return deletedPlayer !== undefined;
+  }
+
   // ---------------------------------------------------------------------------
   // Private: Get Room By ID
   // ---------------------------------------------------------------------------
@@ -530,7 +614,7 @@ class RoomService {
         name,
         symbol,
         points: 0,
-        isReady: false,
+        isReady: true,
       });
   }
 
