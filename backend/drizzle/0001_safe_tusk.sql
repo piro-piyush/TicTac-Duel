@@ -1,1 +1,0 @@
-ALTER TABLE "room_players" DROP COLUMN "socket_id";

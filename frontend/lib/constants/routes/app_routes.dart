@@ -11,7 +11,7 @@ abstract final class AppRoutes {
   static const createRoom = '/create-room';
   static const waitingRoom = '/waiting-room';
   static const joinRoom = '/join-room';
-  static const game = '/game/:id';
+  static const game = '/game/:roomCode';
   static const result = '/result';
   static const settings = '/settings';
   static const privacyPolicy = '/privacy-policy';

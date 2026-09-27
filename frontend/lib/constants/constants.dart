@@ -6,3 +6,4 @@ export 'room_socket_events.dart';
 export 'routes/routes.dart';
 // export 'themes.dart';
 export 'themes/themes.dart';
+export 'painter/painter.dart';

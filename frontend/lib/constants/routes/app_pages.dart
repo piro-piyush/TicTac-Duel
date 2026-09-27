@@ -23,7 +23,7 @@ abstract final class AppPages {
     //   page: WaitingRoomScreen.new,
     //   binding: WaitingRoomBinding(),
     // ),
-    GetPage(name: AppRoutes.game, page: GameScreen.new, binding: GameBinding()),
+    GetPage(name: AppRoutes.game, page: GameScreen.new, binding: GameBinding(),),
 
     GetPage(
       name: AppRoutes.result,

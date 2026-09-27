@@ -29,9 +29,7 @@ class CreateRoomScreen extends GetView<RoomController> {
           isRoomPrivate: controller.isRoomPrivate,
           onPrivateRoomChanged: controller.setIsPrivateRoom,
           onRefresh: controller.refreshRooms,
-          onJoinRoom: (room) {
-            // TODO: Join public room.
-          },
+          onJoinRoom: controller.joinPublicRoom,
         ),
       ),
     );
