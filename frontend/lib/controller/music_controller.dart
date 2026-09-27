@@ -4,10 +4,15 @@ import 'package:flutter/services.dart';
 import 'package:tictac_duel/lib.dart';
 
 class MusicController extends GetxController {
-  MusicController({required this._player, required this._effectPlayer});
+  MusicController({
+    required this._player,
+    required this._effectPlayer,
+    required this._storage,
+  });
 
   final AudioPlayer _player;
   final AudioPlayer _effectPlayer;
+  final LocalStorageService _storage;
 
   static const String _musicEnabledKey = 'background_music_enabled';
   static const String _effectsEnabledKey = 'sound_effects_enabled';
@@ -50,14 +55,12 @@ class MusicController extends GetxController {
       return;
     }
 
-    final prefs = Get.find<SharedPreferences>();
-
     try {
-      _isEnabled.value = prefs.getBool(_musicEnabledKey) ?? true;
+      _isEnabled.value = await _storage.getBool(_musicEnabledKey);
 
-      _effectsEnabled.value = prefs.getBool(_effectsEnabledKey) ?? true;
+      _effectsEnabled.value = await _storage.getBool(_effectsEnabledKey);
 
-      _vibrationEnabled.value = prefs.getBool(_vibrationEnabledKey) ?? true;
+      _vibrationEnabled.value = await _storage.getBool(_vibrationEnabledKey);
 
       // -----------------------------------------------------------------------
       // Background music
@@ -261,12 +264,10 @@ class MusicController extends GetxController {
       return;
     }
 
-    final prefs = Get.find<SharedPreferences>();
-
     try {
       _isEnabled.value = enabled;
 
-      await prefs.setBool(_musicEnabledKey, enabled);
+      await _storage.setBool(_musicEnabledKey, enabled);
 
       if (enabled) {
         await play();
@@ -298,12 +299,10 @@ class MusicController extends GetxController {
       return;
     }
 
-    final prefs = Get.find<SharedPreferences>();
-
     try {
       _effectsEnabled.value = enabled;
 
-      await prefs.setBool(_effectsEnabledKey, enabled);
+      await _storage.setBool(_effectsEnabledKey, enabled);
     } catch (e, st) {
       dev.log(
         'Failed to update sound effects setting: $enabled',
@@ -329,12 +328,10 @@ class MusicController extends GetxController {
       return;
     }
 
-    final prefs = Get.find<SharedPreferences>();
-
     try {
       _vibrationEnabled.value = enabled;
 
-      await prefs.setBool(_vibrationEnabledKey, enabled);
+      await _storage.setBool(_vibrationEnabledKey, enabled);
     } catch (e, st) {
       dev.log(
         'Failed to update vibration setting: $enabled',

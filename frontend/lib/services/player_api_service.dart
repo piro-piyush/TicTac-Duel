@@ -9,10 +9,10 @@ class PlayerApiService {
   // INITIALIZE PLAYER
   // ===========================================================================
 
-  Future<bool> initialize(String playerId) async {
+  Future<bool> initialize(String id) async {
     await _httpService.post<Map<String, dynamic>>(
       '/players/initialize',
-      data: {'playerId': playerId},
+      data: {'id': id},
     );
 
     return true;

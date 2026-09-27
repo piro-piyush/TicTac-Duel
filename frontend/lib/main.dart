@@ -7,9 +7,6 @@ Future<void> main() async {
 
   await _initCore();
 
-  final preferences = await SharedPreferences.getInstance();
-
-  Get.put<SharedPreferences>(preferences, permanent: true);
 
   FlutterNativeSplash.remove();
 
@@ -22,7 +19,6 @@ Future<void> main() async {
 
 Future<void> _initCore() async {
   await dotenv.load();
-  await LocalStorageUtils.init();
 }
 
 // =============================================================================
@@ -40,6 +36,7 @@ class MyApp extends StatelessWidget {
       theme: AppTheme.darkTheme,
       initialBinding: GlobalBindings(),
       initialRoute: AppRoutes.home,
+
       getPages: AppPages.routes,
       builder: (context, child) {
         return Listener(

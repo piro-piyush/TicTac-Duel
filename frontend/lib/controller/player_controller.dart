@@ -29,32 +29,36 @@ class PlayerController extends GetxController {
   }
 
   Future<void> initialize() async {
+    _isLoading.value = true;
+    _isInitialized.value = false;
+    _error.value = null;
+
     try {
-      _isLoading.value = true;
-      _error.value = null;
-      _isInitialized.value = false;
-
-      final existingPlayerId = _identityService.localPlayerId;
-
-      if (existingPlayerId != null) {
-        _playerId.value = existingPlayerId;
-        _isInitialized.value = true;
-        return;
-      }
-
-      final playerId = await _identityService.createPlayerId();
+      final playerId =
+          await _identityService.getPlayerId() ??
+          _identityService.generatePlayerId();
 
       _playerId.value = playerId;
+
+      if (_identityService.getPlayerId() == null) {
+        final saved = await _identityService.setPlayerId(playerId);
+
+        if (!saved) {
+          throw Exception('Failed to save player identity');
+        }
+      }
 
       await _playerApiService.initialize(playerId);
 
       _isInitialized.value = true;
-    } catch (error) {
+    } catch (error, stackTrace) {
       _error.value = error.toString();
+
+      LoggerUtils.error('Failed to initialize player', error, stackTrace);
     } finally {
       _isLoading.value = false;
     }
   }
 
-  Future<void> retry() async => await initialize();
+  Future<void> retry() => initialize();
 }

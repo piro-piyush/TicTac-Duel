@@ -198,14 +198,21 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
 
                         Expanded(
                           child: widget.needScroll
-                              ? SingleChildScrollView(
-                            padding: widget.padding ??
-                                Dimens.defaultPadding,
-                            child: widget.child,
+                              ? LayoutBuilder(
+                            builder: (context, constraints) {
+                              return SingleChildScrollView(
+                                padding: widget.padding ?? Dimens.defaultPadding,
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    minHeight: constraints.maxHeight,
+                                  ),
+                                  child: widget.child,
+                                ),
+                              );
+                            },
                           )
                               : Padding(
-                            padding: widget.padding ??
-                                Dimens.defaultPadding,
+                            padding: widget.padding ?? Dimens.defaultPadding,
                             child: widget.child,
                           ),
                         ),

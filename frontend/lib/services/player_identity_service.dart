@@ -1,29 +1,38 @@
 import 'package:tictac_duel/lib.dart';
 
 class PlayerIdentityService {
-  PlayerIdentityService(this._preferences);
+  PlayerIdentityService({required this._storage});
 
-  final SharedPreferences _preferences;
+  final LocalStorageService _storage;
 
   static const _playerIdKey = 'player_id';
 
-  String? get localPlayerId {
-    final playerId = _preferences.getString(_playerIdKey);
+  String generatePlayerId() => const Uuid().v4();
 
-    if (playerId == null || playerId.isEmpty) {
+  Future<String?>? getPlayerId() {
+    try {
+      return _storage.getString(_playerIdKey);
+    } catch (error, stackTrace) {
+      LoggerUtils.error('Failed to get player ID', error, stackTrace);
       return null;
     }
-
-    return playerId;
   }
 
-  Future<String> createPlayerId() async {
-    final playerId = const Uuid().v4();
-
-    await _preferences.setString(_playerIdKey, playerId);
-
-    return playerId;
+  Future<bool> setPlayerId(String playerId) async {
+    try {
+      return await _storage.setString(_playerIdKey, playerId);
+    } catch (error, stackTrace) {
+      LoggerUtils.error('Failed to save player ID', error, stackTrace);
+      return false;
+    }
   }
 
-
+  Future<bool> clearPlayerId() async {
+    try {
+      return await _storage.remove(_playerIdKey);
+    } catch (error, stackTrace) {
+      LoggerUtils.error('Failed to clear player ID', error, stackTrace);
+      return false;
+    }
+  }
 }
