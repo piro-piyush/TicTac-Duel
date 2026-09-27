@@ -2,12 +2,14 @@ import 'package:tictac_duel/constants/animation_constants.dart';
 import 'package:tictac_duel/lib.dart';
 
 class ResultController extends GetxController {
-  ResultController({required ResultModel initialState})
-    : _state = initialState.obs;
+  ResultController({
+    required ResultModel initialState,
+    required this._playerController,
+  }) : _state = initialState.obs;
 
   final Rx<ResultModel> _state;
 
-  SocketService get _socketService => Get.find<SocketService>();
+  final PlayerController _playerController;
 
   ResultModel get state => _state.value;
 
@@ -42,11 +44,11 @@ class ResultController extends GetxController {
   }
 
   bool isMe(PlayerModel player) {
-    return player.socketId == _socketService.socketId;
+    return player.id == _playerController.playerId;
   }
 
   bool isWinner(PlayerModel player) {
-    return state.gameWinner?.socketId == player.socketId;
+    return state.gameWinner?.id == player.id;
   }
 
   void goHome() {

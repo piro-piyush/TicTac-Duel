@@ -6,32 +6,28 @@ class RoomSocketService {
   final SocketService _socket;
 
   // ===========================================================================
+  // CONNECTION
+  // ===========================================================================
+
+  Future<void> connect({required String id, required String playerId}) async {
+    await _socket.connect();
+
+    connectRoom(id: id,playerId:playerId);
+  }
+
+  void disconnect() {
+    _socket.disconnect();
+  }
+
+  // ===========================================================================
   // ROOM REQUESTS
   // ===========================================================================
 
-  void createRoom({
-    required String playerName,
-    required PlayerSymbol symbol,
-    required RoomTheme theme,
-    required int maxRounds,
-  }) {
-    _socket.emit(RoomSocketEvents.createRoom, {
-      'playerName': playerName,
-      'symbol': symbol.value,
-      'theme': theme.value,
-      'maxRounds': maxRounds,
+  void connectRoom({required String id, required String playerId}) {
+    _socket.emit(RoomSocketEvents.connectRoom, {
+      'roomId': id.trim().toUpperCase(),
+      'playerId': playerId.trim().toUpperCase(),
     });
-  }
-
-  void joinRoom({required String roomCode, required String playerName}) {
-    _socket.emit(RoomSocketEvents.joinRoom, {
-      'roomCode': roomCode,
-      'playerName': playerName,
-    });
-  }
-
-  void leaveRoom({required String roomCode}) {
-    _socket.emit(RoomSocketEvents.leaveRoom, {'roomCode': roomCode});
   }
 
   // ===========================================================================
@@ -40,7 +36,7 @@ class RoomSocketService {
 
   void makeMove({required String roomCode, required int index}) {
     _socket.emit(RoomSocketEvents.makeMove, {
-      'roomCode': roomCode,
+      'roomCode': roomCode.trim().toUpperCase(),
       'index': index,
     });
   }
@@ -51,16 +47,16 @@ class RoomSocketService {
     List<int> winningIndexes = const [],
   }) {
     _socket.emit(RoomSocketEvents.submitGameResult, {
-      'roomCode': roomCode,
+      'roomCode': roomCode.trim().toUpperCase(),
       'winnerSocketId': winnerSocketId,
       'winningIndexes': winningIndexes,
     });
   }
 
-  void setPlayerReady({required String roomCode}) {
+  void toggleReady({required String roomCode, required bool isReady}) {
     _socket.emit(RoomSocketEvents.toggleReady, {
-      'roomCode': roomCode,
-      'isReady': true,
+      'roomCode': roomCode.trim().toUpperCase(),
+      'isReady': isReady,
     });
   }
 
@@ -68,45 +64,21 @@ class RoomSocketService {
   // ROOM EVENTS
   // ===========================================================================
 
-  void onRoomCreated(void Function(RoomModel room) callback) {
-    _onRoomEvent(RoomSocketEvents.roomCreated, callback);
-  }
-
-  void onRoomJoined(void Function(RoomModel room) callback) {
-    _onRoomEvent(RoomSocketEvents.roomJoined, callback);
-  }
-
-  void onRoomUpdated(void Function(RoomModel room) callback) {
-    _onRoomEvent(RoomSocketEvents.roomUpdated, callback);
+  void onRoomConnected(void Function(RoomModel room) callback) {
+    _onRoomEvent(RoomSocketEvents.roomConnected, callback);
   }
 
   // ===========================================================================
-  // PLAYER EVENTS
+  // READY EVENTS
   // ===========================================================================
-
-  void onPlayerJoined(void Function(RoomModel room) callback) {
-    _onRoomEvent(RoomSocketEvents.playerJoined, callback);
-  }
-
-  void onPlayerLeft(void Function(RoomModel room) callback) {
-    _onRoomEvent(RoomSocketEvents.playerLeft, callback);
-  }
 
   void onReadyUpdated(void Function(RoomModel room) callback) {
     _onRoomEvent(RoomSocketEvents.readyUpdated, callback);
   }
 
   // ===========================================================================
-  // GAME EVENTS
+  // MOVE EVENTS
   // ===========================================================================
-
-  void onGameStarted(void Function(RoomModel room) callback) {
-    _onRoomEvent(RoomSocketEvents.gameStarted, callback);
-  }
-
-  void onGameEnded(void Function(RoomModel room) callback) {
-    _onRoomEvent(RoomSocketEvents.gameEnded, callback);
-  }
 
   void onMoveMade(
     void Function({
@@ -126,6 +98,10 @@ class RoomSocketService {
       callback(room: result.room, index: result.index, symbol: result.symbol);
     });
   }
+
+  // ===========================================================================
+  // ROUND RESULT EVENTS
+  // ===========================================================================
 
   void onRoundResult(
     void Function({
@@ -162,10 +138,6 @@ class RoomSocketService {
     _onMessageEvent(RoomSocketEvents.roomError, callback);
   }
 
-  void onGameError(void Function(String message) callback) {
-    _onMessageEvent(RoomSocketEvents.gameError, callback);
-  }
-
   // ===========================================================================
   // LISTENER MANAGEMENT
   // ===========================================================================
@@ -174,24 +146,8 @@ class RoomSocketService {
     _socket.off(event);
   }
 
-  void offRoomCreated() {
-    off(RoomSocketEvents.roomCreated);
-  }
-
-  void offRoomJoined() {
-    off(RoomSocketEvents.roomJoined);
-  }
-
-  void offRoomUpdated() {
-    off(RoomSocketEvents.roomUpdated);
-  }
-
-  void offPlayerJoined() {
-    off(RoomSocketEvents.playerJoined);
-  }
-
-  void offPlayerLeft() {
-    off(RoomSocketEvents.playerLeft);
+  void offRoomConnected() {
+    off(RoomSocketEvents.roomConnected);
   }
 
   void offReadyUpdated() {
@@ -206,20 +162,12 @@ class RoomSocketService {
     off(RoomSocketEvents.roundResult);
   }
 
-  void offGameStarted() {
-    off(RoomSocketEvents.gameStarted);
-  }
-
-  void offGameEnded() {
-    off(RoomSocketEvents.gameEnded);
-  }
-
   void offRoomError() {
     off(RoomSocketEvents.roomError);
   }
 
-  void offGameError() {
-    off(RoomSocketEvents.gameError);
+  void dispose() {
+    _socket.dispose();
   }
 
   // ===========================================================================
@@ -239,24 +187,22 @@ class RoomSocketService {
   void _onMessageEvent(String event, void Function(String message) callback) {
     _socket.on(event, (response) {
       if (response is! Map) {
-        callback('Something went wrong.');
+        callback(SocketConstants.genericErrorMessage);
         return;
       }
 
       final message = response['message']?.toString();
 
       callback(
-        message == null || message.isEmpty ? 'Something went wrong.' : message,
+        message == null || message.isEmpty
+            ? SocketConstants.genericErrorMessage
+            : message,
       );
     });
   }
 
   RoomModel? _parseRoom(dynamic response) {
-    if (response is! Map) {
-      return null;
-    }
-
-    if (response['success'] != true) {
+    if (response is! Map || response['success'] != true) {
       return null;
     }
 
