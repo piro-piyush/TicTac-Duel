@@ -45,20 +45,27 @@ function registerRoomSocket(
   // Connect Player To Room
   // ---------------------------------------------------------------------------
 
+  interface ConnectRoomData {
+    roomId: string;
+    playerId: string;
+  }
+
   socket.on(
     ROOM_SOCKET_EVENTS.CONNECT_ROOM,
-    async (data: ConnectRoomData): Promise<void> => {
+    async (
+      data: ConnectRoomData,
+    ): Promise<void> => {
       try {
         const {
-          roomCode,
+          roomId,
           playerId,
         } = data;
 
         if (
-          typeof roomCode !== "string" ||
-          !roomCode.trim()
+          typeof roomId !== "string" ||
+          !roomId.trim()
         ) {
-          throw new Error("Room code is required");
+          throw new Error("Room ID is required");
         }
 
         if (
@@ -68,22 +75,19 @@ function registerRoomSocket(
           throw new Error("Player ID is required");
         }
 
-        const normalizedRoomCode = roomCode
-          .trim()
-          .toUpperCase();
-
+        const normalizedRoomId = roomId.trim();
         const normalizedPlayerId = playerId.trim();
 
         Logger.info(
           "Connect room request received",
           {
-            roomCode: normalizedRoomCode,
+            roomId: normalizedRoomId,
             playerId: normalizedPlayerId,
           },
         );
 
-        const room = await RoomService.getRoom(
-          normalizedRoomCode,
+        const room = await RoomService.getRoomById(
+          normalizedRoomId,
         );
 
         if (!room) {
