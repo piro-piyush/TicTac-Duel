@@ -34,22 +34,23 @@ class PlayerController extends GetxController {
     _error.value = null;
 
     try {
-      final playerId =
-          await _identityService.getPlayerId() ??
-          _identityService.generatePlayerId();
+      var playerId = await _identityService.getPlayerId();
 
-      _playerId.value = playerId;
+      if (playerId == null) {
+        playerId = _identityService.generatePlayerId();
 
-      if (_identityService.getPlayerId() == null) {
+        await _playerApiService.initialize(playerId);
+
         final saved = await _identityService.setPlayerId(playerId);
 
         if (!saved) {
           throw Exception('Failed to save player identity');
         }
+      } else {
+        await _playerApiService.initialize(playerId);
       }
 
-      await _playerApiService.initialize(playerId);
-
+      _playerId.value = playerId;
       _isInitialized.value = true;
     } catch (error, stackTrace) {
       _error.value = error.toString();
@@ -60,5 +61,4 @@ class PlayerController extends GetxController {
     }
   }
 
-  Future<void> retry() => initialize();
 }

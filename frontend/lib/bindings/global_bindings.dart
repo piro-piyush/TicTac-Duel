@@ -18,7 +18,7 @@ class GlobalBindings extends Bindings {
     );
 
     Get.put<LocalStorageService>(
-      LocalStorageService(storage: FlutterSecureStorage()),
+      LocalStorageService(storage: const FlutterSecureStorage()),
       permanent: true,
     );
 
@@ -31,9 +31,8 @@ class GlobalBindings extends Bindings {
       permanent: true,
     );
 
-    Get.put<PlayerApiService>(
-      PlayerApiService(httpService: Get.find<HttpService>()),
-      permanent: true,
+    Get.lazyPut<PlayerApiService>(
+      () => PlayerApiService(httpService: Get.find<HttpService>()),
     );
 
     Get.put<PlayerController>(
@@ -45,41 +44,41 @@ class GlobalBindings extends Bindings {
     );
 
     // =========================================================================
-    // ROOM API
+    // ROOM
     // =========================================================================
 
-    Get.put<RoomApiService>(
-      RoomApiService(Get.find<HttpService>()),
-      permanent: true,
+    Get.lazyPut<RoomApiService>(
+      () => RoomApiService(Get.find<HttpService>()),
+      fenix: true,
     );
 
     // =========================================================================
     // SOCKET
     // =========================================================================
 
-    Get.put<SocketService>(
-      SocketService(
+    Get.lazyPut<SocketService>(
+      () => SocketService(
         url: dotenv.get('SOCKET_URL', fallback: 'http://localhost:3000'),
       ),
-      permanent: true,
+      fenix: true,
     );
 
-    Get.put<RoomSocketService>(
-      RoomSocketService(Get.find<SocketService>()),
-      permanent: true,
+    Get.lazyPut<RoomSocketService>(
+      () => RoomSocketService(Get.find<SocketService>()),
+      fenix: true,
     );
 
     // =========================================================================
     // AUDIO
     // =========================================================================
 
-    Get.put<MusicController>(
-      MusicController(
+    Get.lazyPut<MusicController>(
+      () => MusicController(
         player: AudioPlayer(),
         effectPlayer: AudioPlayer(),
         storage: Get.find<LocalStorageService>(),
       ),
-      permanent: true,
+      fenix: true,
     );
   }
 }

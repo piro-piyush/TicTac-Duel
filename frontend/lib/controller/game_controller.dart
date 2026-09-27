@@ -107,6 +107,9 @@ class GameController extends GetxController {
     _roomSocketService.onPlayerJoined(_handlePlayerJoined);
     _roomSocketService.onPlayerLeft(_handlePlayerLeft);
     _roomSocketService.onReadyUpdated(_handleReadyUpdated);
+    _roomSocketService.onRoundStarted(_handleRoundStarted);
+    _roomSocketService.onRoomClosed(_handleRoomClosed);
+    _roomSocketService.onGameDismissed(_handleGameDismissed);
 
     _roomSocketService.onReadyUpdated(_handleReadyUpdated);
 
@@ -128,6 +131,10 @@ class GameController extends GetxController {
     _setRoom(updatedRoom);
   }
 
+  void _handleRoundStarted(RoomModel updatedRoom) {
+    _setRoom(updatedRoom);
+  }
+
   void _handlePlayerJoined(RoomModel updatedRoom) {
     _setRoom(updatedRoom);
   }
@@ -138,6 +145,18 @@ class GameController extends GetxController {
 
   void _handleRoomError(String message) {
     setError(message);
+  }
+
+  void _handleRoomClosed(String reason) {
+    GameDialogUtils.showRoomClosed(reason: reason);
+  }
+
+  void _handleGameDismissed({
+    required String winnerPlayerId,
+    required String disconnectedPlayerId,
+    required String reason,
+  }) {
+    GameDialogUtils.showGameDismissed(reason: reason, theme: room!.theme);
   }
 
   // ===========================================================================
@@ -197,7 +216,9 @@ class GameController extends GetxController {
     return (room?.currentRound ?? 0) > 0;
   }
 
-  void startGame() {}
+  void startGame() {
+    _roomSocketService.startGame(roomCode: room!.roomCode);
+  }
 
   bool get isMyTurn {
     final currentRoom = room;
@@ -213,14 +234,14 @@ class GameController extends GetxController {
   // READY
   // ===========================================================================
 
-  void toggleReady() {
+  void setReady() {
     final currentRoom = room;
 
     if (currentRoom == null) {
       return;
     }
 
-    _roomSocketService.toggleReady(
+    _roomSocketService.setReady(
       roomCode: currentRoom.roomCode,
       isReady: !amIReady,
     );

@@ -11,6 +11,10 @@ abstract final class AppNavigation {
     Get.offAllNamed(AppRoutes.home);
   }
 
+  static void replaceHome() {
+    Get.offAllNamed(AppRoutes.home);
+  }
+
   // ===========================================================================
   // CREATE ROOM
   // ===========================================================================

@@ -3,36 +3,38 @@ import 'package:tictac_duel/lib.dart';
 class GameDialogUtils {
   GameDialogUtils._();
 
+  // ===========================================================================
+  // ROUND RESULT
+  // ===========================================================================
+
   static Future<void> showGameResult({
-    required BuildContext context,
     required GameResult result,
     required PlayerSymbol mySymbol,
     required RoomTheme theme,
     VoidCallback? onConfirm,
   }) {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        final isDraw = result == GameResult.draw;
-        final hasWon = result.winner == mySymbol;
+    final isDraw = result == GameResult.draw;
+    final hasWon = result.winner == mySymbol;
 
-        final title = isDraw
-            ? 'Draw'
-            : hasWon
-            ? 'You Won!'
-            : 'You Lose';
+    final title = isDraw
+        ? 'Draw'
+        : hasWon
+        ? 'You Won!'
+        : 'You Lose';
 
-        final message = isDraw
-            ? 'The round ended in a draw.'
-            : hasWon
-            ? 'You won this round!'
-            : 'Your opponent won this round.';
+    final message = isDraw
+        ? 'The round ended in a draw.'
+        : hasWon
+        ? 'You won this round!'
+        : 'Your opponent won this round.';
 
-        return AlertDialog(
+    return Get.dialog<void>(
+      PopScope(
+        canPop: false,
+        child: AlertDialog(
           backgroundColor: AppColors.surface,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: Dimens.radius16,
             side: BorderSide(color: theme.primary.withValues(alpha: 0.4)),
           ),
           title: Text(
@@ -49,19 +51,23 @@ class GameDialogUtils {
           actions: [
             ElevatedButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                Get.back();
                 onConfirm?.call();
               },
               child: const Text('OK'),
             ),
           ],
-        );
-      },
+        ),
+      ),
+      barrierDismissible: false,
     );
   }
 
+  // ===========================================================================
+  // GAME FINISHED
+  // ===========================================================================
+
   static Future<void> showGameFinished({
-    required BuildContext context,
     required RoomModel room,
     required PlayerSymbol mySymbol,
     required RoomTheme theme,
@@ -85,25 +91,19 @@ class GameDialogUtils {
         ? 'You Won!'
         : 'You Lose';
 
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        return AlertDialog(
+    return Get.dialog<void>(
+      PopScope(
+        canPop: false,
+        child: AlertDialog(
           backgroundColor: AppColors.surface,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: BorderSide(
-              color: theme.primary.withValues(alpha: 0.4),
-            ),
+            borderRadius: Dimens.radius16,
+            side: BorderSide(color: theme.primary.withValues(alpha: 0.4)),
           ),
           title: Text(
             title,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: theme.primary,
-              fontWeight: FontWeight.w800,
-            ),
+            style: TextStyle(color: theme.primary, fontWeight: FontWeight.w800),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -113,9 +113,7 @@ class GameDialogUtils {
                     ? 'The game ended in a draw.'
                     : '${overallWinner!.name} wins the game!',
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                ),
+                style: const TextStyle(color: AppColors.textPrimary),
               ),
               const SizedBox(height: 20),
               _buildScoreRow(playerOne),
@@ -127,23 +125,132 @@ class GameDialogUtils {
           actions: [
             OutlinedButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                Get.back();
                 AppNavigation.goToHome();
               },
               child: const Text('Home'),
             ),
+            SizedBox(height: Dimens.four),
             ElevatedButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                Get.back();
                 AppNavigation.goToCreateRoom();
               },
               child: const Text('New Game'),
             ),
           ],
-        );
-      },
+        ),
+      ),
+      barrierDismissible: false,
     );
   }
+
+  // ===========================================================================
+  // ROOM CLOSED
+  // ===========================================================================
+
+  static Future<void> showRoomClosed({required String reason}) {
+    return Get.dialog<void>(
+      PopScope(
+        canPop: false,
+        child: AlertDialog(
+          backgroundColor: AppColors.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: Dimens.radius16,
+            side: BorderSide(color: AppColors.neonPink.withValues(alpha: 0.4)),
+          ),
+          title: const Text(
+            'Room Closed',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: AppColors.neonPink,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          content: Text(
+            reason,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppColors.textPrimary),
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+
+          actions: [
+            OutlinedButton(
+              onPressed: () {
+                Get.back();
+                AppNavigation.replaceHome();
+              },
+              child: const Text('Back Home'),
+            ),
+            SizedBox(height: Dimens.four),
+            ElevatedButton(
+              onPressed: () {
+                Get.back();
+                AppNavigation.replaceCreateRoom();
+              },
+              child: const Text('Create Room'),
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+  }
+
+  // ===========================================================================
+  // GAME DISMISSED
+  // ===========================================================================
+
+  static Future<void> showGameDismissed({
+    required String reason,
+    required RoomTheme theme,
+  }) {
+    return Get.dialog<void>(
+      PopScope(
+        canPop: false,
+        child: AlertDialog(
+          backgroundColor: AppColors.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: Dimens.radius16,
+            side: BorderSide(color: theme.primary.withValues(alpha: 0.4)),
+          ),
+          title: Text(
+            'Game Dismissed',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: theme.primary, fontWeight: FontWeight.w800),
+          ),
+          content: Text(
+            reason,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppColors.textPrimary),
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            OutlinedButton(
+              onPressed: () {
+                Get.back();
+                AppNavigation.goToHome();
+              },
+              child: const Text('Back Home'),
+            ),
+            SizedBox(height: Dimens.four),
+            ElevatedButton(
+              onPressed: () {
+                Get.back();
+                AppNavigation.goToCreateRoom();
+              },
+              child: const Text('New Game'),
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+  }
+
+  // ===========================================================================
+  // SCORE
+  // ===========================================================================
 
   static Widget _buildScoreRow(PlayerModel player) {
     return Row(
