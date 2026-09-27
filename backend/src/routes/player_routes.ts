@@ -10,7 +10,7 @@ playerRoutes.post(
 );
 
 playerRoutes.get(
-    "/:playerId",
+    "/:id",
     PlayerController.getPlayer.bind(PlayerController),
 );
 
@@ -20,7 +20,7 @@ playerRoutes.get(
 );
 
 playerRoutes.delete(
-    "/:playerId",
+    "/:id",
     PlayerController.deletePlayer.bind(PlayerController),
 );
 

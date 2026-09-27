@@ -3,8 +3,10 @@ import type {
   Request,
 } from "express";
 
+import Logger from "../core/utils/logger.js";
 import Response from "../core/utils/response.js";
 import PlayerService from "../services/player_service.js";
+import { playerIdValidator } from "../validators/player_validator.js";
 
 class PlayerController {
   async initialize(
@@ -12,34 +14,26 @@ class PlayerController {
     res: ExpressResponse,
   ): Promise<ExpressResponse> {
     try {
-      const { playerId } = req.body;
+      const id = this._validatePlayerId(req.body?.id);
 
-      if (
-        typeof playerId !== "string" ||
-        playerId.trim().length === 0
-      ) {
-        return Response.badRequest(
-          res,
-          "Invalid player ID",
-        );
+      if (!id) {
+        return Response.badRequest(res, "Invalid player ID");
       }
 
-      const player =
-        await PlayerService.initializePlayer({
-          playerId: playerId.trim(),
-        });
+      const player = await PlayerService.initializePlayer({
+        id,
+      });
 
       return Response.success(res, {
         message: "Player initialized",
         data: player,
       });
     } catch (error: unknown) {
-      return Response.error(res, {
-        message:
-          error instanceof Error
-            ? error.message
-            : "Failed to initialize player",
-      });
+      return this._handleError(
+        res,
+        "Failed to initialize player",
+        error,
+      );
     }
   }
 
@@ -48,23 +42,16 @@ class PlayerController {
     res: ExpressResponse,
   ): Promise<ExpressResponse> {
     try {
-      const { playerId } = req.params;
+      const id = this._validatePlayerId(req.params.id);
 
-      if (typeof playerId !== "string") {
-        return Response.badRequest(
-          res,
-          "Invalid player ID",
-        );
+      if (!id) {
+        return Response.badRequest(res, "Invalid player ID");
       }
 
-      const player =
-        await PlayerService.getPlayer(playerId);
+      const player = await PlayerService.getPlayer(id);
 
       if (!player) {
-        return Response.notFound(
-          res,
-          "Player not found",
-        );
+        return Response.notFound(res, "Player not found");
       }
 
       return Response.success(res, {
@@ -72,17 +59,16 @@ class PlayerController {
         data: player,
       });
     } catch (error: unknown) {
-      return Response.error(res, {
-        message:
-          error instanceof Error
-            ? error.message
-            : "Failed to get player",
-      });
+      return this._handleError(
+        res,
+        "Failed to get player",
+        error,
+      );
     }
   }
 
   async getPlayers(
-    req: Request,
+    _req: Request,
     res: ExpressResponse,
   ): Promise<ExpressResponse> {
     try {
@@ -93,12 +79,11 @@ class PlayerController {
         data: players,
       });
     } catch (error: unknown) {
-      return Response.error(res, {
-        message:
-          error instanceof Error
-            ? error.message
-            : "Failed to get players",
-      });
+      return this._handleError(
+        res,
+        "Failed to get players",
+        error,
+      );
     }
   }
 
@@ -107,23 +92,16 @@ class PlayerController {
     res: ExpressResponse,
   ): Promise<ExpressResponse> {
     try {
-      const { playerId } = req.params;
+      const id = this._validatePlayerId(req.params.id);
 
-      if (typeof playerId !== "string") {
-        return Response.badRequest(
-          res,
-          "Invalid player ID",
-        );
+      if (!id) {
+        return Response.badRequest(res, "Invalid player ID");
       }
 
-      const player =
-        await PlayerService.deletePlayer(playerId);
+      const player = await PlayerService.deletePlayer(id);
 
       if (!player) {
-        return Response.notFound(
-          res,
-          "Player not found",
-        );
+        return Response.notFound(res, "Player not found");
       }
 
       return Response.success(res, {
@@ -131,13 +109,41 @@ class PlayerController {
         data: player,
       });
     } catch (error: unknown) {
-      return Response.error(res, {
-        message:
-          error instanceof Error
-            ? error.message
-            : "Failed to delete player",
-      });
+      return this._handleError(
+        res,
+        "Failed to delete player",
+        error,
+      );
     }
+  }
+
+  private _validatePlayerId(
+    value: unknown,
+  ): string | null {
+    const result = playerIdValidator.safeParse(value);
+
+    return result.success ? result.data : null;
+  }
+
+  private _handleError(
+    res: ExpressResponse,
+    message: string,
+    error: unknown,
+  ): ExpressResponse {
+    Logger.error(message, error);
+
+    return Response.error(res, {
+      message: this._getErrorMessage(error, message),
+    });
+  }
+
+  private _getErrorMessage(
+    error: unknown,
+    fallback: string,
+  ): string {
+    return error instanceof Error
+      ? error.message
+      : fallback;
   }
 }
 

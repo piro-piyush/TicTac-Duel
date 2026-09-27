@@ -4,59 +4,41 @@ import { db } from "../db/index.js";
 import { players } from "../db/schema.js";
 
 interface InitializePlayerParams {
-    playerId: string;
+    id: string;
 }
 
 class PlayerService {
     async initializePlayer({
-        playerId,
+        id,
     }: InitializePlayerParams) {
-        const normalizedPlayerId = playerId.trim();
+        const [player] = await db
+            .insert(players)
+            .values({
+                id: id,
+            })
+            .onConflictDoNothing({
+                target: players.id,
+            })
+            .returning();
 
-        if (!this._isValidUuid(normalizedPlayerId)) {
-            throw new Error("Invalid player ID");
+        if (player) {
+            return player;
         }
 
-        try {
-            const [player] = await db
-                .insert(players)
-                .values({
-                    id: normalizedPlayerId,
-                })
-                .onConflictDoNothing({
-                    target: players.id,
-                })
-                .returning();
+        const existingPlayer = await this.getPlayer(id);
 
-            if (player) {
-                return player;
-            }
-
-            const existingPlayer = await this.getPlayer(normalizedPlayerId);
-
-            if (!existingPlayer) {
-                throw new Error("Failed to initialize player");
-            }
-
-            return existingPlayer;
-        } catch (error) {
-            console.error("PLAYER INITIALIZATION ERROR:");
-            console.error(error);
-
-            throw error;
+        if (!existingPlayer) {
+            throw new Error("Failed to initialize player");
         }
+
+        return existingPlayer;
     }
-    async getPlayer(playerId: string) {
-        const normalizedPlayerId = playerId.trim();
 
-        if (!this._isValidUuid(normalizedPlayerId)) {
-            return null;
-        }
-
+    async getPlayer(id: string) {
         const [player] = await db
             .select()
             .from(players)
-            .where(eq(players.id, normalizedPlayerId))
+            .where(eq(players.id, id))
             .limit(1);
 
         return player ?? null;
@@ -68,25 +50,13 @@ class PlayerService {
             .from(players);
     }
 
-    async deletePlayer(playerId: string) {
-        const normalizedPlayerId = playerId.trim();
-
-        if (!this._isValidUuid(normalizedPlayerId)) {
-            return null;
-        }
-
+    async deletePlayer(id: string) {
         const [player] = await db
             .delete(players)
-            .where(eq(players.id, normalizedPlayerId))
+            .where(eq(players.id, id))
             .returning();
 
         return player ?? null;
-    }
-
-    private _isValidUuid(value: string): boolean {
-        return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-            value,
-        );
     }
 }
 

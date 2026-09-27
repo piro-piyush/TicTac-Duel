@@ -3,15 +3,14 @@ import type {
   Request,
 } from "express";
 
-import {
-  playerSymbolEnum,
-  roomThemeEnum,
-  type PlayerSymbol,
-  type RoomTheme,
-} from "../db/schema.js";
-
+import Logger from "../core/utils/logger.js";
 import Response from "../core/utils/response.js";
 import RoomService from "../services/room_service.js";
+import {
+  createRoomValidator,
+  joinRoomValidator,
+  uuidValidator,
+} from "../validators/room_validator.js";
 
 class RoomController {
   // ===========================================================================
@@ -19,7 +18,7 @@ class RoomController {
   // ===========================================================================
 
   async getRooms(
-    req: Request,
+    _req: Request,
     res: ExpressResponse,
   ): Promise<ExpressResponse> {
     try {
@@ -30,11 +29,10 @@ class RoomController {
         data: rooms,
       });
     } catch (error: unknown) {
+      Logger.error("Failed to get rooms", error);
+
       return Response.error(res, {
-        message:
-          error instanceof Error
-            ? error.message
-            : "An unexpected error occurred",
+        message: this._getErrorMessage(error),
       });
     }
   }
@@ -48,20 +46,19 @@ class RoomController {
     res: ExpressResponse,
   ): Promise<ExpressResponse> {
     try {
-      const { id } = req.params;
+      const result = uuidValidator.safeParse(
+        req.params.id,
+      );
 
-      if (
-        typeof id !== "string" ||
-        !id.trim()
-      ) {
+      if (!result.success) {
         return Response.badRequest(
           res,
           "Invalid room ID",
         );
       }
 
-      const room = await RoomService.getRoomById(
-        id,
+      const room = await RoomService.getRoom(
+        result.data,
       );
 
       if (!room) {
@@ -76,11 +73,10 @@ class RoomController {
         data: room,
       });
     } catch (error: unknown) {
+      Logger.error("Failed to get room", error);
+
       return Response.error(res, {
-        message:
-          error instanceof Error
-            ? error.message
-            : "An unexpected error occurred",
+        message: this._getErrorMessage(error),
       });
     }
   }
@@ -94,86 +90,34 @@ class RoomController {
     res: ExpressResponse,
   ): Promise<ExpressResponse> {
     try {
-      const {
-        playerId,
-        playerName,
-        symbol,
-        theme,
-        maxRounds,
-        isPrivate,
-      } = req.body;
+      const result = createRoomValidator.safeParse(
+        req.body,
+      );
 
-      if (
-        typeof playerId !== "string" ||
-        !playerId.trim()
-      ) {
+      if (!result.success) {
         return Response.badRequest(
           res,
-          "Player ID is required",
+          result.error.issues[0]?.message ??
+          "Invalid request data",
         );
       }
 
-      if (
-        typeof playerName !== "string" ||
-        !playerName.trim()
-      ) {
-        return Response.badRequest(
-          res,
-          "Player name is required",
-        );
-      }
-
-      if (!isPlayerSymbol(symbol)) {
-        return Response.badRequest(
-          res,
-          "Invalid player symbol",
-        );
-      }
-
-      if (!isRoomTheme(theme)) {
-        return Response.badRequest(
-          res,
-          "Invalid room theme",
-        );
-      }
-
-      if (
-        typeof maxRounds !== "number" ||
-        !Number.isInteger(maxRounds) ||
-        maxRounds <= 0
-      ) {
-        return Response.badRequest(
-          res,
-          "Invalid maximum rounds",
-        );
-      }
-
-      if (typeof isPrivate !== "boolean") {
-        return Response.badRequest(
-          res,
-          "isPrivate must be a boolean",
-        );
-      }
-
-      const room = await RoomService.createRoom({
-        playerId: playerId.trim(),
-        playerName: playerName.trim(),
-        symbol,
-        theme,
-        maxRounds,
-        isPrivate,
-      });
+      const room = await RoomService.createRoom(
+        result.data,
+      );
 
       return Response.created(res, {
         message: "Room created successfully",
         data: room,
       });
     } catch (error: unknown) {
+      Logger.error(
+        "Failed to create room",
+        error,
+      );
+
       return Response.error(res, {
-        message:
-          error instanceof Error
-            ? error.message
-            : "An unexpected error occurred",
+        message: this._getErrorMessage(error),
       });
     }
   }
@@ -187,65 +131,34 @@ class RoomController {
     res: ExpressResponse,
   ): Promise<ExpressResponse> {
     try {
-      const {
-        playerId,
-        playerName,
-        roomCode,
-      } = req.body;
+      const result = joinRoomValidator.safeParse(
+        req.body,
+      );
 
-      if (
-        typeof playerId !== "string" ||
-        !playerId.trim()
-      ) {
+      if (!result.success) {
         return Response.badRequest(
           res,
-          "Player ID is required",
+          result.error.issues[0]?.message ??
+          "Invalid request data",
         );
       }
 
-      if (
-        typeof playerName !== "string" ||
-        !playerName.trim()
-      ) {
-        return Response.badRequest(
-          res,
-          "Player name is required",
-        );
-      }
-
-      if (
-        typeof roomCode !== "string" ||
-        !roomCode.trim()
-      ) {
-        return Response.badRequest(
-          res,
-          "Room Code is required",
-        );
-      }
-
-      const room = await RoomService.joinRoom({
-        playerId: playerId.trim(),
-        playerName: playerName.trim(),
-        roomCode: roomCode.trim(),
-      });
-
-      if (!room) {
-        return Response.notFound(
-          res,
-          "Room not found",
-        );
-      }
+      const room = await RoomService.joinRoom(
+        result.data,
+      );
 
       return Response.success(res, {
         message: "Room joined successfully",
         data: room,
       });
     } catch (error: unknown) {
+      Logger.error(
+        "Failed to join room",
+        error,
+      );
+
       return Response.error(res, {
-        message:
-          error instanceof Error
-            ? error.message
-            : "An unexpected error occurred",
+        message: this._getErrorMessage(error),
       });
     }
   }
@@ -259,12 +172,11 @@ class RoomController {
     res: ExpressResponse,
   ): Promise<ExpressResponse> {
     try {
-      const { id } = req.params;
+      const result = uuidValidator.safeParse(
+        req.params.id,
+      );
 
-      if (
-        typeof id !== "string" ||
-        !id.trim()
-      ) {
+      if (!result.success) {
         return Response.badRequest(
           res,
           "Invalid room ID",
@@ -272,7 +184,7 @@ class RoomController {
       }
 
       const room = await RoomService.deleteRoom(
-        id.trim(),
+        result.data,
       );
 
       if (!room) {
@@ -283,44 +195,30 @@ class RoomController {
       }
 
       return Response.success(res, {
-        message: "Room deleted",
+        message: "Room deleted successfully",
         data: room,
       });
     } catch (error: unknown) {
+      Logger.error(
+        "Failed to delete room",
+        error,
+      );
+
       return Response.error(res, {
-        message:
-          error instanceof Error
-            ? error.message
-            : "An unexpected error occurred",
+        message: this._getErrorMessage(error),
       });
     }
   }
-}
 
-// =============================================================================
-// TYPE GUARDS
-// =============================================================================
+  // ===========================================================================
+  // Private: Error Message
+  // ===========================================================================
 
-function isPlayerSymbol(
-  value: unknown,
-): value is PlayerSymbol {
-  return (
-    typeof value === "string" &&
-    playerSymbolEnum.enumValues.includes(
-      value as PlayerSymbol,
-    )
-  );
-}
-
-function isRoomTheme(
-  value: unknown,
-): value is RoomTheme {
-  return (
-    typeof value === "string" &&
-    roomThemeEnum.enumValues.includes(
-      value as RoomTheme,
-    )
-  );
+  private _getErrorMessage(error: unknown): string {
+    return error instanceof Error
+      ? error.message
+      : "An unexpected error occurred";
+  }
 }
 
 export default new RoomController();
