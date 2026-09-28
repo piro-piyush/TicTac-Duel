@@ -56,7 +56,7 @@ class ResultController extends GetxController {
   }
 
   void newGame() {
-    AppNavigation.goToCreateRoom();
+    AppNavigation.replaceCreateRoom();
   }
 
   String get animationPath {

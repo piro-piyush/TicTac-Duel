@@ -2,9 +2,10 @@ import 'package:tictac_duel/lib.dart';
 
 class ResultBinding extends Bindings {
   @override
-  void dependencies() {
-    final resultState = Get.arguments as ResultModel;
-
-    Get.put<ResultController>(ResultController(initialState: resultState,playerController: Get.find<PlayerController>(),));
-  }
+  void dependencies() => Get.put<ResultController>(
+    ResultController(
+      initialState: Get.arguments as ResultModel,
+      playerController: Get.find<PlayerController>(),
+    ),
+  );
 }
