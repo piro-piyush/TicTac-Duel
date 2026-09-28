@@ -92,27 +92,19 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
           fit: StackFit.expand,
           children: [
             // Base background
-            const ColoredBox(
-              color: AppColors.background,
-            ),
+            const ColoredBox(color: AppColors.background),
 
             // Ambient neon glows
             const Positioned(
               top: -140,
               right: -100,
-              child: _NeonGlow(
-                color: AppColors.neonPurple,
-                size: 300,
-              ),
+              child: _NeonGlow(color: AppColors.neonPurple, size: 300),
             ),
 
             const Positioned(
               bottom: -150,
               left: -120,
-              child: _NeonGlow(
-                color: AppColors.neonCyan,
-                size: 320,
-              ),
+              child: _NeonGlow(color: AppColors.neonCyan, size: 320),
             ),
 
             const Positioned(
@@ -129,9 +121,7 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
             if (widget.showGrid)
               const Positioned.fill(
                 child: IgnorePointer(
-                  child: CustomPaint(
-                    painter: _NeonGridPainter(),
-                  ),
+                  child: CustomPaint(painter: _NeonGridPainter()),
                 ),
               ),
 
@@ -139,9 +129,7 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
             if (widget.showParticles)
               const Positioned.fill(
                 child: IgnorePointer(
-                  child: CustomPaint(
-                    painter: _NeonParticlePainter(),
-                  ),
+                  child: CustomPaint(painter: _NeonParticlePainter()),
                 ),
               ),
 
@@ -151,9 +139,7 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
                 child: Stack(
                   children: [
                     for (final effect in _tapEffects)
-                      _TapEffectWidget(
-                        effect: effect,
-                      ),
+                      _TapEffectWidget(effect: effect),
                   ],
                 ),
               ),
@@ -172,11 +158,7 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
                         Color(0x22000000),
                         Color(0x66000000),
                       ],
-                      stops: [
-                        0.45,
-                        0.78,
-                        1.0,
-                      ],
+                      stops: [0.45, 0.78, 1.0],
                     ),
                   ),
                 ),
@@ -193,38 +175,32 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
                   child: SafeArea(
                     child: Column(
                       children: [
-                        if (widget.title != null)
-                          _buildAppBar(context),
+                        if (widget.title != null) _buildAppBar(context),
 
                         Expanded(
                           child: widget.needScroll
-                              ? LayoutBuilder(
-                            builder: (context, constraints) {
-                              return SingleChildScrollView(
+                              ? CustomScrollView(
+                            slivers: [
+                              SliverPadding(
                                 padding: widget.padding ?? Dimens.defaultPadding,
-                                child: ConstrainedBox(
-                                  constraints: BoxConstraints(
-                                    minHeight: constraints.maxHeight,
-                                  ),
+                                sliver: SliverToBoxAdapter(
                                   child: widget.child,
                                 ),
-                              );
-                            },
+                              ),
+                            ],
                           )
                               : Padding(
                             padding: widget.padding ?? Dimens.defaultPadding,
-                            child: widget.child,
+                            child: Center(
+                              child: widget.child,
+                            ),
                           ),
                         ),
 
                         if (widget.bottomNavigationBar != null)
                           Padding(
-                            padding: (widget.padding ??
-                                Dimens.defaultPadding)
-                                .copyWith(
-                              top: 0,
-                              bottom: 0,
-                            ),
+                            padding: (widget.padding ?? Dimens.defaultPadding)
+                                .copyWith(top: 0, bottom: Dimens.eight),
                             child: widget.bottomNavigationBar!,
                           ),
                       ],

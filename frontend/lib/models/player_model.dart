@@ -5,8 +5,8 @@ class PlayerModel {
     required this.id,
     required this.name,
     required this.symbol,
-    required this.points,
-    required this.isReady,
+     this.points = 0,
+     this.isReady = true,
   });
 
   /// Persistent guest player ID.
