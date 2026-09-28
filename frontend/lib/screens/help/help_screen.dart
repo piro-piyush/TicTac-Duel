@@ -7,8 +7,9 @@ class HelpScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return NeonBackgroundWidget(
       title: 'HELP',
+      needScroll: true,
       child: Column(
-        spacing: Dimens.thirtySix,
+        spacing: Dimens.thirty,
         children: [
           Column(
             spacing: Dimens.twentyEight,

@@ -1,28 +1,27 @@
 import 'package:tictac_duel/lib.dart';
 
 class GameStatusWidget extends StatelessWidget {
-  final RoomModel room;
-  final String playerId;
-  final bool compact;
-
   const GameStatusWidget({
     super.key,
-    required this.room,
-    required this.playerId,
-    required this.compact,
+    required this.player,
+    required this.isMyTurn,
+    required this.theme,
+    this.compact = false,
   });
+
+  final PlayerModel player;
+  final bool isMyTurn;
+  final RoomTheme theme;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
-    final player = room.turn;
-    if (player == null) {
-      return const SizedBox.shrink();
-    }
-    final isMyTurn = player.id == playerId;
     final color = player.symbol == PlayerSymbol.x
-        ? room.theme.primary
-        : room.theme.secondary;
+        ? theme.primary
+        : theme.secondary;
+
     final text = isMyTurn ? 'Your turn' : '${player.name}\'s turn';
+
     return Container(
       constraints: const BoxConstraints(maxWidth: 420),
       padding: EdgeInsets.symmetric(
@@ -37,17 +36,7 @@ class GameStatusWidget extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 6,
-            height: 6,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(color: color.withValues(alpha: 0.6), blurRadius: 7),
-              ],
-            ),
-          ),
+          _StatusIndicator(color: color),
           const SizedBox(width: 7),
           Flexible(
             child: Text(
@@ -60,6 +49,27 @@ class GameStatusWidget extends StatelessWidget {
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatusIndicator extends StatelessWidget {
+  const _StatusIndicator({required this.color});
+
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 6,
+      height: 6,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(color: color.withValues(alpha: 0.6), blurRadius: 7),
         ],
       ),
     );

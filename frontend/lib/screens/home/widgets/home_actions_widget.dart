@@ -23,13 +23,11 @@ class HomeActionsWidget extends StatelessWidget {
           spacing: Dimens.fourteen,
           children: [
             MenuButtonWidget(
-              title: 'Quick Start',
+              title: 'Quick Match',
               subtitle: 'Find an opponent and play',
               icon: Icons.bolt_rounded,
               color: AppColors.neonCyan,
-              onTap: () => checkNetworkAndRun(
-                () => PopupUtils.showWarning('Coming soon...'),
-              ),
+              onTap: AppNavigation.pushQuickMatch,
             ),
 
             MenuButtonWidget(
@@ -37,9 +35,7 @@ class HomeActionsWidget extends StatelessWidget {
               subtitle: 'Play against a friend on this device',
               icon: Icons.smartphone_rounded,
               color: AppColors.neonPurple,
-              onTap: () {
-                PopupUtils.showWarning('Coming soon...');
-              },
+              onTap: AppNavigation.pushLocalGame,
             ),
           ],
         ),

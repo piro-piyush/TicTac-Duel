@@ -38,7 +38,7 @@ class HomeScreen extends StatelessWidget {
               QuickActionWidget(
                 icon: Icons.settings_rounded,
                 label: 'Settings',
-                onTap: AppNavigation.pushToSettings,
+                onTap: AppNavigation.pushSettings,
               ),
               QuickActionWidget(
                 icon: Icons.help_outline_rounded,

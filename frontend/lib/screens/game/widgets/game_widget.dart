@@ -38,15 +38,21 @@ class GameWidget extends StatelessWidget {
           ),
           child: Column(
             children: [
-              GameRoundIndicatorWidget(room: room, compact: isCompact),
+              GameRoundIndicatorWidget(
+                currentRound: room.currentRound,
+                maxRounds: room.maxRounds,
+                color: room.theme.primary,
+                compact: isCompact,
+              ),
               SizedBox(height: sectionSpacing),
               _buildPlayers(room, playerId, compact: isCompact),
               SizedBox(height: sectionSpacing),
               _buildBoard(room, isWide: isWide),
               SizedBox(height: sectionSpacing),
               GameStatusWidget(
-                room: room,
-                playerId: playerId,
+               player: room.players[room.turnIndex],
+                theme: room.theme,
+                isMyTurn: isMyTurn,
                 compact: isCompact,
               ),
             ],
