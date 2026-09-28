@@ -6,15 +6,24 @@ class PlayerApiService {
   final HttpService _httpService;
 
   // ===========================================================================
-  // INITIALIZE PLAYER
+  // CREATE PLAYER
   // ===========================================================================
 
-  Future<bool> initialize(String id) async {
-    await _httpService.post<Map<String, dynamic>>(
-      '/players/initialize',
-      data: {'id': id},
+  Future<PlayerModel> create() async {
+    final data = await _httpService.post<Map<String, dynamic>>('/players');
+
+    return PlayerModel.fromJson(data);
+  }
+
+  // ===========================================================================
+  // GET PLAYER
+  // ===========================================================================
+
+  Future<PlayerModel> get(String playerId) async {
+    final data = await _httpService.get<Map<String, dynamic>>(
+      '/players/$playerId',
     );
 
-    return true;
+    return PlayerModel.fromJson(data);
   }
 }

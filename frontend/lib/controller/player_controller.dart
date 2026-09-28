@@ -1,13 +1,12 @@
 import 'package:tictac_duel/lib.dart';
 
 class PlayerController extends GetxController {
-  PlayerController({
-    required this._identityService,
-    required this._playerApiService,
-  });
+  PlayerController({required this._storage, required this._playerApiService});
 
-  final PlayerIdentityService _identityService;
+  final LocalStorageService _storage;
   final PlayerApiService _playerApiService;
+
+  static const String _playerIdKey = 'player_id';
 
   final RxnString _playerId = RxnString();
 
@@ -29,14 +28,14 @@ class PlayerController extends GetxController {
 
   Future<void> _initialize() async {
     try {
-      var playerId = await _identityService.getPlayerId();
+      var playerId = await _storage.getString(_playerIdKey);
 
       if (playerId == null) {
         final player = await _playerApiService.create();
 
         playerId = player.id;
 
-        await _identityService.setPlayerId(playerId);
+        await _storage.setString(_playerIdKey, playerId);
       }
 
       _playerId.value = playerId;

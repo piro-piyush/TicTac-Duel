@@ -26,10 +26,10 @@ class GlobalBindings extends Bindings {
     // PLAYER
     // =========================================================================
 
-    Get.put<PlayerIdentityService>(
-      PlayerIdentityService(storage: Get.find<LocalStorageService>()),
-      permanent: true,
-    );
+    // Get.put<PlayerIdentityService>(
+    //   PlayerIdentityService(storage: Get.find<LocalStorageService>()),
+    //   permanent: true,
+    // );
 
     Get.lazyPut<PlayerApiService>(
       () => PlayerApiService(httpService: Get.find<HttpService>()),
@@ -37,7 +37,7 @@ class GlobalBindings extends Bindings {
 
     Get.put<PlayerController>(
       PlayerController(
-        identityService: Get.find<PlayerIdentityService>(),
+        storage: Get.find<LocalStorageService>(),
         playerApiService: Get.find<PlayerApiService>(),
       ),
       permanent: true,
