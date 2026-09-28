@@ -34,7 +34,7 @@ class GameController extends GetxController {
 
   final RxnString _infoMessage = RxnString();
 
-  final Rxn<GameRoundResultModel> _roundResult = Rxn<GameRoundResultModel>();
+  final Rxn<RoundResultResponse> _roundResult = Rxn<RoundResultResponse>();
 
   final RxBool _isLoading = false.obs;
 
@@ -56,7 +56,7 @@ class GameController extends GetxController {
 
   String? get infoMessage => _infoMessage.value;
 
-  GameRoundResultModel? get roundResult => _roundResult.value;
+  RoundResultResponse? get roundResult => _roundResult.value;
 
   bool get isLoading => _isLoading.value;
 
@@ -147,17 +147,11 @@ class GameController extends GetxController {
     setError(message);
   }
 
-  void _handleRoomClosed(String reason) {
-    GameDialogUtils.showRoomClosed(reason: reason);
-  }
+  void _handleRoomClosed(String reason) =>
+      GameDialogUtils.showRoomClosed(reason: reason);
 
-  void _handleGameDismissed({
-    required String winnerPlayerId,
-    required String disconnectedPlayerId,
-    required String reason,
-  }) {
-    GameDialogUtils.showGameDismissed(reason: reason, theme: room!.theme);
-  }
+  void _handleGameDismissed(GameDismissedResponse response) =>
+      GameDialogUtils.showGameDismissed(reason: response.reason);
 
   // ===========================================================================
   // ROOM STATE
@@ -241,10 +235,7 @@ class GameController extends GetxController {
       return;
     }
 
-    _roomSocketService.setReady(
-      roomCode: currentRoom.roomCode,
-      isReady: !amIReady,
-    );
+    _roomSocketService.setReady(roomCode: currentRoom.roomCode);
   }
 
   // ===========================================================================
@@ -296,14 +287,8 @@ class GameController extends GetxController {
   // ROUND RESULT
   // ===========================================================================
 
-  void _handleRoundResult({
-    required RoomModel room,
-    required String winnerSocketId,
-    required List<int> winningIndexes,
-    required int completedRound,
-    required bool gameFinished,
-  }) {
-    _setRoom(room);
+  void _handleRoundResult(RoundResultResponse response) {
+    _setRoom(response.room);
 
     setWinningIndexes(winningIndexes.toSet());
 
@@ -312,7 +297,7 @@ class GameController extends GetxController {
      * is available.
      */
 
-    if (gameFinished) {
+    if (response.gameFinished) {
       setInfo('Game completed.');
     }
   }
@@ -385,14 +370,10 @@ class GameController extends GetxController {
   // MOVE RESPONSE
   // ===========================================================================
 
-  void _handleMoveMade({
-    required RoomModel room,
-    required int index,
-    required PlayerSymbol symbol,
-  }) {
-    _setRoom(room);
+  void _handleMoveMade(MoveResultResponse response) {
+    _setRoom(response.room);
 
-    updateBoardValue(index, symbol);
+    updateBoardValue(response.index, response.symbol);
   }
 
   // ===========================================================================

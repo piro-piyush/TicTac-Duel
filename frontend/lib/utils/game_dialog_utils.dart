@@ -10,7 +10,6 @@ class GameDialogUtils {
   static Future<void> showGameResult({
     required GameResult result,
     required PlayerSymbol mySymbol,
-    required RoomTheme theme,
     VoidCallback? onConfirm,
   }) {
     final isDraw = result == GameResult.draw;
@@ -33,19 +32,19 @@ class GameDialogUtils {
         canPop: false,
         child: AlertDialog(
           backgroundColor: AppColors.surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: Dimens.radius16,
-            side: BorderSide(color: theme.primary.withValues(alpha: 0.4)),
-          ),
+          shape: _dialogShape,
           title: Text(
             title,
             textAlign: TextAlign.center,
-            style: TextStyle(color: theme.primary, fontWeight: FontWeight.w800),
+            style: TextStyle(
+              color: Get.theme.colorScheme.primary,
+              fontWeight: FontWeight.w800,
+            ),
           ),
           content: Text(
             message,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.textPrimary),
+            style: TextStyle(color: Get.theme.colorScheme.onSurface),
           ),
           actionsAlignment: MainAxisAlignment.center,
           actions: [
@@ -70,7 +69,6 @@ class GameDialogUtils {
   static Future<void> showGameFinished({
     required RoomModel room,
     required PlayerSymbol mySymbol,
-    required RoomTheme theme,
   }) {
     final playerOne = room.players[0];
     final playerTwo = room.players[1];
@@ -96,14 +94,14 @@ class GameDialogUtils {
         canPop: false,
         child: AlertDialog(
           backgroundColor: AppColors.surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: Dimens.radius16,
-            side: BorderSide(color: theme.primary.withValues(alpha: 0.4)),
-          ),
+          shape: _dialogShape,
           title: Text(
             title,
             textAlign: TextAlign.center,
-            style: TextStyle(color: theme.primary, fontWeight: FontWeight.w800),
+            style: TextStyle(
+              color: Get.theme.colorScheme.primary,
+              fontWeight: FontWeight.w800,
+            ),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -113,7 +111,7 @@ class GameDialogUtils {
                     ? 'The game ended in a draw.'
                     : '${overallWinner!.name} wins the game!',
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: AppColors.textPrimary),
+                style: TextStyle(color: Get.theme.colorScheme.onSurface),
               ),
               const SizedBox(height: 20),
               _buildScoreRow(playerOne),
@@ -130,7 +128,6 @@ class GameDialogUtils {
               },
               child: const Text('Home'),
             ),
-            SizedBox(height: Dimens.four),
             ElevatedButton(
               onPressed: () {
                 Get.back();
@@ -155,25 +152,21 @@ class GameDialogUtils {
         canPop: false,
         child: AlertDialog(
           backgroundColor: AppColors.surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: Dimens.radius16,
-            side: BorderSide(color: AppColors.neonPink.withValues(alpha: 0.4)),
-          ),
-          title: const Text(
+          shape: _dialogShape,
+          title: Text(
             'Room Closed',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: AppColors.neonPink,
+              color: Get.theme.colorScheme.primary,
               fontWeight: FontWeight.w800,
             ),
           ),
           content: Text(
             reason,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.textPrimary),
+            style: TextStyle(color: Get.theme.colorScheme.onSurface),
           ),
           actionsAlignment: MainAxisAlignment.center,
-
           actions: [
             OutlinedButton(
               onPressed: () {
@@ -182,7 +175,6 @@ class GameDialogUtils {
               },
               child: const Text('Back Home'),
             ),
-            SizedBox(height: Dimens.four),
             ElevatedButton(
               onPressed: () {
                 Get.back();
@@ -201,28 +193,25 @@ class GameDialogUtils {
   // GAME DISMISSED
   // ===========================================================================
 
-  static Future<void> showGameDismissed({
-    required String reason,
-    required RoomTheme theme,
-  }) {
+  static Future<void> showGameDismissed({required String reason}) {
     return Get.dialog<void>(
       PopScope(
         canPop: false,
         child: AlertDialog(
           backgroundColor: AppColors.surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: Dimens.radius16,
-            side: BorderSide(color: theme.primary.withValues(alpha: 0.4)),
-          ),
+          shape: _dialogShape,
           title: Text(
             'Game Dismissed',
             textAlign: TextAlign.center,
-            style: TextStyle(color: theme.primary, fontWeight: FontWeight.w800),
+            style: TextStyle(
+              color: Get.theme.colorScheme.primary,
+              fontWeight: FontWeight.w800,
+            ),
           ),
           content: Text(
             reason,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.textPrimary),
+            style: TextStyle(color: Get.theme.colorScheme.onSurface),
           ),
           actionsAlignment: MainAxisAlignment.center,
           actions: [
@@ -233,7 +222,6 @@ class GameDialogUtils {
               },
               child: const Text('Back Home'),
             ),
-            SizedBox(height: Dimens.four),
             ElevatedButton(
               onPressed: () {
                 Get.back();
@@ -249,8 +237,15 @@ class GameDialogUtils {
   }
 
   // ===========================================================================
-  // SCORE
+  // HELPERS
   // ===========================================================================
+
+  static RoundedRectangleBorder get _dialogShape => RoundedRectangleBorder(
+    borderRadius: Dimens.radius16,
+    side: BorderSide(
+      color: Get.theme.colorScheme.primary.withValues(alpha: 0.4),
+    ),
+  );
 
   static Widget _buildScoreRow(PlayerModel player) {
     return Row(
@@ -259,16 +254,16 @@ class GameDialogUtils {
           child: Text(
             player.name,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
+            style: TextStyle(
+              color: Get.theme.colorScheme.onSurface,
               fontWeight: FontWeight.w700,
             ),
           ),
         ),
         Text(
           '${player.points}',
-          style: const TextStyle(
-            color: AppColors.neonCyan,
+          style: TextStyle(
+            color: Get.theme.colorScheme.secondary,
             fontSize: 18,
             fontWeight: FontWeight.w800,
           ),

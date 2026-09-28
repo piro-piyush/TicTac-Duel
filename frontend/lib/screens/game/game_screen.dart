@@ -42,7 +42,6 @@ class GameScreen extends GetView<GameController> {
       }
 
       return NeonBackgroundWidget(
-        // needScroll: true,
         title: 'Tic Tac Duel',
         child: child,
       );

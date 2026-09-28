@@ -396,6 +396,7 @@ class Dimens {
   static BorderRadius get radius22 => BorderRadius.circular(twentyTwo);
 
   static BorderRadius get radius24 => BorderRadius.circular(twentyFour);
+  static BorderRadius get radius30 => BorderRadius.circular(thirty);
 
 
   /// ---------------------------------------------------------------------------
