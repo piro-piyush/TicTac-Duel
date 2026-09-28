@@ -13,7 +13,7 @@ class SelectRoomThemeWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      spacing: Dimens.eight,
+      spacing: Dimens.sixteen,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Column(
@@ -40,17 +40,17 @@ class SelectRoomThemeWidget extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: () => onThemeChanged(theme),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: Dimens.radius14,
           splashColor: theme.primary.withValues(alpha: 0.08),
           highlightColor: theme.primary.withValues(alpha: 0.04),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 180),
-            padding: const EdgeInsets.all(13),
+            padding: Dimens.edgeInsets14,
             decoration: BoxDecoration(
               color: isSelected
                   ? theme.primary.withValues(alpha: 0.09)
                   : AppColors.surface,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: Dimens.radius14,
               border: Border.all(
                 color: isSelected
                     ? theme.primary.withValues(alpha: 0.75)
@@ -67,7 +67,7 @@ class SelectRoomThemeWidget extends StatelessWidget {
                   : null,
             ),
             child: Column(
-              spacing: 9,
+              spacing: Dimens.eight,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
@@ -91,12 +91,12 @@ class SelectRoomThemeWidget extends StatelessWidget {
                               Icons.check_circle_rounded,
                               key: const ValueKey('selected'),
                               color: theme.primary,
-                              size: 16,
+                              size: Dimens.iconSm,
                             )
-                          : const SizedBox(
+                          : SizedBox(
                               key: ValueKey('unselected'),
-                              width: 16,
-                              height: 16,
+                              width: Dimens.iconSm,
+                              height: Dimens.iconSm,
                             ),
                     ),
                   ],
@@ -109,7 +109,7 @@ class SelectRoomThemeWidget extends StatelessWidget {
                   ),
                 ),
                 Row(
-                  spacing: 5,
+                  spacing: Dimens.six,
                   children: [
                     _buildThemeDot(theme.primary),
                     _buildThemeDot(theme.secondary),
@@ -172,7 +172,7 @@ class SelectRoomThemeWidget extends StatelessWidget {
                   children: [
                     Icon(
                       Icons.palette_outlined,
-                      size: 13,
+                      size: Dimens.iconXs,
                       color: theme.secondary,
                     ),
                     Text(
@@ -194,22 +194,20 @@ class SelectRoomThemeWidget extends StatelessWidget {
   }
 
   Widget _buildMiniBoard(RoomTheme theme) {
-    const symbols = ['X', '', 'O', '', 'X', '', 'O', '', ''];
-
     return SizedBox(
       width: Dimens.ninetySix,
       height: Dimens.ninetySix,
       child: GridView.builder(
         physics: const NeverScrollableScrollPhysics(),
         padding: EdgeInsets.zero,
-        itemCount: symbols.length,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          crossAxisSpacing: 4,
-          mainAxisSpacing: 4,
+        itemCount: GameConstants.themePreviewSymbols.length,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: GameConstants.boardSize,
+          crossAxisSpacing: Dimens.four,
+          mainAxisSpacing: Dimens.four,
         ),
         itemBuilder: (context, index) {
-          final symbol = symbols[index];
+          final symbol = GameConstants.themePreviewSymbols[index];
 
           return Container(
             decoration: BoxDecoration(
@@ -218,12 +216,14 @@ class SelectRoomThemeWidget extends StatelessWidget {
               border: Border.all(color: theme.primary.withValues(alpha: 0.07)),
             ),
             child: Center(
-              child: symbol.isEmpty
+              child: symbol == null
                   ? null
                   : Text(
-                      symbol,
+                      symbol.value.toString().toUpperCase(),
                       style: TextStyle(
-                        color: symbol == 'X' ? theme.primary : theme.secondary,
+                        color: symbol == PlayerSymbol.x
+                            ? theme.primary
+                            : theme.secondary,
                         fontSize: 17,
                         fontWeight: FontWeight.w800,
                       ),

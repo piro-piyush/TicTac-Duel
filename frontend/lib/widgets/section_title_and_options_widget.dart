@@ -25,7 +25,7 @@ class SectionTitleAndOptionsWidget extends StatelessWidget {
           clipBehavior: Clip.antiAlias,
           child: Column(
             mainAxisSize: MainAxisSize.min,
-
+            spacing: Dimens.ten,
             children: List.generate(
               children.length * 2 - 1,
               (index) =>
