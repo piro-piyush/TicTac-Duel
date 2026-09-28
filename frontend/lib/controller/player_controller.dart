@@ -9,56 +9,39 @@ class PlayerController extends GetxController {
   final PlayerIdentityService _identityService;
   final PlayerApiService _playerApiService;
 
-  final RxString _playerId = ''.obs;
-  final RxBool _isLoading = true.obs;
-  final RxBool _isInitialized = false.obs;
-  final RxnString _error = RxnString();
+  final RxnString _playerId = RxnString();
 
-  String get playerId => _playerId.value;
+  String get playerId {
+    final id = _playerId.value;
 
-  bool get isLoading => _isLoading.value;
+    if (id == null || id.isEmpty) {
+      throw StateError('Player ID is not initialized');
+    }
 
-  bool get isInitialized => _isInitialized.value;
-
-  String? get error => _error.value;
+    return id;
+  }
 
   @override
   void onInit() {
     super.onInit();
-    initialize();
+    _initialize();
   }
 
-  Future<void> initialize() async {
-    _isLoading.value = true;
-    _isInitialized.value = false;
-    _error.value = null;
-
+  Future<void> _initialize() async {
     try {
       var playerId = await _identityService.getPlayerId();
 
       if (playerId == null) {
-        playerId = _identityService.generatePlayerId();
+        final player = await _playerApiService.create();
 
-        await _playerApiService.initialize(playerId);
+        playerId = player.id;
 
-        final saved = await _identityService.setPlayerId(playerId);
-
-        if (!saved) {
-          throw Exception('Failed to save player identity');
-        }
-      } else {
-        await _playerApiService.initialize(playerId);
+        await _identityService.setPlayerId(playerId);
       }
 
       _playerId.value = playerId;
-      _isInitialized.value = true;
     } catch (error, stackTrace) {
-      _error.value = error.toString();
-
       LoggerUtils.error('Failed to initialize player', error, stackTrace);
-    } finally {
-      _isLoading.value = false;
     }
   }
-
 }
