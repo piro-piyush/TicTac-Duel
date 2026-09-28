@@ -118,3 +118,72 @@ enum RoundStatus {
 
   final String value;
 }
+
+enum LocalGameType {
+  friend(
+    value: 'friend',
+    name: 'Local Friend',
+    description: 'Play face-to-face with a friend on the same device.',
+    icon: Icons.people_alt_rounded,
+    color: AppColors.neonCyan,
+  ),
+  computer(
+    value: 'computer',
+    name: 'Computer',
+    description: 'Challenge the CPU and play completely offline.',
+    icon: Icons.smart_toy_rounded,
+    color: AppColors.neonPink,
+  );
+
+  const LocalGameType({
+    required this.value,
+    required this.name,
+    required this.description,
+    required this.icon,
+    required this.color,
+  });
+
+  final String value;
+  final String name;
+  final String description;
+  final IconData icon;
+  final Color color;
+}
+
+enum CpuDifficulty {
+  easy(
+    value: 'easy',
+    name: 'Easy',
+    description: 'A relaxed opponent that makes occasional random moves.',
+    icon: Icons.sentiment_satisfied_alt_rounded,
+    color: AppColors.neonGreen,
+  ),
+  medium(
+    value: 'medium',
+    name: 'Medium',
+    description: 'A balanced opponent that can attack and defend.',
+    icon: Icons.flash_on_rounded,
+    color: AppColors.neonCyan,
+  ),
+  hard(
+    value: 'hard',
+    name: 'Hard',
+    description: 'A strategic opponent that plays near-perfect moves.',
+    icon: Icons.local_fire_department_rounded,
+    color: AppColors.neonPink,
+  );
+
+  const CpuDifficulty({
+    required this.value,
+    required this.name,
+    required this.description,
+    required this.icon,
+    required this.color,
+  });
+
+  final String value;
+  final String name;
+  final String description;
+  final IconData icon;
+  final Color color;
+}

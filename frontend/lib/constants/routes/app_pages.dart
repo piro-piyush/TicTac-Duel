@@ -17,13 +17,27 @@ abstract final class AppPages {
       page: JoinRoomScreen.new,
       binding: RoomBinding(),
     ),
-
+    GetPage(
+      name: AppRoutes.quickMatch,
+      page: QuickMatchScreen.new,
+      binding: QuickMatchBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.localGame,
+      page: LocalGameScreen.new,
+      binding: LocalGameBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.localGameBoard,
+      binding: LocalGameBoardBinding(),
+      page: LocalGameBoardScreen.new,
+    ),
     // GetPage(
     //   name: AppRoutes.waitingRoom,
     //   page: WaitingRoomScreen.new,
     //   binding: WaitingRoomBinding(),
     // ),
-    GetPage(name: AppRoutes.game, page: GameScreen.new, binding: GameBinding(),),
+    GetPage(name: AppRoutes.game, page: GameScreen.new, binding: GameBinding()),
 
     GetPage(
       name: AppRoutes.result,
@@ -34,7 +48,6 @@ abstract final class AppPages {
     GetPage(name: AppRoutes.settings, page: SettingsScreen.new),
 
     // GetPage(name: AppRoutes.privacyPolicy, page: PrivacyPolicyScreen.new),
-
     GetPage(name: AppRoutes.help, page: HelpScreen.new),
   ];
 }

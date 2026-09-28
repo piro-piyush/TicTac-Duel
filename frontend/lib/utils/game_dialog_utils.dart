@@ -67,17 +67,17 @@ class GameDialogUtils {
   // ===========================================================================
 
   static Future<void> showGameFinished({
-    required RoomModel room,
+    required PlayerModel playerOne,
+    required PlayerModel playerTwo,
+    required int playerOneScore,
+    required int playerTwoScore,
     required PlayerSymbol mySymbol,
   }) {
-    final playerOne = room.players[0];
-    final playerTwo = room.players[1];
-
-    final isDraw = playerOne.points == playerTwo.points;
+    final isDraw = playerOneScore == playerTwoScore;
 
     final overallWinner = isDraw
         ? null
-        : playerOne.points > playerTwo.points
+        : playerOneScore > playerTwoScore
         ? playerOne
         : playerTwo;
 
@@ -111,12 +111,19 @@ class GameDialogUtils {
                     ? 'The game ended in a draw.'
                     : '${overallWinner!.name} wins the game!',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Get.theme.colorScheme.onSurface),
+                style: TextStyle(
+                  color: Get.theme.colorScheme.onSurface,
+                ),
               ),
               const SizedBox(height: 20),
-              _buildScoreRow(playerOne),
+              _buildScoreRow(
+                playerOne,
+
+              ),
               const SizedBox(height: 8),
-              _buildScoreRow(playerTwo),
+              _buildScoreRow(
+                playerTwo,
+              ),
             ],
           ),
           actionsAlignment: MainAxisAlignment.center,
@@ -131,7 +138,7 @@ class GameDialogUtils {
             ElevatedButton(
               onPressed: () {
                 Get.back();
-                AppNavigation.goToCreateRoom();
+                AppNavigation.pushLocalGame();
               },
               child: const Text('New Game'),
             ),
@@ -225,7 +232,7 @@ class GameDialogUtils {
             ElevatedButton(
               onPressed: () {
                 Get.back();
-                AppNavigation.goToCreateRoom();
+                AppNavigation.replaceCreateRoom();
               },
               child: const Text('New Game'),
             ),

@@ -3,3 +3,6 @@ export 'music_controller.dart';
 export 'player_controller.dart';
 export 'result_controller.dart';
 export 'room_controller.dart';
+export 'quick_match_controller.dart';
+export 'local_game_controller.dart';
+export 'local_game_board_controller.dart';
