@@ -1,9 +1,8 @@
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
-
 import {
-    players,
-    roomPlayers,
-    rooms,
+  players,
+  roomPlayers,
+  rooms,
 } from "./schema.js";
 
 export type Player = InferSelectModel<typeof players>;

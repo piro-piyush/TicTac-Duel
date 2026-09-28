@@ -4,6 +4,7 @@ import {
   pgEnum,
   pgTable,
   timestamp,
+  unique,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
@@ -12,32 +13,52 @@ import {
 // Enums
 // ─────────────────────────────────────────────
 
+export const PlayerSymbol = {
+  X: "x",
+  O: "o",
+} as const;
+
+export const RoomTheme = {
+  CLASSIC: "classic",
+  INFERNO: "inferno",
+  CYBER: "cyber",
+} as const;
+
+export const RoomStatus = {
+  WAITING: "waiting",
+  PLAYING: "playing",
+  RESULT: "result",
+} as const;
+
 export const playerSymbolEnum = pgEnum("player_symbol", [
-  "x",
-  "o",
+  PlayerSymbol.X,
+  PlayerSymbol.O,
 ]);
 
 export const roomThemeEnum = pgEnum("room_theme", [
-  "classic",
-  "inferno",
-  "cyber",
+  RoomTheme.CLASSIC,
+  RoomTheme.INFERNO,
+  RoomTheme.CYBER,
 ]);
 
 export const roomStatusEnum = pgEnum("room_status", [
-  "waiting",
-  "playing",
-  "result",
+  RoomStatus.WAITING,
+  RoomStatus.PLAYING,
+  RoomStatus.RESULT,
 ]);
 
-// TypeScript types
+// ─────────────────────────────────────────────
+// TypeScript Types
+// ─────────────────────────────────────────────
+
 export type PlayerSymbol =
-  (typeof playerSymbolEnum.enumValues)[number];
+  (typeof PlayerSymbol)[keyof typeof PlayerSymbol];
 
 export type RoomTheme =
-  (typeof roomThemeEnum.enumValues)[number];
+  (typeof RoomTheme)[keyof typeof RoomTheme];
 
 export type RoomStatus =
-  (typeof roomStatusEnum.enumValues)[number];
+  (typeof RoomStatus)[keyof typeof RoomStatus];
 
 // ─────────────────────────────────────────────
 // Players
@@ -81,6 +102,10 @@ export const rooms = pgTable("rooms", {
   theme: roomThemeEnum("theme")
     .notNull(),
 
+  maxPlayers: integer("max_players")
+    .notNull()
+    .default(2),
+
   maxRounds: integer("max_rounds")
     .notNull()
     .default(5),
@@ -91,7 +116,7 @@ export const rooms = pgTable("rooms", {
 
   roundStatus: roomStatusEnum("round_status")
     .notNull()
-    .default("waiting"),
+    .default(RoomStatus.WAITING),
 
   turnPlayerId: uuid("turn_player_id")
     .references(() => players.id),
@@ -102,7 +127,7 @@ export const rooms = pgTable("rooms", {
 
   boardSize: integer("board_size")
     .notNull()
-    .default(9),
+    .default(3),
 
   createdAt: timestamp("created_at", {
     withTimezone: true,
@@ -121,46 +146,51 @@ export const rooms = pgTable("rooms", {
 // Room Players
 // ─────────────────────────────────────────────
 
-export const roomPlayers = pgTable("room_players", {
-  id: uuid("id")
-    .defaultRandom()
-    .primaryKey(),
+export const roomPlayers = pgTable(
+  "room_players",
+  {
+    id: uuid("id")
+      .defaultRandom()
+      .primaryKey(),
 
-  roomId: uuid("room_id")
-    .notNull()
-    .references(() => rooms.id, {
-      onDelete: "cascade",
-    }),
+    roomId: uuid("room_id")
+      .notNull()
+      .references(() => rooms.id, {
+        onDelete: "cascade",
+      }),
 
-  playerId: uuid("player_id")
-    .notNull()
-    .references(() => players.id, {
-      onDelete: "cascade",
-    }),
+    playerId: uuid("player_id")
+      .notNull()
+      .references(() => players.id, {
+        onDelete: "cascade",
+      }),
 
-  name: varchar("name", {
-    length: 20,
-  })
-    .notNull(),
+    name: varchar("name", {
+      length: 20,
+    })
+      .notNull(),
 
-  symbol: playerSymbolEnum("symbol")
-    .notNull(),
+    symbol: playerSymbolEnum("symbol")
+      .notNull(),
 
-  // socketId: varchar("socket_id", {
-  //   length: 100,
-  // }),
+    points: integer("points")
+      .notNull()
+      .default(0),
 
-  points: integer("points")
-    .notNull()
-    .default(0),
+    isReady: boolean("is_ready")
+      .notNull()
+      .default(true),
 
-  isReady: boolean("is_ready")
-    .notNull()
-    .default(false),
-
-  joinedAt: timestamp("joined_at", {
-    withTimezone: true,
-  })
-    .defaultNow()
-    .notNull(),
-});
+    joinedAt: timestamp("joined_at", {
+      withTimezone: true,
+    })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    unique("room_players_room_player_unique").on(
+      table.roomId,
+      table.playerId,
+    ),
+  ],
+);
