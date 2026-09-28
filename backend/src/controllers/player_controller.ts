@@ -2,40 +2,39 @@ import type {
   Response as ExpressResponse,
   Request,
 } from "express";
-
 import Logger from "../core/utils/logger.js";
 import Response from "../core/utils/response.js";
 import PlayerService from "../services/player_service.js";
 import { playerIdValidator } from "../validators/player_validator.js";
 
 class PlayerController {
-  async initialize(
-    req: Request,
+  // ===========================================================================
+  // CREATE PLAYER
+  // ===========================================================================
+
+  async create(
+    _req: Request,
     res: ExpressResponse,
   ): Promise<ExpressResponse> {
     try {
-      const id = this._validatePlayerId(req.body?.id);
-
-      if (!id) {
-        return Response.badRequest(res, "Invalid player ID");
-      }
-
-      const player = await PlayerService.initializePlayer({
-        id,
-      });
+      const player = await PlayerService.createPlayer();
 
       return Response.success(res, {
-        message: "Player initialized",
+        message: "Player created",
         data: player,
       });
     } catch (error: unknown) {
       return this._handleError(
         res,
-        "Failed to initialize player",
+        "Failed to create player",
         error,
       );
     }
   }
+
+  // ===========================================================================
+  // GET PLAYER
+  // ===========================================================================
 
   async getPlayer(
     req: Request,
@@ -67,6 +66,10 @@ class PlayerController {
     }
   }
 
+  // ===========================================================================
+  // GET PLAYERS
+  // ===========================================================================
+
   async getPlayers(
     _req: Request,
     res: ExpressResponse,
@@ -86,6 +89,10 @@ class PlayerController {
       );
     }
   }
+
+  // ===========================================================================
+  // DELETE PLAYER
+  // ===========================================================================
 
   async deletePlayer(
     req: Request,
@@ -117,6 +124,10 @@ class PlayerController {
     }
   }
 
+  // ===========================================================================
+  // VALIDATION
+  // ===========================================================================
+
   private _validatePlayerId(
     value: unknown,
   ): string | null {
@@ -124,6 +135,10 @@ class PlayerController {
 
     return result.success ? result.data : null;
   }
+
+  // ===========================================================================
+  // ERROR HANDLING
+  // ===========================================================================
 
   private _handleError(
     res: ExpressResponse,

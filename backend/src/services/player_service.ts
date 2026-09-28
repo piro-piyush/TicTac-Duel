@@ -1,38 +1,28 @@
 import { eq } from "drizzle-orm";
-
 import { db } from "../db/index.js";
 import { players } from "../db/schema.js";
 
-interface InitializePlayerParams {
-    id: string;
-}
-
 class PlayerService {
-    async initializePlayer({
-        id,
-    }: InitializePlayerParams) {
+    // ===========================================================================
+    // CREATE PLAYER
+    // ===========================================================================
+
+    async createPlayer() {
         const [player] = await db
             .insert(players)
-            .values({
-                id: id,
-            })
-            .onConflictDoNothing({
-                target: players.id,
-            })
+            .values({})
             .returning();
 
-        if (player) {
-            return player;
+        if (!player) {
+            throw new Error("Failed to create player");
         }
 
-        const existingPlayer = await this.getPlayer(id);
-
-        if (!existingPlayer) {
-            throw new Error("Failed to initialize player");
-        }
-
-        return existingPlayer;
+        return player;
     }
+
+    // ===========================================================================
+    // GET PLAYER
+    // ===========================================================================
 
     async getPlayer(id: string) {
         const [player] = await db
@@ -44,11 +34,19 @@ class PlayerService {
         return player ?? null;
     }
 
+    // ===========================================================================
+    // GET PLAYERS
+    // ===========================================================================
+
     async getPlayers() {
         return db
             .select()
             .from(players);
     }
+
+    // ===========================================================================
+    // DELETE PLAYER
+    // ===========================================================================
 
     async deletePlayer(id: string) {
         const [player] = await db
