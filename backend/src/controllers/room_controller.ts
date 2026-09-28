@@ -2,7 +2,6 @@ import type {
   Response as ExpressResponse,
   Request,
 } from "express";
-
 import Logger from "../core/utils/logger.js";
 import Response from "../core/utils/response.js";
 import RoomService from "../services/room_service.js";
@@ -38,6 +37,30 @@ class RoomController {
   }
 
   // ===========================================================================
+  // GET PUBLIC ROOMS
+  // ===========================================================================
+
+  async getPublicRooms(
+    _req: Request,
+    res: ExpressResponse,
+  ): Promise<ExpressResponse> {
+    try {
+      const rooms = await RoomService.getPublicRooms();
+
+      return Response.success(res, {
+        message: "Public rooms found",
+        data: rooms,
+      });
+    } catch (error: unknown) {
+      Logger.error("Failed to get public rooms", error);
+
+      return Response.error(res, {
+        message: this._getErrorMessage(error),
+      });
+    }
+  }
+
+  // ===========================================================================
   // GET ROOM
   // ===========================================================================
 
@@ -46,9 +69,7 @@ class RoomController {
     res: ExpressResponse,
   ): Promise<ExpressResponse> {
     try {
-      const result = uuidValidator.safeParse(
-        req.params.id,
-      );
+      const result = uuidValidator.safeParse(req.params.id);
 
       if (!result.success) {
         return Response.badRequest(
@@ -57,9 +78,7 @@ class RoomController {
         );
       }
 
-      const room = await RoomService.getRoom(
-        result.data,
-      );
+      const room = await RoomService.getRoom(result.data);
 
       if (!room) {
         return Response.notFound(
@@ -211,7 +230,7 @@ class RoomController {
   }
 
   // ===========================================================================
-  // Private: Error Message
+  // PRIVATE: ERROR MESSAGE
   // ===========================================================================
 
   private _getErrorMessage(error: unknown): string {

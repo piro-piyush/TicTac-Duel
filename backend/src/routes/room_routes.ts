@@ -1,5 +1,4 @@
 import { Router } from "express";
-
 import RoomController from "../controllers/room_controller.js";
 
 const roomRoutes = Router();
@@ -11,6 +10,15 @@ const roomRoutes = Router();
 roomRoutes.get(
   "/",
   RoomController.getRooms.bind(RoomController),
+);
+
+// ============================================================================
+// GET PUBLIC ROOMS
+// ============================================================================
+
+roomRoutes.get(
+  "/public",
+  RoomController.getPublicRooms.bind(RoomController),
 );
 
 // ============================================================================

@@ -1,13 +1,14 @@
 import {
   and,
   eq,
-  sql
+  sql,
 } from "drizzle-orm";
 import { db } from "../db/index.js";
 import {
   players,
   roomPlayers,
   rooms,
+  RoomStatus,
 } from "../db/schema.js";
 import type { NewRoom } from "../db/types.js";
 import type {
@@ -20,6 +21,7 @@ import type {
   RoomPlayer,
   SubmitGameResultParams,
 } from "../validators/room_validator.js";
+
 // -----------------------------------------------------------------------------
 // Types
 // -----------------------------------------------------------------------------
@@ -62,10 +64,10 @@ class RoomService {
       maxRounds,
       isPrivate,
       currentRound: 0,
-      roundStatus: "waiting",
+      roundStatus: RoomStatus.WAITING,
       turnPlayerId: playerId,
       turnIndex: 0,
-      boardSize: 9,
+      boardSize: 3,
     };
 
     return db.transaction(async (tx) => {
@@ -86,7 +88,6 @@ class RoomService {
           playerId,
           name: playerName,
           symbol,
-
         },
         tx,
       );
@@ -110,25 +111,32 @@ class RoomService {
       throw new Error("Room not found");
     }
 
-    if (room.roundStatus === "playing") {
+    if (room.roundStatus === RoomStatus.PLAYING) {
       throw new Error("Game is already in progress");
     }
 
-    if (room.players.length >= 2) {
+    if (room.players.length >= room.maxPlayers) {
       throw new Error("Room is full");
     }
 
-    if (room.players.some((player) => player.id === playerId)) {
+    if (
+      room.players.some(
+        (player) => player.id === playerId,
+      )
+    ) {
       throw new Error("Player is already in this room");
     }
 
-    const hostPlayer = room.players[0];
+    const hostPlayer = room.players.find(
+      (player) => player.id === room.hostPlayerId,
+    );
 
     if (!hostPlayer) {
       throw new Error("Room has no host player");
     }
 
-    const guestSymbol = hostPlayer.symbol === "x" ? "o" : "x";
+    const guestSymbol =
+      hostPlayer.symbol === "x" ? "o" : "x";
 
     return db.transaction(async (tx) => {
       await this._ensurePlayer(playerId, tx);
@@ -143,9 +151,7 @@ class RoomService {
         tx,
       );
 
-      return this._requireRoom(
-        () => this._getRoom(room.id, tx),
-      );
+      return this._getRoom(room.id, tx);
     });
   }
 
@@ -158,27 +164,39 @@ class RoomService {
     index,
     playerId,
   }: MakeMoveParams): Promise<MoveResult> {
-    const room = await this._requireRoomByCode(roomCode);
+    const room =
+      await this._requireRoomByCode(roomCode);
 
-    if (room.roundStatus !== "playing") {
+    if (room.roundStatus !== RoomStatus.PLAYING) {
       throw new Error("Round is not active");
     }
 
-    if (index < 0 || index >= room.boardSize) {
+    if (
+      index < 0 ||
+      index >= room.boardSize * room.boardSize
+    ) {
       throw new Error("Invalid board position");
     }
 
-    const player = this._getRoomPlayer(room, playerId);
+    const player = this._getRoomPlayer(
+      room,
+      playerId,
+    );
 
     if (room.turnPlayerId !== player.id) {
       throw new Error("Not your turn");
     }
 
-    const nextTurnIndex = room.turnIndex === 0 ? 1 : 0;
-    const nextPlayer = room.players[nextTurnIndex];
+    const nextTurnIndex =
+      room.turnIndex === 0 ? 1 : 0;
+
+    const nextPlayer =
+      room.players[nextTurnIndex];
 
     if (!nextPlayer) {
-      throw new Error("Unable to determine next player");
+      throw new Error(
+        "Unable to determine next player",
+      );
     }
 
     await db
@@ -190,7 +208,10 @@ class RoomService {
       })
       .where(eq(rooms.id, room.id));
 
-    const updatedRoom = await this._getRoom(room.id, db);
+    const updatedRoom = await this._getRoom(
+      room.id,
+      db,
+    );
 
     return {
       room: updatedRoom,
@@ -211,20 +232,21 @@ class RoomService {
     winningIndexes,
     playerId,
   }: SubmitGameResultParams): Promise<GameResult> {
-    const room = await this._requireRoomByCode(roomCode);
+    const room =
+      await this._requireRoomByCode(roomCode);
 
-    if (room.roundStatus !== "playing") {
+    if (room.roundStatus !== RoomStatus.PLAYING) {
       throw new Error("Round is not active");
     }
 
-    if (room.players.length !== 2) {
-      throw new Error("Room does not have two players");
+    if (room.players.length !== room.maxPlayers) {
+      throw new Error(
+        "Room does not have enough players",
+      );
     }
 
-    const submittingPlayer = this._getRoomPlayer(
-      room,
-      playerId,
-    );
+    const submittingPlayer =
+      this._getRoomPlayer(room, playerId);
 
     // -------------------------------------------------------------------------
     // Draw
@@ -232,12 +254,15 @@ class RoomService {
 
     if (winnerPlayerId === null) {
       await db.transaction(async (tx) => {
-        await this._resetPlayersReady(room.id, tx);
+        await this._resetPlayersReady(
+          room.id,
+          tx,
+        );
 
         await tx
           .update(rooms)
           .set({
-            roundStatus: "result",
+            roundStatus: RoomStatus.RESULT,
             turnPlayerId: null,
             updatedAt: new Date(),
           })
@@ -257,7 +282,9 @@ class RoomService {
     // Win
     // -------------------------------------------------------------------------
 
-    if (submittingPlayer.id !== winnerPlayerId) {
+    if (
+      submittingPlayer.id !== winnerPlayerId
+    ) {
       throw new Error("Invalid winner");
     }
 
@@ -281,14 +308,19 @@ class RoomService {
           points: sql`${roomPlayers.points} + 1`,
           isReady: false,
         })
-        .where(eq(roomPlayers.id, winner.id));
+        .where(
+          eq(roomPlayers.id, winner.id),
+        );
 
-      await this._resetPlayersReady(room.id, tx);
+      await this._resetPlayersReady(
+        room.id,
+        tx,
+      );
 
       await tx
         .update(rooms)
         .set({
-          roundStatus: "result",
+          roundStatus: RoomStatus.RESULT,
           turnIndex: winnerIndex,
           turnPlayerId: winnerPlayerId,
           updatedAt: new Date(),
@@ -309,7 +341,9 @@ class RoomService {
   // Get Room By ID
   // ---------------------------------------------------------------------------
 
-  async getRoom(roomId: string): Promise<Room | null> {
+  async getRoom(
+    roomId: string,
+  ): Promise<Room | null> {
     return this._getRoom(roomId, db);
   }
 
@@ -317,7 +351,9 @@ class RoomService {
   // Get Room By Code
   // ---------------------------------------------------------------------------
 
-  async getRoomByCode(roomCode: string): Promise<Room | null> {
+  async getRoomByCode(
+    roomCode: string,
+  ): Promise<Room | null> {
     const result = await db
       .select({
         room: rooms,
@@ -354,44 +390,36 @@ class RoomService {
         eq(roomPlayers.roomId, rooms.id),
       );
 
-    const groupedRooms = new Map<
-      string,
-      {
-        room: typeof rooms.$inferSelect;
-        players: Array<typeof roomPlayers.$inferSelect>;
-      }
-    >();
+    return this._mapRooms(result);
+  }
 
-    for (const row of result) {
-      const existing = groupedRooms.get(row.room.id);
+  // ---------------------------------------------------------------------------
+  // Get Public Rooms
+  // ---------------------------------------------------------------------------
 
-      if (existing) {
-        if (row.roomPlayer) {
-          existing.players.push(row.roomPlayer);
-        }
+  async getPublicRooms(): Promise<Room[]> {
+    const result = await db
+      .select({
+        room: rooms,
+        roomPlayer: roomPlayers,
+      })
+      .from(rooms)
+      .leftJoin(
+        roomPlayers,
+        eq(roomPlayers.roomId, rooms.id),
+      )
+      .where(eq(rooms.isPrivate, false));
 
-        continue;
-      }
-
-      groupedRooms.set(row.room.id, {
-        room: row.room,
-        players: row.roomPlayer
-          ? [row.roomPlayer]
-          : [],
-      });
-    }
-
-    return Array.from(groupedRooms.values()).map(
-      ({ room, players }) =>
-        this._mapRoom(room, players),
-    );
+    return this._mapRooms(result);
   }
 
   // ---------------------------------------------------------------------------
   // Delete Room
   // ---------------------------------------------------------------------------
 
-  async deleteRoom(roomId: string): Promise<boolean> {
+  async deleteRoom(
+    roomId: string,
+  ): Promise<boolean> {
     const [deletedRoom] = await db
       .delete(rooms)
       .where(eq(rooms.id, roomId))
@@ -402,6 +430,9 @@ class RoomService {
     return deletedRoom !== undefined;
   }
 
+  // ---------------------------------------------------------------------------
+  // Set Player Ready
+  // ---------------------------------------------------------------------------
 
   async setPlayerReady(
     roomId: string,
@@ -426,29 +457,54 @@ class RoomService {
     return updatedPlayer !== undefined;
   }
 
-  async startRound(roomId: string): Promise<Room> {
-    return db.transaction(async (tx) => {
-      const room = await this._getRoom(roomId, tx);
+  // ---------------------------------------------------------------------------
+  // Start Round
+  // ---------------------------------------------------------------------------
 
-      if (room.players.length !== 2) {
-        throw new Error("Two players are required to start the round");
+  async startRound(
+    roomId: string,
+  ): Promise<Room> {
+    return db.transaction(async (tx) => {
+      const room = await this._getRoom(
+        roomId,
+        tx,
+      );
+
+      if (room.players.length !== room.maxPlayers) {
+        throw new Error(
+          "Two players are required to start the round",
+        );
+      }
+
+      if (
+        !room.players.every(
+          (player) => player.isReady,
+        )
+      ) {
+        throw new Error(
+          "Both players must be ready",
+        );
       }
 
       const firstPlayer = room.players.find(
-        (player) => player.id === room.hostPlayerId,
+        (player) =>
+          player.id === room.hostPlayerId,
       );
 
       if (!firstPlayer) {
-        throw new Error("Host player not found");
+        throw new Error(
+          "Host player not found",
+        );
       }
 
-      const nextRound = room.currentRound + 1;
+      const nextRound =
+        room.currentRound + 1;
 
       await tx
         .update(rooms)
         .set({
           currentRound: nextRound,
-          roundStatus: "playing",
+          roundStatus: RoomStatus.PLAYING,
           turnPlayerId: firstPlayer.id,
           turnIndex: 0,
           updatedAt: new Date(),
@@ -460,11 +516,17 @@ class RoomService {
         .set({
           isReady: false,
         })
-        .where(eq(roomPlayers.roomId, roomId));
+        .where(
+          eq(roomPlayers.roomId, roomId),
+        );
 
       return this._getRoom(roomId, tx);
     });
   }
+
+  // ---------------------------------------------------------------------------
+  // Remove Player
+  // ---------------------------------------------------------------------------
 
   async removePlayer(
     roomId: string,
@@ -499,26 +561,14 @@ class RoomService {
         roomPlayer: roomPlayers,
       })
       .from(rooms)
-      .leftJoin(roomPlayers, eq(roomPlayers.roomId, rooms.id))
+      .leftJoin(
+        roomPlayers,
+        eq(roomPlayers.roomId, rooms.id),
+      )
       .where(eq(rooms.id, roomId));
 
-    const room = this._mapRoomResult(result);
-
-    if (!room) {
-      throw new Error("Room not found");
-    }
-
-    return room;
-  }
-
-  // ---------------------------------------------------------------------------
-  // Private: Require Room
-  // ---------------------------------------------------------------------------
-
-  private async _requireRoom(
-    getRoom: () => Promise<Room | null>,
-  ): Promise<Room> {
-    const room = await getRoom();
+    const room =
+      this._mapRoomResult(result);
 
     if (!room) {
       throw new Error("Room not found");
@@ -534,7 +584,8 @@ class RoomService {
   private async _requireRoomByCode(
     roomCode: string,
   ): Promise<Room> {
-    const room = await this.getRoomByCode(roomCode);
+    const room =
+      await this.getRoomByCode(roomCode);
 
     if (!room) {
       throw new Error("Room not found");
@@ -544,13 +595,67 @@ class RoomService {
   }
 
   // ---------------------------------------------------------------------------
+  // Private: Map Rooms
+  // ---------------------------------------------------------------------------
+
+  private _mapRooms(
+    result: Array<{
+      room: typeof rooms.$inferSelect;
+      roomPlayer:
+      | typeof roomPlayers.$inferSelect
+      | null;
+    }>,
+  ): Room[] {
+    const groupedRooms = new Map<
+      string,
+      {
+        room: typeof rooms.$inferSelect;
+        players: Array<
+          typeof roomPlayers.$inferSelect
+        >;
+      }
+    >();
+
+    for (const row of result) {
+      const existing = groupedRooms.get(
+        row.room.id,
+      );
+
+      if (existing) {
+        if (row.roomPlayer) {
+          existing.players.push(
+            row.roomPlayer,
+          );
+        }
+
+        continue;
+      }
+
+      groupedRooms.set(row.room.id, {
+        room: row.room,
+        players: row.roomPlayer
+          ? [row.roomPlayer]
+          : [],
+      });
+    }
+
+    return Array.from(
+      groupedRooms.values(),
+    ).map(({ room, players }) =>
+      this._mapRoom(room, players),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
   // Private: Map Query Result
   // ---------------------------------------------------------------------------
 
   private _mapRoomResult(
     result: Array<{
       room: typeof rooms.$inferSelect;
-      roomPlayer: typeof roomPlayers.$inferSelect | null;
+      roomPlayer:
+      | typeof roomPlayers.$inferSelect
+      | null;
     }>,
   ): Room | null {
     if (result.length === 0) {
@@ -572,7 +677,10 @@ class RoomService {
           player !== null,
       );
 
-    return this._mapRoom(first.room, players);
+    return this._mapRoom(
+      first.room,
+      players,
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -627,7 +735,8 @@ class RoomService {
     playerId: string,
   ): RoomPlayer {
     const player = room.players.find(
-      (roomPlayer) => roomPlayer.id === playerId,
+      (roomPlayer) =>
+        roomPlayer.id === playerId,
     );
 
     if (!player) {
@@ -652,7 +761,9 @@ class RoomService {
       .set({
         isReady: false,
       })
-      .where(eq(roomPlayers.roomId, roomId));
+      .where(
+        eq(roomPlayers.roomId, roomId),
+      );
   }
 
   // ---------------------------------------------------------------------------
@@ -666,25 +777,30 @@ class RoomService {
     completedRound: number,
     maxRounds: number,
   ): Promise<GameResult> {
-    const room = await this._getRoom(roomId, db);
+    const room =
+      await this._getRoom(roomId, db);
 
     return {
       room,
       winnerPlayerId,
       winningIndexes,
       completedRound,
-      gameFinished: completedRound >= maxRounds,
+      gameFinished:
+        completedRound >= maxRounds,
     };
   }
+
   // ---------------------------------------------------------------------------
   // Private: Map Room
   // ---------------------------------------------------------------------------
 
   private _mapRoom(
     room: typeof rooms.$inferSelect,
-    playerRows: Array<typeof roomPlayers.$inferSelect>,
+    playerRows: Array<
+      typeof roomPlayers.$inferSelect
+    >,
   ): Room {
-    const mappedPlayers: RoomPlayer[] =
+    const players: RoomPlayer[] =
       playerRows.map((player) => ({
         id: player.playerId,
         name: player.name,
@@ -696,16 +812,17 @@ class RoomService {
     return {
       id: room.id,
       roomCode: room.roomCode,
+      isPrivate: room.isPrivate,
       hostPlayerId: room.hostPlayerId,
       theme: room.theme,
+      maxPlayers: room.maxPlayers,
       maxRounds: room.maxRounds,
       currentRound: room.currentRound,
       roundStatus: room.roundStatus,
       turnPlayerId: room.turnPlayerId,
       turnIndex: room.turnIndex,
       boardSize: room.boardSize,
-      players: mappedPlayers,
-      occupancy: mappedPlayers.length,
+      players,
       createdAt: room.createdAt,
       updatedAt: room.updatedAt,
     };
@@ -723,14 +840,17 @@ class RoomService {
       attempt < maxAttempts;
       attempt++
     ) {
-      const roomCode = this._generateRoomCode();
+      const roomCode =
+        this._generateRoomCode();
 
       const [existingRoom] = await db
         .select({
           id: rooms.id,
         })
         .from(rooms)
-        .where(eq(rooms.roomCode, roomCode))
+        .where(
+          eq(rooms.roomCode, roomCode),
+        )
         .limit(1);
 
       if (!existingRoom) {
