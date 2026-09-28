@@ -36,6 +36,7 @@ class RoomController extends GetxController {
   final RxBool _isRoomPrivate = true.obs;
 
   final RxList<RoomModel> _rooms = <RoomModel>[].obs;
+
   // ===========================================================================
   // REQUEST STATE
   // ===========================================================================
@@ -177,7 +178,7 @@ class RoomController extends GetxController {
         isPrivate: isRoomPrivate,
       );
 
-      AppNavigation.replaceToGame(room.roomCode);
+      AppNavigation.replaceGame(room.roomCode);
     } catch (error) {
       _errorMessage.value = error.toString();
     } finally {
@@ -208,7 +209,7 @@ class RoomController extends GetxController {
         roomCode: roomCodeController.text.trim().toUpperCase(),
       );
 
-      AppNavigation.replaceToGame(room.roomCode);
+      AppNavigation.replaceGame(room.roomCode);
     } catch (error) {
       _errorMessage.value = error.toString();
     } finally {
@@ -255,7 +256,6 @@ class RoomController extends GetxController {
       _errorMessage.value = error.toString();
     }
   }
-
 
   // ===========================================================================
   // PUBLIC ROOMS
