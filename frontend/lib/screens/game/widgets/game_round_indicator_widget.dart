@@ -1,14 +1,18 @@
 import 'package:tictac_duel/lib.dart';
 
 class GameRoundIndicatorWidget extends StatelessWidget {
-  final RoomModel room;
-  final bool compact;
-
   const GameRoundIndicatorWidget({
     super.key,
-    required this.room,
-    required this.compact,
+    required this.currentRound,
+    required this.maxRounds,
+    this.color = AppColors.neonCyan,
+    this.compact = false,
   });
+
+  final int currentRound;
+  final int maxRounds;
+  final Color color;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +24,7 @@ class GameRoundIndicatorWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: room.theme.primary.withValues(alpha: 0.20)),
+        border: Border.all(color: color.withValues(alpha: 0.20)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -28,13 +32,13 @@ class GameRoundIndicatorWidget extends StatelessWidget {
         children: [
           Icon(
             Icons.sports_esports_outlined,
-            color: room.theme.primary,
+            color: color,
             size: compact ? 14 : 15,
           ),
           Text(
-            'ROUND ${room.currentRound}',
+            'ROUND ${currentRound + 1}',
             style: TextStyle(
-              color: room.theme.primary,
+              color: color,
               fontSize: compact ? 9 : 10,
               fontWeight: FontWeight.w800,
               letterSpacing: 1.3,
@@ -48,7 +52,7 @@ class GameRoundIndicatorWidget extends StatelessWidget {
             ),
           ),
           Text(
-            '${room.maxRounds}',
+            '$maxRounds',
             style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: 10,

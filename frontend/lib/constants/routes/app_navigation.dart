@@ -19,7 +19,7 @@ abstract final class AppNavigation {
   // CREATE ROOM
   // ===========================================================================
 
-  static void goToCreateRoom() {
+  static void pushCreateRoom() {
     Get.toNamed(AppRoutes.createRoom);
   }
 
@@ -27,15 +27,11 @@ abstract final class AppNavigation {
     Get.offNamed(AppRoutes.createRoom);
   }
 
-  static void pushCreateRoom() {
-    Get.toNamed(AppRoutes.createRoom);
-  }
-
   // ===========================================================================
   // JOIN ROOM
   // ===========================================================================
 
-  static void goToJoinRoom() {
+  static void pushJoinRoom() {
     Get.toNamed(AppRoutes.joinRoom);
   }
 
@@ -43,23 +39,22 @@ abstract final class AppNavigation {
     Get.offNamed(AppRoutes.joinRoom);
   }
 
-  static void pushJoinRoom() {
-    Get.toNamed(AppRoutes.joinRoom);
-  }
-
   // ===========================================================================
   // WAITING ROOM
   // ===========================================================================
 
   static void replaceWaitingRoom(RoomModel room) {
-    Get.offNamed(AppRoutes.waitingRoom, arguments: room);
+    Get.offNamed(
+      AppRoutes.waitingRoom,
+      arguments: room,
+    );
   }
 
   // ===========================================================================
-  // GAME
+  // ONLINE GAME
   // ===========================================================================
 
-  static void replaceToGame(String roomCode) {
+  static void replaceGame(String roomCode) {
     Get.offNamed(
       AppRoutes.game.replaceFirst(':roomCode', roomCode),
       arguments: roomCode,
@@ -67,14 +62,44 @@ abstract final class AppNavigation {
   }
 
   // ===========================================================================
+  // QUICK MATCH
+  // ===========================================================================
+
+  static void pushQuickMatch() {
+    Get.toNamed(AppRoutes.quickMatch);
+  }
+
+  // ===========================================================================
+  // LOCAL GAME
+  // ===========================================================================
+
+  static void pushLocalGame() {
+    Get.toNamed(AppRoutes.localGame);
+  }
+
+  static void pushLocalGameBoard(LocalGameModel localGame) {
+    Get.toNamed(
+      AppRoutes.localGameBoard,
+      arguments: localGame,
+    );
+  }
+
+  static void replaceLocalGameBoard(LocalGameModel localGame) {
+    Get.offNamed(
+      AppRoutes.localGameBoard,
+      arguments: localGame,
+    );
+  }
+
+  // ===========================================================================
   // RESULT
   // ===========================================================================
 
-  static void goToResult() {
+  static void pushResult() {
     Get.toNamed(AppRoutes.result);
   }
 
-  static void replaceToResult() {
+  static void replaceResult() {
     Get.offNamed(AppRoutes.result);
   }
 
@@ -82,7 +107,7 @@ abstract final class AppNavigation {
   // SETTINGS
   // ===========================================================================
 
-  static void pushToSettings() {
+  static void pushSettings() {
     Get.toNamed(AppRoutes.settings);
   }
 
@@ -107,23 +132,15 @@ abstract final class AppNavigation {
   // ===========================================================================
 
   static void back() {
-    if (Get.isOverlaysOpen) {
+    if (Get.isDialogOpen == true ||
+        Get.isBottomSheetOpen == true ||
+        Get.isSnackbarOpen) {
       Get.back();
       return;
     }
 
-    if (Get.isDialogOpen == true) {
-      Get.back();
-      return;
-    }
-
-    if (Get.isSnackbarOpen) {
-      Get.back();
-      return;
-    }
-
-    if (Get.currentRoute != AppRoutes.home) {
-      Get.back();
-    }
+    // if (Get.canPop()) {
+    //   Get.back();
+    // }
   }
 }

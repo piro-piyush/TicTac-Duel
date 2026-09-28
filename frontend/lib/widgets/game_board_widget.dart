@@ -133,10 +133,7 @@ class WinningLinePainter extends CustomPainter {
       ..color = color.withValues(alpha: 0.35)
       ..strokeWidth = 12
       ..strokeCap = StrokeCap.round
-      ..maskFilter = const MaskFilter.blur(
-        BlurStyle.normal,
-        8,
-      );
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
 
     canvas.drawLine(start, end, glowPaint);
   }

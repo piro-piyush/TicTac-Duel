@@ -1,3 +1,5 @@
+import 'package:tictac_duel/constants/constants.dart';
+
 class GameConstants {
   GameConstants._();
 
@@ -20,6 +22,38 @@ class GameConstants {
 
   static const List<int> roundOptions = [1, 3, 5, 7];
 
+  static const List<PlayerSymbol?> themePreviewSymbols = [
+    PlayerSymbol.x,
+    null,
+    PlayerSymbol.o,
+    null,
+    PlayerSymbol.x,
+    null,
+    PlayerSymbol.o,
+    null,
+    PlayerSymbol.x,
+  ];
+
+  // ─────────────────────────────────────────────────────────────
+  // Local Game
+  // ─────────────────────────────────────────────────────────────
+
+  static const String localPlayerOneId = 'local_player_1';
+  static const String localPlayerTwoId = 'local_player_2';
+  static const String localCpuId = 'local_cpu';
+
+  static const String localPlayerOneName = 'Player One';
+  static const String localPlayerTwoName = 'Player Two';
+  static const String localCpuName = 'CPU';
+
+  static const Duration socketConnectionTimeout = Duration(seconds: 10);
+
+  static const Duration cpuMoveDelay = Duration(milliseconds: 450);
+
+  static const Duration resultDelay = Duration(seconds: 1);
+
+  static const Duration roundAnimationDuration = Duration(milliseconds: 1200);
+
   // ─────────────────────────────────────────────────────────────
   // Room
   // ─────────────────────────────────────────────────────────────
@@ -29,10 +63,7 @@ class GameConstants {
 
   static const Duration roomExpiryDuration = Duration(hours: 24);
 
-
   // ─────────────────────────────────────────────────────────────
   // Network
   // ─────────────────────────────────────────────────────────────
-
-  static const Duration socketConnectionTimeout = Duration(seconds: 10);
 }
