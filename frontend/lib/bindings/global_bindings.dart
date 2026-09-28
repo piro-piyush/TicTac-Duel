@@ -72,13 +72,15 @@ class GlobalBindings extends Bindings {
     // AUDIO
     // =========================================================================
 
-    Get.lazyPut<MusicController>(
-      () => MusicController(
+    Get.put<MusicController>(
+      MusicController(
         player: AudioPlayer(),
         effectPlayer: AudioPlayer(),
         storage: Get.find<LocalStorageService>(),
       ),
-      fenix: true,
+      permanent: true,
     );
+
+    Get.put<NetworkService>(NetworkService(connectivity: Connectivity()));
   }
 }

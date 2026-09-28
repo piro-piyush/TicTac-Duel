@@ -30,4 +30,8 @@ class AppColors {
   // Game Status
   static const Color win = neonGreen;
   static const Color draw = Color(0xFFFFD166);
+
+  static const Color darkerGrey = Color(0xFF4F4F4F);
+  static const Color grey = Color(0xFFE0E0E0);
+
 }

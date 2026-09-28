@@ -41,7 +41,7 @@ class LocalStorageService {
     }
   }
 
-  Future<bool> getBool(String key) async {
+  Future<bool?> getBool(String key) async {
     try {
       final value = await _storage.read(
         key: key,
@@ -51,7 +51,7 @@ class LocalStorageService {
       return value == 'true';
     } catch (error, stackTrace) {
       LoggerUtils.error('Failed to get bool: $key', error, stackTrace);
-      return false;
+      return null;
     }
   }
 

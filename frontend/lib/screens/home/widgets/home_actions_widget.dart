@@ -5,37 +5,45 @@ class HomeActionsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final networkService = Get.find<NetworkService>();
+
+    void checkNetworkAndRun(VoidCallback action) async {
+      if (!await networkService.isConnected()) {
+        PopupUtils.showToast('No internet connection');
+        return;
+      }
+
+      action();
+    }
+
     return Column(
       spacing: Dimens.thirty,
       children: [
         Column(
           spacing: Dimens.fourteen,
-
           children: [
             MenuButtonWidget(
               title: 'Quick Start',
               subtitle: 'Find an opponent and play',
               icon: Icons.bolt_rounded,
               color: AppColors.neonCyan,
-              onTap: () {
-                SnackbarUtils.showWarning('Coming soon...');
-              },
+              onTap: () => checkNetworkAndRun(
+                () => PopupUtils.showWarning('Coming soon...'),
+              ),
             ),
 
-            // Local Game
             MenuButtonWidget(
               title: 'Local Game',
               subtitle: 'Play against a friend on this device',
               icon: Icons.smartphone_rounded,
               color: AppColors.neonPurple,
               onTap: () {
-                SnackbarUtils.showWarning('Coming soon...');
+                PopupUtils.showWarning('Coming soon...');
               },
             ),
           ],
         ),
 
-        // Room-based multiplayer
         Row(
           spacing: Dimens.twelve,
           children: [
@@ -43,14 +51,18 @@ class HomeActionsWidget extends StatelessWidget {
               child: QuickActionWidget(
                 icon: Icons.add_rounded,
                 label: 'Create Room',
-                onTap: AppNavigation.pushCreateRoom,
+                onTap: () {
+                  checkNetworkAndRun(AppNavigation.pushCreateRoom);
+                },
               ),
             ),
             Expanded(
               child: QuickActionWidget(
                 icon: Icons.login_rounded,
                 label: 'Join Room',
-                onTap: AppNavigation.pushJoinRoom,
+                onTap: () {
+                  checkNetworkAndRun(AppNavigation.pushJoinRoom);
+                },
               ),
             ),
           ],
