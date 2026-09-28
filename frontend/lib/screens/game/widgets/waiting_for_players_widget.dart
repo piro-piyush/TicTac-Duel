@@ -440,6 +440,6 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
   void _copyRoomCode() {
     Clipboard.setData(ClipboardData(text: widget.room.roomCode));
 
-    SnackbarUtils.showSuccess('Room code copied');
+    PopupUtils.showSuccess('Room code copied');
   }
 }

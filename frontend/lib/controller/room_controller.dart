@@ -82,7 +82,7 @@ class RoomController extends GetxController {
         return;
       }
 
-      SnackbarUtils.showError('Room error: $message');
+      PopupUtils.showError('Room error: $message');
 
       clearError();
     });

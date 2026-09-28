@@ -4,129 +4,170 @@ class RoomModel {
   const RoomModel({
     required this.id,
     required this.roomCode,
+    required this.isPrivate,
     required this.hostPlayerId,
-    required this.occupancy,
+    required this.maxPlayers,
     required this.maxRounds,
     required this.currentRound,
     required this.roundStatus,
     required this.theme,
     required this.players,
-    required this.turn,
+    required this.turnPlayerId,
     required this.turnIndex,
     required this.boardSize,
   });
 
   final String id;
-  final String hostPlayerId;
   final String roomCode;
-  final int occupancy;
+  final bool isPrivate;
+  final String hostPlayerId;
+  final int maxPlayers;
   final int maxRounds;
   final int currentRound;
+  final RoundStatus roundStatus;
   final RoomTheme theme;
   final List<PlayerModel> players;
-  final PlayerModel? turn;
-  final RoundStatus roundStatus;
+  final String? turnPlayerId;
   final int turnIndex;
   final int boardSize;
 
-  factory RoomModel.fromJson(Map<String, dynamic> json) {
-    try {
-      return RoomModel(
-        id: json['id'] as String,
-        roomCode: json['roomCode'] as String,
-        hostPlayerId: json['hostPlayerId'] as String,
-        occupancy: json['occupancy'] as int,
-        maxRounds: json['maxRounds'] as int,
-        currentRound: json['currentRound'] as int,
-        theme: RoomTheme.values.byName(json['theme'] as String),
-        roundStatus: RoundStatus.values.byName(json['roundStatus'] as String),
-        players: (json['players'] as List)
-            .map(
-              (player) => PlayerModel.fromJson(
-                Map<String, dynamic>.from(player as Map),
-              ),
-            )
-            .toList(),
-        // isPlaying: json['isPlaying'] as bool,
-        turn: json['turn'] == null
-            ? null
-            : PlayerModel.fromJson(
-                Map<String, dynamic>.from(json['turn'] as Map),
-              ),
-        turnIndex: json['turnIndex'] as int,
-        boardSize: json['boardSize'] as int,
-      );
-    } catch (e) {
-      rethrow;
+  /// Number of players currently in the room.
+  int get occupancy => players.length;
+
+  /// Current player's turn.
+  PlayerModel? get turn {
+    final playerId = turnPlayerId;
+
+    if (playerId == null) {
+      return null;
     }
+
+    for (final player in players) {
+      if (player.id == playerId) {
+        return player;
+      }
+    }
+
+    return null;
   }
 
-  static List<RoomModel> publicRooms = [
-    RoomModel(
-      id: 'public-room-1',
-      hostPlayerId: 'mock-alex',
-      roomCode: 'ALEX01',
-      occupancy: 1,
-      maxRounds: 3,
-      currentRound: 0,
-      roundStatus: RoundStatus.waiting,
-      theme: RoomTheme.classic,
-      players: [
-        PlayerModel(
-          id: 'mock-alex',
-          name: 'Alex',
-          symbol: PlayerSymbol.x,
-          points: 0,
-          isReady: false,
-        ),
-      ],
-      turn: null,
-      turnIndex: 0,
-      boardSize: 9,
-    ),
-    RoomModel(
-      id: 'public-room-2',
-      hostPlayerId: 'mock-shadow',
-      roomCode: 'SHDW01',
-      occupancy: 1,
-      maxRounds: 5,
-      currentRound: 0,
-      roundStatus: RoundStatus.waiting,
-      theme: RoomTheme.inferno,
-      players: [
-        PlayerModel(
-          id: 'mock-shadow',
-          name: 'Shadow',
-          symbol: PlayerSymbol.x,
-          points: 0,
-          isReady: false,
-        ),
-      ],
-      turn: null,
-      turnIndex: 0,
-      boardSize: 9,
-    ),
-    RoomModel(
-      id: 'public-room-3',
-      hostPlayerId: 'mock-nova',
-      roomCode: 'NOVA01',
-      occupancy: 1,
-      maxRounds: 7,
-      currentRound: 0,
-      roundStatus: RoundStatus.waiting,
-      theme: RoomTheme.classic,
-      players: [
-        PlayerModel(
-          id: 'mock-nova',
-          name: 'Nova',
-          symbol: PlayerSymbol.o,
-          points: 0,
-          isReady: false,
-        ),
-      ],
-      turn: null,
-      turnIndex: 0,
-      boardSize: 9,
-    ),
-  ];
+  factory RoomModel.fromJson(dynamic json) {
+    if (json is! Map) {
+      throw const FormatException('Invalid room response');
+    }
+
+    final id = json['id'];
+    final roomCode = json['roomCode'];
+    final isPrivate = json['isPrivate'];
+    final hostPlayerId = json['hostPlayerId'];
+    final maxPlayers = json['maxPlayers'];
+    final maxRounds = json['maxRounds'];
+    final currentRound = json['currentRound'];
+    final roundStatus = json['roundStatus'];
+    final theme = json['theme'];
+    final players = json['players'];
+    final turnPlayerId = json['turnPlayerId'];
+    final turnIndex = json['turnIndex'];
+    final boardSize = json['boardSize'];
+
+    if (id is! String || id.isEmpty) {
+      throw const FormatException('Invalid room ID');
+    }
+
+    if (roomCode is! String || roomCode.isEmpty) {
+      throw const FormatException('Invalid room code');
+    }
+
+    if (isPrivate is! bool) {
+      throw const FormatException('Invalid room privacy value');
+    }
+
+    if (hostPlayerId is! String || hostPlayerId.isEmpty) {
+      throw const FormatException('Invalid host player ID');
+    }
+
+    if (maxPlayers is! num) {
+      throw const FormatException('Invalid maximum players value');
+    }
+
+    if (maxRounds is! num) {
+      throw const FormatException('Invalid maximum rounds value');
+    }
+
+    if (currentRound is! num) {
+      throw const FormatException('Invalid current round value');
+    }
+
+    if (roundStatus is! String) {
+      throw const FormatException('Invalid round status');
+    }
+
+    if (theme is! String) {
+      throw const FormatException('Invalid room theme');
+    }
+
+    if (players is! List) {
+      throw const FormatException('Invalid players data');
+    }
+
+    if (turnPlayerId != null &&
+        (turnPlayerId is! String || turnPlayerId.isEmpty)) {
+      throw const FormatException('Invalid turn player ID');
+    }
+
+    if (turnIndex is! num) {
+      throw const FormatException('Invalid turn index');
+    }
+
+    if (boardSize is! num) {
+      throw const FormatException('Invalid board size');
+    }
+
+    late final RoundStatus parsedRoundStatus;
+    late final RoomTheme parsedTheme;
+
+    try {
+      parsedRoundStatus = RoundStatus.values.byName(roundStatus);
+    } catch (_) {
+      throw const FormatException('Invalid round status');
+    }
+
+    try {
+      parsedTheme = RoomTheme.values.byName(theme);
+    } catch (_) {
+      throw const FormatException('Invalid room theme');
+    }
+
+    final parsedPlayers = <PlayerModel>[];
+
+    for (final player in players) {
+      if (player is! Map) {
+        throw const FormatException('Invalid player data');
+      }
+
+      try {
+        parsedPlayers.add(
+          PlayerModel.fromJson(Map<String, dynamic>.from(player)),
+        );
+      } catch (_) {
+        throw const FormatException('Invalid player data');
+      }
+    }
+
+    return RoomModel(
+      id: id,
+      roomCode: roomCode,
+      isPrivate: isPrivate,
+      hostPlayerId: hostPlayerId,
+      maxPlayers: maxPlayers.toInt(),
+      maxRounds: maxRounds.toInt(),
+      currentRound: currentRound.toInt(),
+      roundStatus: parsedRoundStatus,
+      theme: parsedTheme,
+      players: parsedPlayers,
+      turnPlayerId: turnPlayerId as String?,
+      turnIndex: turnIndex.toInt(),
+      boardSize: boardSize.toInt(),
+    );
+  }
 }

@@ -4,3 +4,4 @@ export 'http_service.dart';
 export 'player_api_service.dart';
 export 'room_api_service.dart';
 export 'local_storage_service.dart';
+export 'network_service.dart';

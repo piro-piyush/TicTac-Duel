@@ -6,28 +6,22 @@ class RoomApiService {
   final HttpService _httpService;
 
   // ===========================================================================
-  // GET ROOMS
+  // GET PUBLIC ROOMS
   // ===========================================================================
 
   Future<List<RoomModel>> getRooms() async {
-    final rooms = await _httpService.get<List<dynamic>>('/rooms');
+    final rooms = await _httpService.get<List<dynamic>>(
+      '/rooms/public',
+    );
 
     return rooms
         .map(
-          (room) => RoomModel.fromJson(Map<String, dynamic>.from(room as Map)),
-        )
+          (room) => RoomModel.fromJson(
+        Map<String, dynamic>.from(room as Map),
+      ),
+    )
         .toList();
   }
-
-  // ===========================================================================
-  // GET ROOM
-  // ===========================================================================
-
-  // Future<RoomModel> getRoom(String id) async {
-  //   final room = await _httpService.get<Map<String, dynamic>>('/rooms/$id');
-  //
-  //   return RoomModel.fromJson(room);
-  // }
 
   // ===========================================================================
   // CREATE ROOM
@@ -76,6 +70,4 @@ class RoomApiService {
 
     return RoomModel.fromJson(room);
   }
-
-
 }
