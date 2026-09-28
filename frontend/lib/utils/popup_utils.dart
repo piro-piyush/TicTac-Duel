@@ -1,7 +1,7 @@
 import 'package:tictac_duel/lib.dart';
 
-class SnackbarUtils {
-  SnackbarUtils._();
+class PopupUtils {
+  PopupUtils._();
 
   // ===========================================================================
   // INFO
@@ -52,6 +52,43 @@ class SnackbarUtils {
       message: message,
       color: AppColors.neonPink,
       icon: Icons.error_outline_rounded,
+    );
+  }
+
+  // ===========================================================================
+  // TOAST
+  // ===========================================================================
+
+  static void showToast(String message) {
+    final context = Get.context;
+
+    if (context == null) {
+      return;
+    }
+
+    final messenger = ScaffoldMessenger.of(context);
+
+    messenger.hideCurrentSnackBar();
+
+    messenger.showSnackBar(
+      SnackBar(
+        elevation: 0,
+        duration: const Duration(seconds: 3),
+        backgroundColor: Colors.transparent,
+        content: Container(
+          padding: Dimens.edgeInsets12,
+          margin: Dimens.edgeInsets30_0,
+          decoration: BoxDecoration(
+            borderRadius: Dimens.radius6,
+            color: Get.isDarkMode
+                ? AppColors.darkerGrey.withValues(alpha: 0.9)
+                : AppColors.grey.withValues(alpha: 0.9),
+          ),
+          child: Center(
+            child: Text(message, style: Theme.of(context).textTheme.labelLarge),
+          ),
+        ),
+      ),
     );
   }
 

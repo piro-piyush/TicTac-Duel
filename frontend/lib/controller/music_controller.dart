@@ -56,11 +56,13 @@ class MusicController extends GetxController {
     }
 
     try {
-      _isEnabled.value = await _storage.getBool(_musicEnabledKey);
+      _isEnabled.value = await _storage.getBool(_musicEnabledKey) ?? true;
 
-      _effectsEnabled.value = await _storage.getBool(_effectsEnabledKey);
+      _effectsEnabled.value =
+          await _storage.getBool(_effectsEnabledKey) ?? true;
 
-      _vibrationEnabled.value = await _storage.getBool(_vibrationEnabledKey);
+      _vibrationEnabled.value =
+          await _storage.getBool(_vibrationEnabledKey) ?? true;
 
       // -----------------------------------------------------------------------
       // Background music
