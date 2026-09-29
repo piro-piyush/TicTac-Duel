@@ -1,38 +1,57 @@
 import 'package:tictac_duel/lib.dart';
 
 class LocalGameModel {
-  const LocalGameModel({
+  const LocalGameModel.friend({
+    required this.playerOne,
+    required this.playerTwo,
+    required this.theme,
+    required this.maxRounds,
+  })  : gameType = LocalGameType.friend,
+        difficulty = null;
+
+  factory LocalGameModel.computer({
+    required LocalPlayerModel playerOne,
+    required RoomTheme theme,
+    required int maxRounds,
+    required CpuDifficulty difficulty,
+  }) {
+    final cpuSymbol = playerOne.symbol == PlayerSymbol.x
+        ? PlayerSymbol.o
+        : PlayerSymbol.x;
+
+    return LocalGameModel._(
+      playerOne: playerOne,
+      playerTwo: LocalPlayerModel(
+        id: GameConstants.localCpuId,
+        name: GameConstants.localCpuName,
+        symbol: cpuSymbol,
+      ),
+      theme: theme,
+      maxRounds: maxRounds,
+      gameType: LocalGameType.computer,
+      difficulty: difficulty,
+    );
+  }
+
+  const LocalGameModel._({
     required this.playerOne,
     required this.playerTwo,
     required this.theme,
     required this.maxRounds,
     required this.gameType,
-    this.difficulty,
-    this.currentRound = 0,
-    this.turnIndex = 0,
+    required this.difficulty,
   });
 
-  final PlayerModel playerOne;
-  final PlayerModel playerTwo;
+  final LocalPlayerModel playerOne;
+  final LocalPlayerModel playerTwo;
 
   final RoomTheme theme;
-
   final int maxRounds;
-  final int currentRound;
-  final int turnIndex;
 
   final LocalGameType gameType;
   final CpuDifficulty? difficulty;
 
-  PlayerModel get currentPlayer {
-    return turnIndex == 0 ? playerOne : playerTwo;
-  }
+  bool get isComputerGame => gameType == LocalGameType.computer;
 
-  PlayerModel get opponentPlayer {
-    return turnIndex == 0 ? playerTwo : playerOne;
-  }
-
-  PlayerSymbol get currentSymbol {
-    return currentPlayer.symbol;
-  }
+  bool get isFriendGame => gameType == LocalGameType.friend;
 }

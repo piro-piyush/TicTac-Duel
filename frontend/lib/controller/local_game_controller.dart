@@ -20,21 +20,13 @@ class LocalGameController extends GetxController {
 
   bool get isStarting => _isStarting.value;
 
-  void setGameType(LocalGameType value) {
-    _gameType.value = value;
-  }
+  void setGameType(LocalGameType value) => _gameType.value = value;
 
-  void setSelectedSymbol(PlayerSymbol value) {
-    _selectedSymbol.value = value;
-  }
+  void setSelectedSymbol(PlayerSymbol value) => _selectedSymbol.value = value;
 
-  void setSelectedTheme(RoomTheme value) {
-    _selectedTheme.value = value;
-  }
+  void setSelectedTheme(RoomTheme value) => _selectedTheme.value = value;
 
-  void setSelectedMaxRounds(int value) {
-    _selectedMaxRounds.value = value;
-  }
+  void setSelectedMaxRounds(int value) => _selectedMaxRounds.value = value;
 
   void setSelectedDifficulty(CpuDifficulty value) {
     _selectedDifficulty.value = value;
@@ -42,64 +34,43 @@ class LocalGameController extends GetxController {
 
   void startGame() {
     FocusManager.instance.primaryFocus?.unfocus();
-
-    if (_isStarting.value) {
-      return;
-    }
-
+    if (isStarting) return;
     _isStarting.value = true;
-
     try {
-      final playerOne = _buildPlayer(
+      final playerOne = LocalPlayerModel(
         id: GameConstants.localPlayerOneId,
-        name: GameConstants.localPlayerOneName,
+        name: gameType == LocalGameType.computer
+            ? GameConstants.localPlayerName
+            : GameConstants.localPlayerOneName,
         symbol: selectedSymbol,
       );
-
-      final isComputerGame = gameType == LocalGameType.computer;
-
-      final playerTwo = _buildPlayer(
-        id: isComputerGame
-            ? GameConstants.localCpuId
-            : GameConstants.localPlayerTwoId,
-        name: isComputerGame
-            ? GameConstants.localCpuName
-            : GameConstants.localPlayerTwoName,
-        symbol: _opponentSymbol,
-      );
-
-      final localGame = LocalGameModel(
-        playerOne: playerOne,
-        playerTwo: playerTwo,
-        theme: selectedTheme,
-        maxRounds: selectedMaxRounds,
-        gameType: gameType,
-        difficulty: _selectedDifficultyForGame,
-      );
-
-      AppNavigation.replaceLocalGameBoard(localGame);
+      final game = switch (gameType) {
+        LocalGameType.friend => LocalGameModel.friend(
+          playerOne: playerOne,
+          playerTwo: LocalPlayerModel(
+            id: GameConstants.localPlayerTwoId,
+            name: GameConstants.localPlayerTwoName,
+            symbol: _opponentSymbol,
+          ),
+          theme: selectedTheme,
+          maxRounds: selectedMaxRounds,
+        ),
+        LocalGameType.computer => LocalGameModel.computer(
+          playerOne: playerOne,
+          theme: selectedTheme,
+          maxRounds: selectedMaxRounds,
+          difficulty: selectedDifficulty,
+        ),
+      };
+      AppNavigation.replaceLocalGameBoard(game);
     } catch (error, stackTrace) {
       LoggerUtils.error('LocalGameController.startGame', error, stackTrace);
-
       PopupUtils.showError(error.toString());
     } finally {
       _isStarting.value = false;
     }
   }
 
-  PlayerModel _buildPlayer({
-    required String id,
-    required String name,
-    required PlayerSymbol symbol,
-  }) {
-    return PlayerModel(id: id, name: name, symbol: symbol, isReady: true);
-  }
-
-  PlayerSymbol get _opponentSymbol {
-    return selectedSymbol == PlayerSymbol.x ? PlayerSymbol.o : PlayerSymbol.x;
-  }
-
-  CpuDifficulty? get _selectedDifficultyForGame {
-    return gameType == LocalGameType.computer ? selectedDifficulty : null;
-  }
+  PlayerSymbol get _opponentSymbol =>
+      selectedSymbol == PlayerSymbol.x ? PlayerSymbol.o : PlayerSymbol.x;
 }

@@ -48,9 +48,18 @@ class LocalStorageService {
         iOptions: _iOSOptions,
         aOptions: _androidOptions,
       );
-      return value == 'true';
+
+      if (value == null) {
+        return null;
+      }
+
+      return value.toLowerCase() == 'true';
     } catch (error, stackTrace) {
-      LoggerUtils.error('Failed to get bool: $key', error, stackTrace);
+      LoggerUtils.error(
+        'Failed to get bool: $key',
+        error,
+        stackTrace,
+      );
       return null;
     }
   }

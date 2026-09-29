@@ -1,10 +1,14 @@
 import 'package:tictac_duel/lib.dart';
 
 class LocalGameBoardController extends GetxController {
-  LocalGameBoardController({required this.game});
+  LocalGameBoardController({
+    required this.game,
+    required this._musicController,
+  });
 
   final LocalGameModel game;
 
+  final MusicController _musicController;
   Timer? _cpuMoveTimer;
   Timer? _roundAnimationTimer;
   Timer? _resultTimer;
@@ -25,7 +29,10 @@ class LocalGameBoardController extends GetxController {
   // ===========================================================================
 
   final RxInt _turnIndex = 0.obs;
-  final RxInt _currentRound = 1.obs;
+  final RxInt _currentRound = 0.obs;
+  final RxBool _isRoundFinished = false.obs;
+
+  bool get isRoundFinished => _isRoundFinished.value;
 
   // ===========================================================================
   // ROUND ANIMATION
@@ -35,11 +42,15 @@ class LocalGameBoardController extends GetxController {
   final RxInt _animatedRound = 1.obs;
 
   // ===========================================================================
-  // SCORES
+  // POINTS
   // ===========================================================================
 
-  final RxInt _playerOneScore = 0.obs;
-  final RxInt _playerTwoScore = 0.obs;
+  final RxInt _playerOnePoints = 0.obs;
+  final RxInt _playerTwoPoints = 0.obs;
+
+  int get playerOnePoints => _playerOnePoints.value;
+
+  int get playerTwoPoints => _playerTwoPoints.value;
 
   // ===========================================================================
   // GETTERS
@@ -57,33 +68,48 @@ class LocalGameBoardController extends GetxController {
 
   bool get showRoundAnimation => _showRoundAnimation.value;
 
-  int get playerOneScore => _playerOneScore.value;
+  LocalPlayerModel get currentPlayer =>
+      turnIndex == 0 ? game.playerOne : game.playerTwo;
 
-  int get playerTwoScore => _playerTwoScore.value;
+  LocalPlayerModel get opponentPlayer =>
+      turnIndex == 0 ? game.playerTwo : game.playerOne;
 
-  PlayerModel get currentPlayer {
-    return turnIndex == 0 ? game.playerOne : game.playerTwo;
+  PlayerSymbol get currentSymbol => currentPlayer.symbol;
+
+  bool get isBoardFull => !_board.contains(null);
+
+  bool get isCpuTurn =>
+      game.isComputerGame && currentPlayer.id == game.playerTwo.id;
+
+  bool get canMakeMove => !isBoardFull && !isCpuTurn;
+
+  // ===========================================================================
+  // LIFECYCLE
+  // ===========================================================================
+
+  @override
+  void onInit() {
+    super.onInit();
+    _startGame();
   }
 
-  PlayerModel get opponentPlayer {
-    return turnIndex == 0 ? game.playerTwo : game.playerOne;
+  @override
+  void onClose() {
+    _cancelTimers();
+    super.onClose();
   }
 
-  PlayerSymbol get currentSymbol {
-    return currentPlayer.symbol;
-  }
+  // ===========================================================================
+  // GAME START
+  // ===========================================================================
 
-  bool get isBoardFull {
-    return !_board.contains(null);
-  }
+  void _startGame() {
+    _playerOnePoints.value = 0;
+    _playerTwoPoints.value = 0;
 
-  bool get isCpuTurn {
-    return game.gameType == LocalGameType.computer &&
-        currentPlayer.id == GameConstants.localCpuId;
-  }
+    _currentRound.value = 0;
 
-  bool get _canMakeMoveForCpu {
-    return isCpuTurn && !isBoardFull;
+    startNextRound(game.playerOne.symbol);
   }
 
   // ===========================================================================
@@ -91,74 +117,113 @@ class LocalGameBoardController extends GetxController {
   // ===========================================================================
 
   Future<void> onCellTap(int index) async {
-    if (!_canMakeMove(index)) {
+    if (!_canMakeHumanMove(index)) {
       return;
     }
 
-    // Add the move.
-    _board[index] = currentSymbol;
-
-    // Stop here and let Flutter paint the tile.
-    await WidgetsBinding.instance.endOfFrame;
-
-    // Now evaluate the result.
-    final result = GameLogicUtils.checkWinner(_board);
-
-    switch (result) {
-      case GameResult.xWins:
-      case GameResult.oWins:
-      case GameResult.draw:
-        _handleRoundResult(result);
-        return;
-
-      case GameResult.inProgress:
-        _switchTurn();
-        return;
-    }
+    await _makeMove(index);
   }
 
-  // ===========================================================================
-  // MOVE VALIDATION
-  // ===========================================================================
+  Future<void> _makeCpuMove() async {
+    _cpuMoveTimer = null;
 
-  bool _canMakeMove(int index) {
+    if (!isCpuTurn || isBoardFull) {
+      return;
+    }
+
+    final difficulty = game.difficulty;
+
+    if (difficulty == null) {
+      return;
+    }
+
+    final move = GameLogicUtils.getBestMove(
+      board: board,
+      difficulty: difficulty,
+      cpuSymbol: currentSymbol,
+      opponentSymbol: opponentPlayer.symbol,
+    );
+
+    if (move == null) {
+      return;
+    }
+
+    await _makeMove(move);
+  }
+
+  bool _canMakeHumanMove(int index) {
     if (index < 0 || index >= _board.length) {
+      return false;
+    }
+
+    if (isBoardFull || isRoundFinished) {
+      return false;
+    }
+
+    if (game.isComputerGame && isCpuTurn) {
       return false;
     }
 
     return _board[index] == null;
   }
 
+  Future<void> _makeMove(int index) async {
+    if (index < 0 || index >= _board.length) {
+      return;
+    }
+
+    if (_board[index] != null) {
+      return;
+    }
+
+    final symbol = currentSymbol;
+
+    _board[index] = symbol;
+
+    await WidgetsBinding.instance.endOfFrame;
+
+    final result = GameLogicUtils.checkWinner(board);
+
+    if (result.isFinished) {
+      _handleRoundResult(result);
+      return;
+    }
+
+    _switchTurn();
+  }
+
+  // ===========================================================================
+  // MOVE VALIDATION
+  // ===========================================================================
+
+  // bool _canMakeMove(int index) {
+  //   if (index < 0 || index >= _board.length) {
+  //     return false;
+  //   }
+  //
+  //   if (!canMakeMove) {
+  //     return false;
+  //   }
+  //
+  //   return _board[index] == null;
+  // }
+
   // ===========================================================================
   // ROUND RESULT
   // ===========================================================================
 
   void _handleRoundResult(GameResult result) {
-    _cpuMoveTimer?.cancel();
-    _resultTimer?.cancel();
+    _cancelCpuTimer();
+    _cancelResultTimer();
+    _isRoundFinished.value = true;
+    if (result.hasWinner) {
+      final winner = result.winner;
 
-    switch (result) {
-      case GameResult.xWins:
-      case GameResult.oWins:
-        final winner = result.winner;
+      if (winner != null) {
+        _updateWinnerScore(winner);
 
-        if (winner != null) {
-          _updateWinnerScore(winner);
-        }
-
-        _winningIndexes.assignAll(GameLogicUtils.getWinningIndexes(_board));
-        break;
-
-      case GameResult.draw:
-        break;
-
-      case GameResult.inProgress:
-        return;
-    }
-
-    // Increment the round after the current round finishes.
-    if (!_hasGameWinner && !_isFinalRound) {
-      _currentRound.value++;
+        _winningIndexes.assignAll(GameLogicUtils.getWinningIndexes(board));
+      }
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -166,36 +231,69 @@ class LocalGameBoardController extends GetxController {
     });
   }
 
-  void _showRoundResultDialog(GameResult result) {
-    _resultTimer = Timer(GameConstants.resultDelay, () {
-      if (_hasGameWinner || _isFinalRound) {
-        GameDialogUtils.showGameFinished(
-          playerOne: game.playerOne,
-          playerTwo: game.playerTwo,
-          playerOneScore: playerOneScore,
-          playerTwoScore: playerTwoScore,
-          mySymbol: game.playerOne.symbol,
-        );
+  void _showFinalResult() {
+    final isDraw = playerOnePoints == playerTwoPoints;
 
+    final winner = isDraw
+        ? null
+        : playerOnePoints > playerTwoPoints
+        ? game.playerOne
+        : game.playerTwo;
+
+    final hasWon = winner?.id == game.playerOne.id;
+
+    final result = ResultModel.local(
+      playerOne: game.playerOne,
+      playerTwo: game.playerTwo,
+      playerOnePoints: playerOnePoints,
+      playerTwoPoints: playerTwoPoints,
+      currentRound: currentRound,
+      maxRounds: game.maxRounds,
+      gameWinner: winner,
+      isDraw: isDraw,
+      hasWon: hasWon,
+      showConfetti: hasWon,
+    );
+
+    AppNavigation.replaceResult(result);
+  }
+
+  void _showRoundResultDialog(GameResult result) {
+    _cancelResultTimer();
+
+    _resultTimer = Timer(GameConstants.resultDelay, () {
+      if (_isFinalRound) {
+        _showFinalResult();
         return;
       }
 
       GameDialogUtils.showGameResult(
         result: result,
         mySymbol: game.playerOne.symbol,
-        onConfirm: startNextRound,
+        onConfirm: () {
+          final winner = result.winner;
+
+          if (winner != null) {
+            startNextRound(winner);
+            return;
+          }
+
+          // Draw: alternate the starting player.
+          final nextStarter = currentRound.isEven
+              ? game.playerOne.symbol
+              : game.playerTwo.symbol;
+
+          startNextRound(nextStarter);
+        },
       );
     });
   }
 
   void _updateWinnerScore(PlayerSymbol winner) {
     if (winner == game.playerOne.symbol) {
-      _playerOneScore.value++;
-      return;
-    }
-
-    if (winner == game.playerTwo.symbol) {
-      _playerTwoScore.value++;
+      _playerOnePoints.value++;
+    } else if (winner == game.playerTwo.symbol) {
+      _playerTwoPoints.value++;
     }
   }
 
@@ -206,60 +304,40 @@ class LocalGameBoardController extends GetxController {
   void _switchTurn() {
     _turnIndex.value = turnIndex == 0 ? 1 : 0;
 
-    if (!isCpuTurn) {
-      return;
-    }
-
-    _cpuMoveTimer?.cancel();
-
-    _cpuMoveTimer = Timer(GameConstants.cpuMoveDelay, _makeCpuMove);
+    _scheduleCpuMove();
   }
 
-  void _makeCpuMove() {
-    if (!_canMakeMoveForCpu) {
+  void _scheduleCpuMove() {
+    _cancelCpuTimer();
+
+    if (!isCpuTurn || isBoardFull) {
       return;
     }
 
-    final move = GameLogicUtils.getBestMove(
-      board: board,
-      difficulty: game.difficulty ?? CpuDifficulty.medium,
-      cpuSymbol: currentSymbol,
-      opponentSymbol: opponentPlayer.symbol,
-    );
-
-    if (move == null) {
-      return;
-    }
-
-    onCellTap(move);
+    _cpuMoveTimer = Timer(GameConstants.cpuMoveDelay, _makeCpuMove);
   }
 
   // ===========================================================================
   // GAME WINNER
   // ===========================================================================
 
-  int get _requiredWins {
-    return (game.maxRounds ~/ 2) + 1;
-  }
+  // int get _requiredWins => (game.maxRounds ~/ 2) + 1;
+  //
+  // bool get _hasGameWinner =>
+  //     playerOneScore >= _requiredWins || playerTwoScore >= _requiredWins;
 
-  bool get _hasGameWinner {
-    return playerOneScore >= _requiredWins || playerTwoScore >= _requiredWins;
-  }
+  bool get _isFinalRound => currentRound >= game.maxRounds;
 
-  bool get _isFinalRound {
-    return currentRound >= game.maxRounds;
-  }
-
-  PlayerModel? get gameWinner {
-    if (!_hasGameWinner) {
+  LocalPlayerModel? get gameWinner {
+    if (!_isFinalRound) {
       return null;
     }
 
-    if (playerOneScore > playerTwoScore) {
+    if (playerOnePoints > playerTwoPoints) {
       return game.playerOne;
     }
 
-    if (playerTwoScore > playerOneScore) {
+    if (playerTwoPoints > playerOnePoints) {
       return game.playerTwo;
     }
 
@@ -270,30 +348,23 @@ class LocalGameBoardController extends GetxController {
   // NEXT ROUND
   // ===========================================================================
 
-  void startNextRound() {
+  void startNextRound(PlayerSymbol startingSymbol) {
     if (_isFinalRound) {
       return;
     }
 
-    _cpuMoveTimer?.cancel();
-    _resultTimer?.cancel();
+    _cancelRoundTimers();
 
-    // Clear previous round state first.
-    _winningIndexes.clear();
     _resetBoard();
 
-    // Move to the next round.
     _currentRound.value++;
 
-    // Alternate starting player.
-    _turnIndex.value = (currentRound - 1) % 2;
+    _turnIndex.value = startingSymbol == game.playerOne.symbol ? 0 : 1;
+
+    _musicController.playRoundStart();
 
     _showRoundStartAnimation();
-
-    // If CPU starts the new round, let it make its move.
-    if (isCpuTurn) {
-      _cpuMoveTimer = Timer(GameConstants.cpuMoveDelay, _makeCpuMove);
-    }
+    _scheduleCpuMove();
   }
 
   // ===========================================================================
@@ -308,6 +379,7 @@ class LocalGameBoardController extends GetxController {
 
     _roundAnimationTimer = Timer(GameConstants.roundAnimationDuration, () {
       _showRoundAnimation.value = false;
+      _roundAnimationTimer = null;
     });
   }
 
@@ -316,30 +388,31 @@ class LocalGameBoardController extends GetxController {
   // ===========================================================================
 
   void restartGame() {
-    _cpuMoveTimer?.cancel();
-    _resultTimer?.cancel();
-    _roundAnimationTimer?.cancel();
+    _cancelTimers();
 
     _resetBoard();
 
     _turnIndex.value = 0;
     _currentRound.value = 1;
 
-    _playerOneScore.value = 0;
-    _playerTwoScore.value = 0;
+    _playerOnePoints.value = 0;
+    _playerTwoPoints.value = 0;
 
     _showRoundAnimation.value = false;
     _animatedRound.value = 1;
+
+    _showRoundStartAnimation();
+    _scheduleCpuMove();
   }
 
   void resetBoard() {
-    _cpuMoveTimer?.cancel();
-    _resultTimer?.cancel();
-
+    _cancelRoundTimers();
     _resetBoard();
   }
 
   void _resetBoard() {
+    _isRoundFinished.value = false;
+
     _board.assignAll(
       List<PlayerSymbol?>.filled(GameConstants.totalCells, null),
     );
@@ -348,15 +421,28 @@ class LocalGameBoardController extends GetxController {
   }
 
   // ===========================================================================
-  // LIFECYCLE
+  // TIMER HELPERS
   // ===========================================================================
 
-  @override
-  void onClose() {
+  void _cancelCpuTimer() {
     _cpuMoveTimer?.cancel();
-    _resultTimer?.cancel();
-    _roundAnimationTimer?.cancel();
+    _cpuMoveTimer = null;
+  }
 
-    super.onClose();
+  void _cancelResultTimer() {
+    _resultTimer?.cancel();
+    _resultTimer = null;
+  }
+
+  void _cancelRoundTimers() {
+    _cancelCpuTimer();
+    _cancelResultTimer();
+  }
+
+  void _cancelTimers() {
+    _cancelRoundTimers();
+
+    _roundAnimationTimer?.cancel();
+    _roundAnimationTimer = null;
   }
 }

@@ -6,19 +6,34 @@ class LocalGameBoardScreen extends GetView<LocalGameBoardController> {
   @override
   Widget build(BuildContext context) {
     return Obx(
-      () => NeonBackgroundWidget(
+          () => NeonBackgroundWidget(
         title: 'LOCAL GAME',
         child: Stack(
           alignment: Alignment.center,
           children: [
             LocalGameWidget(
               localGame: controller.game,
-              playerId: controller.game.playerOne.id,
+
+              // Board
               board: controller.board,
-              isMyTurn: controller.turnIndex == 0,
               winningIndexes: controller.winningIndexes,
+
+              // Turn
+              currentPlayer: controller.currentPlayer,
+              turnIndex: controller.turnIndex,
+
+              // Round
+              currentRound: controller.currentRound,
+
+              // Interaction
+              canMakeMove: controller.canMakeMove,
               onCellTap: controller.onCellTap,
+
+              // Points
+              playerOnePoints: controller.playerOnePoints,
+              playerTwoPoints: controller.playerTwoPoints,
             ),
+
             GameRoundAnimationWidget(
               showRoundAnimation: controller.showRoundAnimation,
               animatedRound: controller.animatedRound,

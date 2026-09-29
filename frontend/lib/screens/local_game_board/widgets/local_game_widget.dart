@@ -4,18 +4,32 @@ class LocalGameWidget extends StatelessWidget {
   const LocalGameWidget({
     super.key,
     required this.localGame,
-    required this.playerId,
     required this.board,
-    required this.isMyTurn,
     required this.winningIndexes,
+    required this.currentPlayer,
+    required this.currentRound,
+    required this.turnIndex,
+    required this.canMakeMove,
     required this.onCellTap,
+    required this.playerOnePoints,
+    required this.playerTwoPoints,
   });
 
   final LocalGameModel localGame;
-  final String playerId;
+
+  // Board state
   final List<PlayerSymbol?> board;
-  final bool isMyTurn;
   final Set<int> winningIndexes;
+
+  // Turn / round state
+  final PlayerModel currentPlayer;
+  final int turnIndex;
+  final int currentRound;
+  final int playerOnePoints;
+  final int playerTwoPoints;
+
+  // Interaction
+  final bool canMakeMove;
   final ValueChanged<int> onCellTap;
 
   @override
@@ -23,6 +37,7 @@ class LocalGameWidget extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
+
         final isCompact = width < 380;
         final isWide = width >= 600;
 
@@ -38,27 +53,16 @@ class LocalGameWidget extends StatelessWidget {
           ),
           child: Column(
             children: [
-              GameRoundIndicatorWidget(
-                compact: isCompact,
-                currentRound: localGame.currentRound,
-                maxRounds: localGame.maxRounds,
-                color: AppColors.neonCyan,
-              ),
+              _buildRoundIndicator(compact: isCompact),
               SizedBox(height: sectionSpacing),
-              _buildPlayers(
-                localGame,
-                compact: isCompact,
-              ),
-              SizedBox(height: sectionSpacing),
-              _buildBoard(localGame, isWide: isWide),
-              SizedBox(height: sectionSpacing),
-              GameStatusWidget(
 
-                compact: isCompact,
-                player: localGame.currentPlayer,
-                isMyTurn: isMyTurn,
-                theme: localGame.theme,
-              ),
+              _buildPlayers(compact: isCompact),
+              SizedBox(height: sectionSpacing),
+
+              _buildBoard(isWide: isWide),
+              SizedBox(height: sectionSpacing),
+
+              _buildStatus(compact: isCompact),
             ],
           ),
         );
@@ -67,39 +71,50 @@ class LocalGameWidget extends StatelessWidget {
   }
 
   // ===========================================================================
+  // ROUND
+  // ===========================================================================
+
+  Widget _buildRoundIndicator({required bool compact}) {
+    return GameRoundIndicatorWidget(
+      compact: compact,
+      currentRound: currentRound,
+      maxRounds: localGame.maxRounds,
+      color: AppColors.neonCyan,
+    );
+  }
+
+  // ===========================================================================
   // PLAYERS
   // ===========================================================================
 
-  Widget _buildPlayers(
-      LocalGameModel game, {
-        required bool compact,
-      }) {
-    final controller = Get.find<LocalGameBoardController>();
-
-    final isComputerGame = game.gameType == LocalGameType.computer;
+  Widget _buildPlayers({required bool compact}) {
+    // final isComputerGame = localGame.gameType == LocalGameType.computer;
 
     return Row(
       spacing: compact ? 6 : 10,
       children: [
         Expanded(
-          child: GamePlayerCardWidget(
-            player: game.playerOne,
-            isTurn: controller.turnIndex == 0,
-            theme: game.theme,
+          child: GamePlayerCardWidget.local(
+            player: localGame.playerOne,
+            points: playerOnePoints,
+            isTurn: turnIndex == 0,
+            theme: localGame.theme,
             compact: compact,
-            isMe: true,
           ),
         ),
-        VersusWidget(
-          compact: compact,
-        ),
+
+        VersusWidget(compact: compact),
+
         Expanded(
-          child: GamePlayerCardWidget(
-            player: game.playerTwo,
-            isTurn: controller.turnIndex == 1,
-            theme: game.theme,
+          child: GamePlayerCardWidget.local(
+            player: localGame.playerTwo,
+            points: playerTwoPoints,
+
+            isTurn: turnIndex == 1,
+            theme: localGame.theme,
             compact: compact,
-            isMe: isComputerGame ? false : true,
+            // isMe: isComputerGame ? false : true,
+            // isOnline: false,
           ),
         ),
       ],
@@ -110,24 +125,32 @@ class LocalGameWidget extends StatelessWidget {
   // BOARD
   // ===========================================================================
 
-  Widget _buildBoard(
-      LocalGameModel game, {
-        required bool isWide,
-      }) {
+  Widget _buildBoard({required bool isWide}) {
     return Align(
       alignment: Alignment.center,
       child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: isWide ? 460 : 420,
-        ),
+        constraints: BoxConstraints(maxWidth: isWide ? 460 : 420),
         child: GameBoardWidget(
-          roomTheme: game.theme,
+          roomTheme: localGame.theme,
           values: board,
-          isMyTurn: true,
+          isMyTurn: canMakeMove,
           winningIndexes: winningIndexes,
           onCellTap: onCellTap,
         ),
       ),
+    );
+  }
+
+  // ===========================================================================
+  // STATUS
+  // ===========================================================================
+
+  Widget _buildStatus({required bool compact}) {
+    return GameStatusWidget(
+      compact: compact,
+      player: currentPlayer,
+      status: '${currentPlayer.name}\'s turn',
+      theme: localGame.theme,
     );
   }
 }
