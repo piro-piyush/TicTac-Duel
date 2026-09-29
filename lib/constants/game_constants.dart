@@ -8,7 +8,7 @@ class GameConstants {
   // ─────────────────────────────────────────────────────────────
 
   static const String appName = 'Tic Tac Duel';
-  static const String appVersion = '2.0.0';
+  static const String appVersion = '1.0.0';
   static const String appSlogan = 'YOUR MOVE. YOUR GLORY.';
   static const String appDescription =
       'A real-time multiplayer Tic-Tac-Toe experience.';
@@ -47,24 +47,9 @@ class GameConstants {
   static const String localPlayerTwoName = 'Player Two';
   static const String localCpuName = 'CPU';
 
-  static const Duration socketConnectionTimeout = Duration(seconds: 10);
-
   static const Duration cpuMoveDelay = Duration(milliseconds: 450);
 
   static const Duration resultDelay = Duration(seconds: 1);
 
   static const Duration roundAnimationDuration = Duration(milliseconds: 1200);
-
-  // ─────────────────────────────────────────────────────────────
-  // Room
-  // ─────────────────────────────────────────────────────────────
-
-  static const int roomCodeLength = 6;
-  static const int maxPlayers = 2;
-
-  static const Duration roomExpiryDuration = Duration(hours: 24);
-
-  // ─────────────────────────────────────────────────────────────
-  // Network
-  // ─────────────────────────────────────────────────────────────
 }

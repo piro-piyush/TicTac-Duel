@@ -9,7 +9,21 @@ class HomeScreen extends StatelessWidget {
 
     return NeonBackgroundWidget(
       needScroll: false,
-      padding: Dimens.edgeInsets10_4,
+      bottomNavigationBar: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          QuickActionWidget(
+            icon: Icons.settings,
+            label: 'Settings',
+            onTap: AppNavigation.pushSettings,
+          ),
+          QuickActionWidget(
+            icon: Icons.info_outline,
+            label: 'About',
+            onTap: AppNavigation.pushHelp,
+          ),
+        ],
+      ),
       child: Column(
         children: [
           Expanded(
@@ -35,6 +49,4 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
-
-
 }
