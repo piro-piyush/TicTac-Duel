@@ -138,4 +138,4 @@ android/app/upload-keystore.jks
 *.rej
 *.pid
 *.pid.lock
-release.text
+release.txt
