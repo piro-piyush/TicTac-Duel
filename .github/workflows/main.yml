@@ -2,9 +2,6 @@ name: Build Flutter Android
 
 on:
   workflow_dispatch:
-  # push:
-  #   branches:
-  #     - main
 
 permissions:
   contents: write
@@ -27,7 +24,6 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v6
 
-
       # ============================================================
       # Java
       # ============================================================
@@ -38,7 +34,6 @@ jobs:
           distribution: temurin
           java-version: "17"
           cache: gradle
-
 
       # ============================================================
       # Flutter
@@ -59,7 +54,6 @@ jobs:
 
       - name: Accept Android Licenses
         run: yes | flutter doctor --android-licenses || true
-
 
       # ============================================================
       # Restore Android Signing
@@ -90,7 +84,6 @@ jobs:
           test -f android/key.properties
           echo "Android signing files restored successfully."
 
-
       # ============================================================
       # Clean
       # ============================================================
@@ -101,28 +94,12 @@ jobs:
           rm -rf .dart_tool
           rm -rf build
 
-
       # ============================================================
       # Dependencies
       # ============================================================
 
       - name: Get Dependencies
         run: flutter pub get
-
-
-      # ============================================================
-      # Environment
-      # ============================================================
-
-      - name: Create .env
-        env:
-          SOCKET_URL: ${{ secrets.SOCKET_URL }}
-        run: |
-          cat > .env <<EOF
-          SOCKET_URL=$SOCKET_URL
-          API_BASE_URL=$API_BASE_URL
-          EOF
-
 
       # ============================================================
       # Version
@@ -132,7 +109,6 @@ jobs:
         id: version
         run: |
           VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //')
-
           APP_VERSION="${VERSION%%+*}"
           BUILD_NUMBER="${VERSION##*+}"
 
@@ -142,7 +118,6 @@ jobs:
           echo "App Version: $APP_VERSION"
           echo "Build Number: $BUILD_NUMBER"
 
-
       # ============================================================
       # Analyze
       # ============================================================
@@ -150,7 +125,6 @@ jobs:
       - name: Analyze
         continue-on-error: true
         run: flutter analyze
-
 
       # ============================================================
       # Build APK
@@ -161,7 +135,6 @@ jobs:
           GRADLE_OPTS: "-Xmx4g"
         run: flutter build apk --release --no-pub
 
-
       # ============================================================
       # Build AAB
       # ============================================================
@@ -170,7 +143,6 @@ jobs:
         env:
           GRADLE_OPTS: "-Xmx4g"
         run: flutter build appbundle --release --no-pub
-
 
       # ============================================================
       # List Build Outputs
@@ -183,10 +155,8 @@ jobs:
           find build -name "*.apk" || true
 
           echo ""
-
           echo "===== AAB ====="
           find build -name "*.aab" || true
-
 
       # ============================================================
       # Upload APK Artifact
@@ -200,7 +170,6 @@ jobs:
           path: frontend/build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
 
-
       # ============================================================
       # Upload AAB Artifact
       # ============================================================
@@ -212,7 +181,6 @@ jobs:
           name: app-release-aab
           path: frontend/build/app/outputs/bundle/release/app-release.aab
           if-no-files-found: error
-
 
       # ============================================================
       # GitHub Release
