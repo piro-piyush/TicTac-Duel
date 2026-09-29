@@ -1,59 +1,108 @@
-name: tictac_duel
-description: "Real-time multiplayer Tic-Tac-Toe"
-publish_to: "none"
-version: 1.0.0+1
+# 🎮 Tic Tac Duel
 
-environment:
-  sdk: ^3.13.2
+> A futuristic neon Tic Tac Toe game built with Flutter.
 
-dependencies:
-  flutter:
-    sdk: flutter
+## 📱 About
 
-#  cupertino_icons: ^2.0.0
-  flutter_svg: ^2.3.0
-  lottie: ^3.6.1
-  flutter_confetti: ^0.9.2
-  flutter_native_splash: ^2.4.8
-  get: ^4.7.3
-  flutter_secure_storage: ^11.2.0
-  just_audio: ^0.10.6
+Tic Tac Duel is a neon-themed Tic Tac Toe game designed around a clean, modern, and competitive gameplay experience.
 
-dev_dependencies:
-  flutter_test:
-    sdk: flutter
-  flutter_lints: ^6.0.0
-  icons_launcher: ^3.1.0
-  change_app_package_name: ^1.5.0
+The game currently focuses on **local gameplay**, allowing players to play against a friend on the same device or challenge the CPU.
 
-flutter:
-  uses-material-design: true
+## ✨ Features
 
-  assets:
-    - assets/animations/
-    - assets/audio/
+* 🎮 Local Tic Tac Toe gameplay
+* 👥 Play with a friend
+* 🤖 Challenge the CPU
+* ⚡ Multiple CPU difficulty levels
+* 🏆 Multi-round gameplay
+* 🎵 Background music and sound effects
+* 🌌 Futuristic neon UI
+* 📱 Responsive Flutter interface
 
-icons_launcher:
-  platforms:
-    android:
-      enable: true
-      image_path: "assets/app/icon_foreground.png"
-      adaptive_background_image: "assets/app/icon_background.png"
-      adaptive_foreground_image: "assets/app/icon_foreground.png"
+## 🛠️ Tech Stack
 
-    ios:
-      enable: true
-      image_path: "assets/app/icon_foreground.png"
+* **Flutter**
+* **Dart**
+* **GetX**
+* **Flutter Secure Storage**
+* **just_audio**
+* **Lottie**
+* **Flutter Confetti**
 
-flutter_native_splash:
-  color: "#080B14"
-  image: assets/app/icon_foreground.png
-  fullscreen: true
+## 🚀 Getting Started
 
-  android: true
-  ios: true
-  web: true
+### Prerequisites
 
-  android_12:
-    color: "#080B14"
-    image: assets/app/splash_android12.png
+Make sure Flutter is installed and configured on your system.
+
+Check your Flutter installation:
+
+```bash
+flutter doctor
+```
+
+### Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/piro-piyush/tictac-duel.git
+```
+
+Navigate to the project:
+
+```bash
+cd tictac-duel
+```
+
+Install dependencies:
+
+```bash
+flutter pub get
+```
+
+Run the application:
+
+```bash
+flutter run
+```
+
+## 📦 Release
+
+### v1.0.0
+
+The first release of Tic Tac Duel, featuring local Tic Tac Toe gameplay with friend and CPU modes.
+
+**Version:** `1.0.0+1`
+
+### 📱 Which APK should I download?
+
+The APKs are split by Android CPU architecture to reduce download size.
+
+| APK                           | Architecture | Recommended for                              |
+| ----------------------------- | ------------ | -------------------------------------------- |
+| `app-arm64-v8a-release.apk`   | ARM64        | **Most modern Android phones and tablets**   |
+| `app-armeabi-v7a-release.apk` | ARM32        | Older Android phones and tablets             |
+| `app-x86_64-release.apk`      | x86_64       | Android emulators and some x86-based devices |
+
+### ⭐ Most Android phones
+
+If you're using a modern Android phone or tablet, download:
+
+**`app-arm64-v8a-release.apk`**
+
+### 🔍 Not sure which one to download?
+
+Most modern Android phones use **ARM64**.
+
+If you're using an Android emulator, check its configured CPU architecture and download the matching APK.
+
+> **Note:** Install only the APK that matches your device's CPU architecture.
+
+### 📦 Google Play
+
+For Google Play distribution, use the **AAB (`app-release-aab`)**. Google Play automatically generates optimized APKs for supported device architectures.
+
+### ⬇️ Download
+
+[Download Tic Tac Duel v1.0.0](https://github.com/piro-piyush/tictac-duel/releases/tag/v1.0.0)
