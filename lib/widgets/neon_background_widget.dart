@@ -18,11 +18,11 @@ class NeonBackgroundWidget extends StatefulWidget {
   final Widget child;
   final EdgeInsets? padding;
   final String? title;
-  final bool showGrid;
-  final bool needScroll;
-  final bool showParticles;
   final List<Widget>? actions;
   final Widget? bottomNavigationBar;
+  final bool showGrid;
+  final bool showParticles;
+  final bool needScroll;
 
   @override
   State<NeonBackgroundWidget> createState() => _NeonBackgroundWidgetState();
@@ -30,19 +30,39 @@ class NeonBackgroundWidget extends StatefulWidget {
 
 class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
     with TickerProviderStateMixin {
+  static const int _maxTapEffects = 8;
+  static const Duration _tapEffectDuration = Duration(milliseconds: 650);
+
+  final math.Random _random = math.Random();
   final List<_TapEffect> _tapEffects = [];
 
+  static const List<Color> _neonColors = [
+    AppColors.neonCyan,
+    AppColors.neonPink,
+    AppColors.neonPurple,
+  ];
+
   void _handleTap(PointerDownEvent event) {
+    if (!mounted) {
+      return;
+    }
+
     final controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 650),
+      duration: _tapEffectDuration,
     );
 
     final effect = _TapEffect(
       position: event.localPosition,
-      color: _randomNeonColor(),
+      color: _neonColors[_random.nextInt(_neonColors.length)],
       controller: controller,
     );
+
+    // Prevent too many simultaneous animations during rapid tapping.
+    if (_tapEffects.length >= _maxTapEffects) {
+      final oldestEffect = _tapEffects.removeAt(0);
+      oldestEffect.controller.dispose();
+    }
 
     setState(() {
       _tapEffects.add(effect);
@@ -52,32 +72,25 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
       if (!mounted) {
         return;
       }
-      if (!_tapEffects.contains(effect)) {
+
+      if (!_tapEffects.remove(effect)) {
         return;
       }
-      setState(() {
-        _tapEffects.remove(effect);
-      });
+
+      setState(() {});
+
       controller.dispose();
     });
   }
 
-  Color _randomNeonColor() {
-    final colors = [
-      AppColors.neonCyan,
-      AppColors.neonPink,
-      AppColors.neonPurple,
-    ];
-
-    return colors[math.Random().nextInt(colors.length)];
-  }
-
   @override
   void dispose() {
-    for (final effect in List<_TapEffect>.from(_tapEffects)) {
+    for (final effect in _tapEffects) {
       effect.controller.dispose();
     }
+
     _tapEffects.clear();
+
     super.dispose();
   }
 
@@ -91,10 +104,15 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // Base background
+            // -----------------------------------------------------------------
+            // Background
+            // -----------------------------------------------------------------
+
             const ColoredBox(color: AppColors.background),
 
-            // Ambient neon glows
+            // -----------------------------------------------------------------
+            // Ambient glows
+            // -----------------------------------------------------------------
             const Positioned(
               top: -140,
               right: -100,
@@ -117,7 +135,9 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
               ),
             ),
 
+            // -----------------------------------------------------------------
             // Grid
+            // -----------------------------------------------------------------
             if (widget.showGrid)
               const Positioned.fill(
                 child: IgnorePointer(
@@ -125,7 +145,9 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
                 ),
               ),
 
+            // -----------------------------------------------------------------
             // Particles
+            // -----------------------------------------------------------------
             if (widget.showParticles)
               const Positioned.fill(
                 child: IgnorePointer(
@@ -133,19 +155,27 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
                 ),
               ),
 
+            // -----------------------------------------------------------------
             // Tap effects
-            Positioned.fill(
-              child: IgnorePointer(
-                child: Stack(
-                  children: [
-                    for (final effect in _tapEffects)
-                      _TapEffectWidget(effect: effect),
-                  ],
+            // -----------------------------------------------------------------
+            if (_tapEffects.isNotEmpty)
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: Stack(
+                    children: [
+                      for (final effect in _tapEffects)
+                        _TapEffectWidget(
+                          key: ObjectKey(effect),
+                          effect: effect,
+                        ),
+                    ],
+                  ),
                 ),
               ),
-            ),
 
+            // -----------------------------------------------------------------
             // Vignette
+            // -----------------------------------------------------------------
             const Positioned.fill(
               child: IgnorePointer(
                 child: DecoratedBox(
@@ -165,44 +195,24 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
               ),
             ),
 
+            // -----------------------------------------------------------------
             // Foreground
+            // -----------------------------------------------------------------
             Positioned.fill(
               child: Center(
                 child: ConstrainedBox(
-                  constraints: BoxConstraints(
+                  constraints: const BoxConstraints(
                     maxWidth: Dimens.fourHundredSixty,
                   ),
                   child: SafeArea(
                     child: Column(
                       children: [
-                        if (widget.title != null) _buildAppBar(context),
+                        if (widget.title != null) _buildAppBar(),
 
-                        Expanded(
-                          child: widget.needScroll
-                              ? CustomScrollView(
-                            slivers: [
-                              SliverPadding(
-                                padding: widget.padding ?? Dimens.defaultPadding,
-                                sliver: SliverToBoxAdapter(
-                                  child: widget.child,
-                                ),
-                              ),
-                            ],
-                          )
-                              : Padding(
-                            padding: widget.padding ?? Dimens.defaultPadding,
-                            child: Center(
-                              child: widget.child,
-                            ),
-                          ),
-                        ),
+                        Expanded(child: _buildContent()),
 
                         if (widget.bottomNavigationBar != null)
-                          Padding(
-                            padding: (widget.padding ?? Dimens.defaultPadding)
-                                .copyWith(top: 0, bottom: Dimens.eight),
-                            child: widget.bottomNavigationBar!,
-                          ),
+                          _buildBottomNavigationBar(),
                       ],
                     ),
                   ),
@@ -215,13 +225,52 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
     );
   }
 
-  Widget _buildAppBar(BuildContext context) => widget.title == null
-      ? const SizedBox.shrink()
-      : AppBar(title: Text(widget.title!), actions: widget.actions);
+  Widget _buildAppBar() {
+    final title = widget.title;
+
+    if (title == null) {
+      return const SizedBox.shrink();
+    }
+
+    return AppBar(title: Text(title), actions: widget.actions);
+  }
+
+  Widget _buildContent() {
+    final padding = widget.padding ?? Dimens.defaultPadding;
+
+    if (!widget.needScroll) {
+      return Padding(
+        padding: padding,
+        child: Center(child: widget.child),
+      );
+    }
+
+    return CustomScrollView(
+      slivers: [
+        SliverPadding(
+          padding: padding,
+          sliver: SliverToBoxAdapter(child: widget.child),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBottomNavigationBar() {
+    final padding = widget.padding ?? Dimens.defaultPadding;
+
+    return Padding(
+      padding: padding.copyWith(top: 0, bottom: Dimens.eight),
+      child: widget.bottomNavigationBar!,
+    );
+  }
 }
 
+// =============================================================================
+// TAP EFFECT
+// =============================================================================
+
 class _TapEffect {
-  _TapEffect({
+  const _TapEffect({
     required this.position,
     required this.color,
     required this.controller,
@@ -233,7 +282,7 @@ class _TapEffect {
 }
 
 class _TapEffectWidget extends StatelessWidget {
-  const _TapEffectWidget({required this.effect});
+  const _TapEffectWidget({super.key, required this.effect});
 
   final _TapEffect effect;
 
@@ -245,8 +294,7 @@ class _TapEffectWidget extends StatelessWidget {
         final progress = Curves.easeOutCubic.transform(effect.controller.value);
 
         final radius = 8.0 + (progress * 55.0);
-
-        final opacity = (1.0 - progress).clamp(0.0, 1.0);
+        final opacity = 1.0 - progress;
 
         return Positioned(
           left: effect.position.dx - radius,
@@ -276,6 +324,10 @@ class _TapEffectWidget extends StatelessWidget {
     );
   }
 }
+
+// =============================================================================
+// NEON GLOW
+// =============================================================================
 
 class _NeonGlow extends StatelessWidget {
   const _NeonGlow({
@@ -310,8 +362,14 @@ class _NeonGlow extends StatelessWidget {
   }
 }
 
+// =============================================================================
+// GRID
+// =============================================================================
+
 class _NeonGridPainter extends CustomPainter {
   const _NeonGridPainter();
+
+  static const double _spacing = 42.0;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -319,47 +377,57 @@ class _NeonGridPainter extends CustomPainter {
       ..color = AppColors.neonCyan.withValues(alpha: 0.025)
       ..strokeWidth = 1;
 
-    const spacing = 42.0;
-
-    for (double x = 0; x <= size.width; x += spacing) {
+    for (double x = 0; x <= size.width; x += _spacing) {
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
     }
 
-    for (double y = 0; y <= size.height; y += spacing) {
+    for (double y = 0; y <= size.height; y += _spacing) {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
     }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _NeonGridPainter oldDelegate) {
+    return false;
+  }
 }
+
+// =============================================================================
+// PARTICLES
+// =============================================================================
 
 class _NeonParticlePainter extends CustomPainter {
   const _NeonParticlePainter();
+
+  static const List<Color> _colors = [
+    AppColors.neonCyan,
+    AppColors.neonPurple,
+    AppColors.neonPink,
+  ];
 
   @override
   void paint(Canvas canvas, Size size) {
     final random = math.Random(42);
 
-    final colors = [
-      AppColors.neonCyan,
-      AppColors.neonPurple,
-      AppColors.neonPink,
-    ];
-
     for (var i = 0; i < 35; i++) {
-      final x = random.nextDouble() * size.width;
-      final y = random.nextDouble() * size.height;
+      final position = Offset(
+        random.nextDouble() * size.width,
+        random.nextDouble() * size.height,
+      );
+
       final radius = 0.5 + random.nextDouble() * 1.2;
-      final color = colors[i % colors.length];
 
       final paint = Paint()
-        ..color = color.withValues(alpha: 0.08 + random.nextDouble() * 0.12);
+        ..color = _colors[i % _colors.length].withValues(
+          alpha: 0.08 + random.nextDouble() * 0.12,
+        );
 
-      canvas.drawCircle(Offset(x, y), radius, paint);
+      canvas.drawCircle(position, radius, paint);
     }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _NeonParticlePainter oldDelegate) {
+    return false;
+  }
 }

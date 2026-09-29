@@ -1,540 +1,452 @@
 import 'package:flutter/material.dart';
 
-class Dimens {
-  /// ---------------------------------------------------------------------------
-  /// Base Size Constants
-  /// These are the fundamental numeric values used throughout the Dimens class
-  /// for spacing, padding, sizing, and layout.
-  ///
-  /// Naming Convention:
-  /// - Numbers are written in words for readability.
-  /// - These values are later scaled using `.i` (ScreenUtil responsive scaling).
-  ///
-  /// Example usage:
-  /// EdgeInsets.all(sixteen.i)
-  /// SizedBox(height: twentyFour.i)
-  /// ---------------------------------------------------------------------------
+abstract final class Dimens {
+  Dimens._();
+
+  // ===========================================================================
+  // Base Sizes
+  // ===========================================================================
+
+  static const double zero = 0;
+  static const double one = 1;
+  static const double two = 2;
+  static const double three = 3;
+  static const double four = 4;
+  static const double five = 5;
+  static const double six = 6;
+  static const double eight = 8;
+  static const double ten = 10;
+  static const double eleven = 11;
+  static const double twelve = 12;
+  static const double thirteen = 13;
+  static const double fourteen = 14;
+  static const double sixteen = 16;
+  static const double eighteen = 18;
+  static const double twenty = 20;
+  static const double twentyTwo = 22;
+  static const double twentyFour = 24;
+  static const double twentySix = 26;
+  static const double twentyEight = 28;
+  static const double thirty = 30;
+  static const double thirtyTwo = 32;
+  static const double thirtySix = 36;
+  static const double forty = 40;
+  static const double fortyTwo = 42;
+  static const double fortyFour = 44;
+  static const double fortySix = 46;
+  static const double fortyEight = 48;
+  static const double fifty = 50;
+  static const double fiftySix = 56;
+  static const double sixty = 60;
+  static const double sixtyFour = 64;
+  static const double seventy = 70;
+  static const double seventyTwo = 72;
+  static const double seventyFive = 75;
+  static const double eighty = 80;
+  static const double eightySix = 86;
+  static const double ninety = 90;
+  static const double ninetySix = 96;
+  static const double oneHundred = 100;
+  static const double oneHundredTwelve = 112;
+  static const double oneHundredTwenty = 120;
+  static const double oneHundredTwentyEight = 128;
+  static const double oneHundredThirty = 130;
+  static const double oneHundredForty = 140;
+  static const double oneHundredFifty = 150;
+  static const double oneHundredSixty = 160;
+  static const double oneHundredSeventy = 170;
+  static const double oneHundredEighty = 180;
+  static const double twoHundred = 200;
+  static const double twoHundredTwenty = 220;
+  static const double twoHundredForty = 240;
+  static const double twoHundredFifty = 250;
+  static const double twoHundredSixty = 260;
+  static const double twoHundredSeventy = 270;
+  static const double twoHundredEighty = 280;
+  static const double threeHundred = 300;
+  static const double threeHundredTwenty = 320;
+  static const double threeHundredForty = 340;
+  static const double threeHundredSixty = 360;
+  static const double threeHundredSeventyFive = 375;
+  static const double threeHundredEighty = 380;
+  static const double fourHundred = 400;
+  static const double fourHundredSixty = 460;
+  static const double fiveHundred = 500;
+  static const double sixHundred = 600;
+  static const double sevenHundred = 700;
+
+  /// Used for fully circular shapes.
+  static const double nineNineNine = 999;
+
+  // ===========================================================================
+  // Padding
+  // ===========================================================================
+
+  static const EdgeInsets defaultPadding = EdgeInsets.all(twentyFour);
+
+  // All sides.
+  static const EdgeInsets edgeInsets0 = EdgeInsets.zero;
+  static const EdgeInsets edgeInsets1 = EdgeInsets.all(one);
+  static const EdgeInsets edgeInsets2 = EdgeInsets.all(two);
+  static const EdgeInsets edgeInsets4 = EdgeInsets.all(four);
+  static const EdgeInsets edgeInsets6 = EdgeInsets.all(six);
+  static const EdgeInsets edgeInsets8 = EdgeInsets.all(eight);
+  static const EdgeInsets edgeInsets10 = EdgeInsets.all(ten);
+  static const EdgeInsets edgeInsets12 = EdgeInsets.all(twelve);
+  static const EdgeInsets edgeInsets14 = EdgeInsets.all(fourteen);
+  static const EdgeInsets edgeInsets16 = EdgeInsets.all(sixteen);
+  static const EdgeInsets edgeInsets18 = EdgeInsets.all(eighteen);
+  static const EdgeInsets edgeInsets20 = EdgeInsets.all(twenty);
+  static const EdgeInsets edgeInsets24 = EdgeInsets.all(twentyFour);
+  static const EdgeInsets edgeInsets28 = EdgeInsets.all(twentyEight);
+  static const EdgeInsets edgeInsets32 = EdgeInsets.all(thirtyTwo);
+  static const EdgeInsets edgeInsets40 = EdgeInsets.all(forty);
+  static const EdgeInsets edgeInsets48 = EdgeInsets.all(fortyEight);
+  static const EdgeInsets edgeInsets56 = EdgeInsets.all(fiftySix);
+
+  // Horizontal.
+  static const EdgeInsets edgeInsets4_0 = EdgeInsets.symmetric(
+    horizontal: four,
+  );
+
+  static const EdgeInsets edgeInsets6_0 = EdgeInsets.symmetric(horizontal: six);
+
+  static const EdgeInsets edgeInsets8_0 = EdgeInsets.symmetric(
+    horizontal: eight,
+  );
+
+  static const EdgeInsets edgeInsets12_0 = EdgeInsets.symmetric(
+    horizontal: twelve,
+  );
+
+  static const EdgeInsets edgeInsets14_0 = EdgeInsets.symmetric(
+    horizontal: fourteen,
+  );
+
+  static const EdgeInsets edgeInsets16_0 = EdgeInsets.symmetric(
+    horizontal: sixteen,
+  );
+
+  static const EdgeInsets edgeInsets20_0 = EdgeInsets.symmetric(
+    horizontal: twenty,
+  );
+
+  static const EdgeInsets edgeInsets24_0 = EdgeInsets.symmetric(
+    horizontal: twentyFour,
+  );
+
+  static const EdgeInsets edgeInsets30_0 = EdgeInsets.symmetric(
+    horizontal: thirty,
+    vertical: zero,
+  );
+
+  static const EdgeInsets edgeInsets32_0 = EdgeInsets.symmetric(
+    horizontal: thirtyTwo,
+  );
+
+  // Vertical.
+  static const EdgeInsets edgeInsets0_2 = EdgeInsets.symmetric(vertical: two);
+
+  static const EdgeInsets edgeInsets0_4 = EdgeInsets.symmetric(vertical: four);
+
+  static const EdgeInsets edgeInsets0_8 = EdgeInsets.symmetric(vertical: eight);
+
+  static const EdgeInsets edgeInsets0_12 = EdgeInsets.symmetric(
+    vertical: twelve,
+  );
+
+  static const EdgeInsets edgeInsets0_16 = EdgeInsets.symmetric(
+    vertical: sixteen,
+  );
+
+  static const EdgeInsets edgeInsets0_18 = EdgeInsets.symmetric(
+    vertical: eighteen,
+  );
+
+  static const EdgeInsets edgeInsets0_20 = EdgeInsets.symmetric(
+    vertical: twenty,
+  );
+
+  static const EdgeInsets edgeInsets0_24 = EdgeInsets.symmetric(
+    vertical: twentyFour,
+  );
+
+  static const EdgeInsets edgeInsets0_32 = EdgeInsets.symmetric(
+    vertical: thirtyTwo,
+  );
+
+  // Horizontal + vertical.
+  static const EdgeInsets edgeInsets16_4 = EdgeInsets.symmetric(
+    horizontal: sixteen,
+    vertical: four,
+  );
+
+  static const EdgeInsets edgeInsets4_2 = EdgeInsets.symmetric(
+    horizontal: four,
+    vertical: two,
+  );
+
+  static const EdgeInsets edgeInsets4_8 = EdgeInsets.symmetric(
+    horizontal: four,
+    vertical: eight,
+  );
+
+  static const EdgeInsets edgeInsets20_24 = EdgeInsets.symmetric(
+    horizontal: twenty,
+    vertical: twentyFour,
+  );
+
+  static const EdgeInsets edgeInsets4_10 = EdgeInsets.symmetric(
+    horizontal: four,
+    vertical: ten,
+  );
+
+  static const EdgeInsets edgeInsets4_12 = EdgeInsets.symmetric(
+    horizontal: four,
+    vertical: twelve,
+  );
+
+  static const EdgeInsets edgeInsets4_16 = EdgeInsets.symmetric(
+    horizontal: four,
+    vertical: sixteen,
+  );
+
+  static const EdgeInsets edgeInsets4_20 = EdgeInsets.symmetric(
+    horizontal: four,
+    vertical: twenty,
+  );
+
+  static const EdgeInsets edgeInsets4_24 = EdgeInsets.symmetric(
+    horizontal: four,
+    vertical: twentyFour,
+  );
+
+  static const EdgeInsets edgeInsets6_2 = EdgeInsets.symmetric(
+    horizontal: six,
+    vertical: two,
+  );
+
+  static const EdgeInsets edgeInsets6_4 = EdgeInsets.symmetric(
+    horizontal: six,
+    vertical: four,
+  );
+
+  static const EdgeInsets edgeInsets6_10 = EdgeInsets.symmetric(
+    horizontal: six,
+    vertical: ten,
+  );
 
-  // Basic Sizes
-  static double get zero => 0;
+  static const EdgeInsets edgeInsets6_16 = EdgeInsets.symmetric(
+    horizontal: six,
+    vertical: sixteen,
+  );
 
-  static double get one => 1;
+  static const EdgeInsets edgeInsets8_2 = EdgeInsets.symmetric(
+    horizontal: eight,
+    vertical: two,
+  );
+
+  static const EdgeInsets edgeInsets8_4 = EdgeInsets.symmetric(
+    horizontal: eight,
+    vertical: four,
+  );
+
+  static const EdgeInsets edgeInsets8_12 = EdgeInsets.symmetric(
+    horizontal: eight,
+    vertical: twelve,
+  );
 
-  static double get two => 2;
+  static const EdgeInsets edgeInsets8_16 = EdgeInsets.symmetric(
+    horizontal: eight,
+    vertical: sixteen,
+  );
 
-  static double get three => 3;
-
-  static double get four => 4;
-
-  static double get five => 5;
-
-  static double get six => 6;
-
-  static double get eight => 8;
-
-  static double get ten => 10;
-
-  static double get eleven => 11;
-
-  static double get twelve => 12;
-
-  static double get thirteen => 13;
-
-  static double get fourteen => 14;
-
-  static double get sixteen => 16;
-
-  static double get eighteen => 18;
-
-  static double get twenty => 20;
-
-  static double get twentyTwo => 22;
-
-  static double get twentyFour => 24;
-
-  static double get twentySix => 26;
-
-  static double get twentyEight => 28;
-
-  static double get thirty => 30;
-
-  static double get thirtyTwo => 32;
-
-  static double get thirtySix => 36;
-
-  static double get forty => 40;
-
-  static double get fortyTwo => 42;
-
-  static double get fortyFour => 44;
-
-  static double get fortySix => 46;
-
-  static double get fortyEight => 48;
-
-  static double get fifty => 50;
-
-  static double get fiftySix => 56;
-
-  static double get sixty => 60;
-
-  static double get sixtyFour => 64;
-
-  static double get seventy => 70;
-
-  static double get seventyTwo => 72;
-
-  static double get seventyFive => 75;
-
-  static double get eighty => 80;
-
-  static double get eightySix => 86;
-
-  static double get ninety => 90;
-
-  static double get ninetySix => 96;
-
-  static double get oneHundred => 100;
-
-  static double get oneHundredTwelve => 112;
-
-  static double get oneHundredTwenty => 120;
-
-  static double get oneHundredTwentyEight => 128;
-
-  static double get oneHundredThirty => 130;
-
-  static double get oneHundredForty => 140;
-
-  static double get oneHundredFifty => 150;
-
-  static double get oneHundredSixty => 160;
-
-  static double get oneHundredSeventy => 170;
-
-  static double get oneHundredEighty => 180;
-
-  static double get twoHundred => 200;
-
-  static double get twoHundredTwenty => 220;
-
-  static double get twoHundredForty => 240;
-
-  static double get twoHundredFifty => 250;
-
-  static double get twoHundredSixty => 260;
-
-  static double get twoHundredSeventy => 270;
-
-  static double get twoHundredEighty => 280;
-
-  static double get threeHundred => 300;
-
-  static double get threeHundredTwenty => 320;
-
-  static double get threeHundredForty => 340;
-
-  static double get threeHundredSixty => 360;
-
-  static double get threeHundredSeventyFive => 375;
-  static double get threeHundredEighty => 380;
-
-  static double get fourHundred => 400;
-  static double get fourHundredSixty => 460;
-
-  static double get fiveHundred => 500;
-
-  static double get sixHundred => 600;
-
-  static double get sevenHundred => 700;
-
-  /// Used for full circular shapes or unlimited radius
-  /// Example: BorderRadius.circular(Dimens.nineNineNine)
-  static double get nineNineNine => 999;
-
-  /// ---------------------------------------------------------------------------
-  /// Padding Utilities
-  /// All padding values are responsive using `.i` (ScreenUtil scaling).
-  /// Naming pattern:
-  /// edgeInsetsX_Y → horizontal X, vertical Y
-  /// edgeInsetsL → left padding
-  /// edgeInsetsR → right padding
-  /// edgeInsetsT → top padding
-  /// edgeInsetsB → bottom padding
-  /// ---------------------------------------------------------------------------
-
-  /// ---------------------------------------------------------------------------
-  /// Full Padding Sizes (All sides)
-  /// Example: edgeInsets16 → EdgeInsets.all(16)
-  /// ---------------------------------------------------------------------------
-
-  static EdgeInsets get defaultPadding => EdgeInsets.all(twentyFour);
-
-  static EdgeInsets get edgeInsets0 => EdgeInsets.zero;
-
-  static EdgeInsets get edgeInsets1 => EdgeInsets.all(one);
-
-  static EdgeInsets get edgeInsets2 => EdgeInsets.all(two);
-
-  static EdgeInsets get edgeInsets4 => EdgeInsets.all(four);
-
-  static EdgeInsets get edgeInsets6 => EdgeInsets.all(six);
-
-  static EdgeInsets get edgeInsets8 => EdgeInsets.all(eight);
-
-  static EdgeInsets get edgeInsets10 => EdgeInsets.all(ten);
-
-  static EdgeInsets get edgeInsets12 => EdgeInsets.all(twelve);
-
-  static EdgeInsets get edgeInsets14 => EdgeInsets.all(fourteen);
-
-  static EdgeInsets get edgeInsets16 => EdgeInsets.all(sixteen);
-
-  static EdgeInsets get edgeInsets18 => EdgeInsets.all(eighteen);
-
-  static EdgeInsets get edgeInsets20 => EdgeInsets.all(twenty);
-
-  static EdgeInsets get edgeInsets24 => EdgeInsets.all(twentyFour);
-
-  static EdgeInsets get edgeInsets28 => EdgeInsets.all(twentyEight);
-
-  static EdgeInsets get edgeInsets32 => EdgeInsets.all(thirtyTwo);
-
-  static EdgeInsets get edgeInsets40 => EdgeInsets.all(forty);
-
-  static EdgeInsets get edgeInsets48 => EdgeInsets.all(fortyEight);
-
-  static EdgeInsets get edgeInsets56 => EdgeInsets.all(fiftySix);
-
-
-  static EdgeInsets get edgeInsets4_0 =>
-      EdgeInsets.symmetric(horizontal: four);
-
-  static EdgeInsets get edgeInsets6_0 =>
-      EdgeInsets.symmetric(horizontal: six);
-
-  static EdgeInsets get edgeInsets8_0 =>
-      EdgeInsets.symmetric(horizontal: eight);
-
-  static EdgeInsets get edgeInsets12_0 =>
-      EdgeInsets.symmetric(horizontal: twelve);
-
-  static EdgeInsets get edgeInsets14_0 =>
-      EdgeInsets.symmetric(horizontal: fourteen);
-
-  static EdgeInsets get edgeInsets16_0 =>
-      EdgeInsets.symmetric(horizontal: sixteen);
-
-
-  static EdgeInsets get edgeInsets20_0 =>
-      EdgeInsets.symmetric(horizontal: twenty);
-
-  static EdgeInsets get edgeInsets24_0 =>
-      EdgeInsets.symmetric(horizontal: twentyFour);
-
-  static EdgeInsets get edgeInsets30_0 =>
-      EdgeInsets.symmetric(horizontal: thirty, vertical: zero);
-
-  static EdgeInsets get edgeInsets32_0 =>
-      EdgeInsets.symmetric(horizontal: thirtyTwo);
-
-  /// ---------------------------------------------------------------------------
-  /// Vertical Padding (Top + Bottom)
-  /// Example: edgeInsets0_16 → EdgeInsets.symmetric(vertical: 16)
-  /// ---------------------------------------------------------------------------
-
-  static EdgeInsets get edgeInsets0_2 => EdgeInsets.symmetric(vertical: two);
-
-  static EdgeInsets get edgeInsets0_4 => EdgeInsets.symmetric(vertical: four);
-
-  static EdgeInsets get edgeInsets0_8 =>
-      EdgeInsets.symmetric(vertical: eight);
-
-  static EdgeInsets get edgeInsets0_12 =>
-      EdgeInsets.symmetric(vertical: twelve);
-
-  static EdgeInsets get edgeInsets0_16 =>
-      EdgeInsets.symmetric(vertical: sixteen);
-
-  static EdgeInsets get edgeInsets0_18 =>
-      EdgeInsets.symmetric(vertical: eighteen);
-
-  static EdgeInsets get edgeInsets0_20 =>
-      EdgeInsets.symmetric(vertical: twenty);
-
-  static EdgeInsets get edgeInsets0_24 =>
-      EdgeInsets.symmetric(vertical: twentyFour);
-
-  static EdgeInsets get edgeInsets0_32 =>
-      EdgeInsets.symmetric(vertical: thirtyTwo);
-
-  /// ---------------------------------------------------------------------------
-  /// Symmetric EdgeInsets (horizontal, vertical)
-  /// Format: edgeInsetsH_V → horizontal, vertical
-  /// Example: edgeInsets16_8 = horizontal 16, vertical 8
-  /// All values use `.w` for responsive scaling via ScreenUtil.
-  /// ---------------------------------------------------------------------------
-  static EdgeInsets get edgeInsets16_4 =>
-      EdgeInsets.symmetric(horizontal: sixteen,vertical: four);
-  static EdgeInsets get edgeInsets4_2 =>
-      EdgeInsets.symmetric(horizontal: four, vertical: two);
-
-  static EdgeInsets get edgeInsets4_8 =>
-      EdgeInsets.symmetric(horizontal: four, vertical: eight);
-  static EdgeInsets get edgeInsets20_24 =>
-      EdgeInsets.symmetric(horizontal: twenty, vertical: twentyFour);
-
-  static EdgeInsets get edgeInsets4_10 =>
-      EdgeInsets.symmetric(horizontal: four, vertical: ten);
-
-  static EdgeInsets get edgeInsets4_12 =>
-      EdgeInsets.symmetric(horizontal: four, vertical: twelve);
-
-  static EdgeInsets get edgeInsets4_16 =>
-      EdgeInsets.symmetric(horizontal: four, vertical: sixteen);
-
-  static EdgeInsets get edgeInsets4_20 =>
-      EdgeInsets.symmetric(horizontal: four, vertical: twenty);
-
-  static EdgeInsets get edgeInsets4_24 =>
-      EdgeInsets.symmetric(horizontal: four, vertical: twentyFour);
-
-  static EdgeInsets get edgeInsets6_2 =>
-      EdgeInsets.symmetric(horizontal: six, vertical: two);
-
-  static EdgeInsets get edgeInsets6_4 =>
-      EdgeInsets.symmetric(horizontal: six, vertical: four);
-
-  static EdgeInsets get edgeInsets6_10 =>
-      EdgeInsets.symmetric(horizontal: six, vertical: ten);
-
-  static EdgeInsets get edgeInsets6_16 =>
-      EdgeInsets.symmetric(horizontal: six, vertical: sixteen);
-
-  static EdgeInsets get edgeInsets8_2 =>
-      EdgeInsets.symmetric(horizontal: eight, vertical: two);
-
-  static EdgeInsets get edgeInsets8_4 =>
-      EdgeInsets.symmetric(horizontal: eight, vertical: four);
-
-  static EdgeInsets get edgeInsets8_12 =>
-      EdgeInsets.symmetric(horizontal: eight, vertical: twelve);
-
-  static EdgeInsets get edgeInsets8_16 =>
-      EdgeInsets.symmetric(horizontal: eight, vertical: sixteen);
-
-  static EdgeInsets get edgeInsets8_20 =>
-      EdgeInsets.symmetric(horizontal: eight, vertical: twenty);
-
-  static EdgeInsets get edgeInsets8_24 =>
-      EdgeInsets.symmetric(horizontal: eight, vertical: twentyFour);
-
-  static EdgeInsets get edgeInsets10_4 =>
-      EdgeInsets.symmetric(horizontal: ten, vertical: four);
-
-  static EdgeInsets get edgeInsets10_6 =>
-      EdgeInsets.symmetric(horizontal: ten, vertical: six);
-
-  static EdgeInsets get edgeInsets12_4 =>
-      EdgeInsets.symmetric(horizontal: twelve, vertical: four);
-
-  static EdgeInsets get edgeInsets12_6 =>
-      EdgeInsets.symmetric(horizontal: twelve, vertical: six);
-
-  static EdgeInsets get edgeInsets12_8 =>
-      EdgeInsets.symmetric(horizontal: twelve, vertical: eight);
-
-  static EdgeInsets get edgeInsets12_10 =>
-      EdgeInsets.symmetric(horizontal: twelve, vertical: ten);  static EdgeInsets get edgeInsets12_16 =>
-      EdgeInsets.symmetric(horizontal: twelve, vertical: sixteen);
-
-
-  static EdgeInsets get edgeInsetsB2 => EdgeInsets.only(bottom: two);
-  static EdgeInsets get edgeInsetsB4 => EdgeInsets.only(bottom: four);
-  static EdgeInsets get edgeInsetsB6 => EdgeInsets.only(bottom: six);
-  static EdgeInsets get edgeInsetsB8 => EdgeInsets.only(bottom: eight);
-  static EdgeInsets get edgeInsetsB10 => EdgeInsets.only(bottom: ten);
-  static EdgeInsets get edgeInsetsB12 => EdgeInsets.only(bottom: twelve);
-
-
-
-
-  /// ---------------------------------------------------------------------------
-  /// Border Radius Utilities
-  /// Provides reusable radius values used across the application for
-  /// rounded containers, cards, buttons, dialogs, and shapes.
-  ///
-  /// Usage Examples:
-  /// Container(borderRadius: Dimens.radius12)
-  /// ClipRRect(borderRadius: Dimens.radius16)
-  ///
-  /// These values use `.w` scaling for responsive layouts.
-  /// ---------------------------------------------------------------------------
-
-  /// Circular BorderRadius
-  static BorderRadius get radius0 => BorderRadius.circular(zero);
-
-  static BorderRadius get radius2 => BorderRadius.circular(two);
-
-  static BorderRadius get radius4 => BorderRadius.circular(four);
-
-  static BorderRadius get radius6 => BorderRadius.circular(six);
-
-  static BorderRadius get radius8 => BorderRadius.circular(eight);
-
-  static BorderRadius get radius10 => BorderRadius.circular(ten);
-
-  static BorderRadius get radius12 => BorderRadius.circular(twelve);
-
-  static BorderRadius get radius14 => BorderRadius.circular(fourteen);
-
-  static BorderRadius get radius16 => BorderRadius.circular(sixteen);
-
-  static BorderRadius get radius18 => BorderRadius.circular(eighteen);
-
-  static BorderRadius get radius20 => BorderRadius.circular(twenty);
-
-  static BorderRadius get radius22 => BorderRadius.circular(twentyTwo);
-
-  static BorderRadius get radius24 => BorderRadius.circular(twentyFour);
-  static BorderRadius get radius30 => BorderRadius.circular(thirty);
-
-
-  /// ---------------------------------------------------------------------------
-  /// Single Corner Radius
-  /// Used when applying radius to specific corners using `BorderRadius.only`.
-  ///
-  /// Example:
-  /// BorderRadius.only(topLeft: Dimens.cornerRadius12)
-  /// ---------------------------------------------------------------------------
-
-  static Radius get cornerRadius0 => Radius.circular(zero);
-
-  static Radius get cornerRadius4 => Radius.circular(four);
-
-  static Radius get cornerRadius8 => Radius.circular(eight);
-
-  static Radius get cornerRadius12 => Radius.circular(twelve);
-
-  static Radius get cornerRadius16 => Radius.circular(sixteen);
-
-  static Radius get cornerRadius18 => Radius.circular(eighteen);
-
-  static Radius get cornerRadius20 => Radius.circular(twenty);
-
-  static Radius get cornerRadius24 => Radius.circular(twentyFour);
-
-
-
-
-  /// ---------------------------------------------------------------------------
-  /// Default Spacing
-  /// Common spacing values used between UI elements.
-  /// ---------------------------------------------------------------------------
-
-  static double get defaultSpace => twentyFour;
-
-  static double get spaceBtwItems => sixteen;
-
-  static double get spaceBtwSections => thirtyTwo;
-
-  static double get spaceBtwInputFields => sixteen;
-
-
-  /// ---------------------------------------------------------------------------
-  /// Font Sizes (Responsive)
-  /// Standard typography scale used across the application.
-  /// Uses `.sp` for responsive text scaling.
-  /// ---------------------------------------------------------------------------
-
-  static double get font2Xs => 10;
-
-  static double get fontXs => 12;
-
-  static double get fontSm => 14;
-
-  static double get fontMd => 16;
-
-  static double get fontLg => 18;
-
-  static double get fontXl => 20;
-
-  static double get font2Xl => 24;
-
-  static double get font3Xl => 28;
-
-  static double get font4Xl => 32;
-
-  static double get font5Xl => 36;
-
-  static double get font6Xl => 40;
-
-  static double get font7Xl => 48;
-
-  static double get font8Xl => 56;
-
-  static double get font9Xl => 64;
-
-  /// ---------------------------------------------------------------------------
-  /// Border Radius Sizes
-  /// Used for small UI components like chips, buttons, cards.
-  /// ---------------------------------------------------------------------------
-
-  static double get borderRadiusSm => four;
-
-  static double get borderRadiusMd => eight;
-
-  static double get borderRadiusLg => twelve;
-
-  /// Input field radius
-  static double get inputFieldRadius => twelve;
-
-  /// ---------------------------------------------------------------------------
-  /// Icon Sizes
-  /// Used for icons across the application.
-  /// ---------------------------------------------------------------------------
-
-  static double get iconXs => twelve;
-
-  static double get iconSm => sixteen;
-
-  static double get iconMd => twentyFour;
-
-  static double get iconLg => thirtyTwo;
-
-  static double get iconXl => forty;
-
-  static double get icon2Xl => fortyEight;
-
-  static double get icon3Xl => fiftySix;
-
-  static double get icon4Xl => sixtyFour;
-
-  static double get icon5Xl => eighty;
-
-  static double get icon6Xl => ninetySix;
-
-  static double get icon7Xl => oneHundredTwelve;
-
-  static double get icon8Xl => oneHundredTwentyEight;
-
-
-
-  static double get radiusSm => 8;
-  static double get radiusMd => 12;
-  static double get radiusLg => 16;
-  static double get radiusXl => 20;
-
-  /// Full circular radius
-  // static double get cardRadiusFull => nineNineNine.i;
-
-  /// ---------------------------------------------------------------------------
-  /// Miscellaneous UI Sizes
-  /// ---------------------------------------------------------------------------
-
-  /// Divider thickness
-  static double get dividerHeight => one;
-
-  /// Standard elevated button height
-  static double get elevatedButtonHeight => sixtyFour;
+  static const EdgeInsets edgeInsets8_20 = EdgeInsets.symmetric(
+    horizontal: eight,
+    vertical: twenty,
+  );
+
+  static const EdgeInsets edgeInsets8_24 = EdgeInsets.symmetric(
+    horizontal: eight,
+    vertical: twentyFour,
+  );
+
+  static const EdgeInsets edgeInsets10_4 = EdgeInsets.symmetric(
+    horizontal: ten,
+    vertical: four,
+  );
+
+  static const EdgeInsets edgeInsets10_6 = EdgeInsets.symmetric(
+    horizontal: ten,
+    vertical: six,
+  );
+
+  static const EdgeInsets edgeInsets12_4 = EdgeInsets.symmetric(
+    horizontal: twelve,
+    vertical: four,
+  );
+
+  static const EdgeInsets edgeInsets12_6 = EdgeInsets.symmetric(
+    horizontal: twelve,
+    vertical: six,
+  );
+
+  static const EdgeInsets edgeInsets12_8 = EdgeInsets.symmetric(
+    horizontal: twelve,
+    vertical: eight,
+  );
+
+  static const EdgeInsets edgeInsets12_10 = EdgeInsets.symmetric(
+    horizontal: twelve,
+    vertical: ten,
+  );
+
+  static const EdgeInsets edgeInsets12_16 = EdgeInsets.symmetric(
+    horizontal: twelve,
+    vertical: sixteen,
+  );
+
+  // Bottom.
+  static const EdgeInsets edgeInsetsB2 = EdgeInsets.only(bottom: two);
+
+  static const EdgeInsets edgeInsetsB4 = EdgeInsets.only(bottom: four);
+
+  static const EdgeInsets edgeInsetsB6 = EdgeInsets.only(bottom: six);
+
+  static const EdgeInsets edgeInsetsB8 = EdgeInsets.only(bottom: eight);
+
+  static const EdgeInsets edgeInsetsB10 = EdgeInsets.only(bottom: ten);
+
+  static const EdgeInsets edgeInsetsB12 = EdgeInsets.only(bottom: twelve);
+
+  // ===========================================================================
+  // Border Radius
+  // ===========================================================================
+
+  static const BorderRadius radius0 = BorderRadius.all(Radius.circular(zero));
+
+  static const BorderRadius radius2 = BorderRadius.all(Radius.circular(two));
+
+  static const BorderRadius radius4 = BorderRadius.all(Radius.circular(four));
+
+  static const BorderRadius radius6 = BorderRadius.all(Radius.circular(six));
+
+  static const BorderRadius radius8 = BorderRadius.all(Radius.circular(eight));
+
+  static const BorderRadius radius10 = BorderRadius.all(Radius.circular(ten));
+
+  static const BorderRadius radius12 = BorderRadius.all(
+    Radius.circular(twelve),
+  );
+
+  static const BorderRadius radius14 = BorderRadius.all(
+    Radius.circular(fourteen),
+  );
+
+  static const BorderRadius radius16 = BorderRadius.all(
+    Radius.circular(sixteen),
+  );
+
+  static const BorderRadius radius18 = BorderRadius.all(
+    Radius.circular(eighteen),
+  );
+
+  static const BorderRadius radius20 = BorderRadius.all(
+    Radius.circular(twenty),
+  );
+
+  static const BorderRadius radius22 = BorderRadius.all(
+    Radius.circular(twentyTwo),
+  );
+
+  static const BorderRadius radius24 = BorderRadius.all(
+    Radius.circular(twentyFour),
+  );
+
+  static const BorderRadius radius30 = BorderRadius.all(
+    Radius.circular(thirty),
+  );
+
+  // ===========================================================================
+  // Corner Radius
+  // ===========================================================================
+
+  static const Radius cornerRadius0 = Radius.circular(zero);
+  static const Radius cornerRadius4 = Radius.circular(four);
+  static const Radius cornerRadius8 = Radius.circular(eight);
+  static const Radius cornerRadius12 = Radius.circular(twelve);
+  static const Radius cornerRadius16 = Radius.circular(sixteen);
+  static const Radius cornerRadius18 = Radius.circular(eighteen);
+  static const Radius cornerRadius20 = Radius.circular(twenty);
+  static const Radius cornerRadius24 = Radius.circular(twentyFour);
+
+  // ===========================================================================
+  // Spacing
+  // ===========================================================================
+
+  static const double defaultSpace = twentyFour;
+  static const double spaceBtwItems = sixteen;
+  static const double spaceBtwSections = thirtyTwo;
+  static const double spaceBtwInputFields = sixteen;
+
+  // ===========================================================================
+  // Font Sizes
+  // ===========================================================================
+
+  static const double font2Xs = 10;
+  static const double fontXs = 12;
+  static const double fontSm = 14;
+  static const double fontMd = 16;
+  static const double fontLg = 18;
+  static const double fontXl = 20;
+  static const double font2Xl = 24;
+  static const double font3Xl = 28;
+  static const double font4Xl = 32;
+  static const double font5Xl = 36;
+  static const double font6Xl = 40;
+  static const double font7Xl = 48;
+  static const double font8Xl = 56;
+  static const double font9Xl = 64;
+
+  // ===========================================================================
+  // Semantic Border Radius
+  // ===========================================================================
+
+  static const double borderRadiusSm = four;
+  static const double borderRadiusMd = eight;
+  static const double borderRadiusLg = twelve;
+  static const double inputFieldRadius = twelve;
+
+  // ===========================================================================
+  // Icon Sizes
+  // ===========================================================================
+
+  static const double iconXs = twelve;
+  static const double iconSm = sixteen;
+  static const double iconMd = twentyFour;
+  static const double iconLg = thirtyTwo;
+  static const double iconXl = forty;
+  static const double icon2Xl = fortyEight;
+  static const double icon3Xl = fiftySix;
+  static const double icon4Xl = sixtyFour;
+  static const double icon5Xl = eighty;
+  static const double icon6Xl = ninetySix;
+  static const double icon7Xl = oneHundredTwelve;
+  static const double icon8Xl = oneHundredTwentyEight;
+
+  // ===========================================================================
+  // Semantic Radius
+  // ===========================================================================
+
+  static const double radiusSm = 8;
+  static const double radiusMd = 12;
+  static const double radiusLg = 16;
+  static const double radiusXl = 20;
+
+  // ===========================================================================
+  // Miscellaneous
+  // ===========================================================================
+
+  static const double dividerHeight = one;
+  static const double elevatedButtonHeight = sixtyFour;
 }

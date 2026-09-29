@@ -1,7 +1,7 @@
 import 'package:tictac_duel/lib.dart';
 
 class AppLogoWidget extends StatelessWidget {
-  AppLogoWidget({super.key, double? size})
+  const AppLogoWidget({super.key, double? size})
     : size = size ?? Dimens.oneHundredTwenty;
   final double size;
 
