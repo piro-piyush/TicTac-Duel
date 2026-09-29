@@ -54,16 +54,5 @@ class HomeActionsWidget extends StatelessWidget {
     );
   }
 
-  Future<void> _checkInternetConnection(VoidCallback onSuccess) async {
-    final isConnected = await Get.find<NetworkService>().isConnected();
 
-    if (!isConnected) {
-      PopupUtils.showWarning(
-        'No Internet Connection. Online play requires an internet connection.',
-      );
-      return;
-    }
-
-    onSuccess();
-  }
 }
