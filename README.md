@@ -6,7 +6,7 @@
 
 Tic Tac Duel is a neon-themed Tic Tac Toe game designed around a clean, modern, and competitive gameplay experience.
 
-The game currently focuses on **local gameplay**, allowing players to play against a friend on the same device or challenge the CPU.
+The game supports **local gameplay**, allowing players to play against a friend on the same device or challenge the CPU.
 
 ## ✨ Features
 
@@ -46,13 +46,13 @@ flutter doctor
 Clone the repository:
 
 ```bash
-git clone https://github.com/piro-piyush/tictac-duel.git
+git clone https://github.com/piro-piyush/TicTac-Duel.git
 ```
 
 Navigate to the project:
 
 ```bash
-cd tictac-duel
+cd TicTac-Duel
 ```
 
 Install dependencies:
@@ -69,18 +69,18 @@ flutter run
 
 ## 📦 Release
 
-### v1.0.0
+### v2.0.0
 
-The first release of Tic Tac Duel, featuring local Tic Tac Toe gameplay with friend and CPU modes.
+The **v2.0.0** release brings the latest Tic Tac Duel gameplay and project updates, including the current local Tic Tac Toe experience with friend and CPU modes.
 
-**Version:** `1.0.0+1`
+**Version:** `2.0.0+1`
 
 ### 📱 Which APK should I download?
 
-The APKs are split by Android CPU architecture to reduce download size.
+The release APKs are split by Android CPU architecture to reduce download size.
 
 | APK                           | Architecture | Recommended for                              |
-| ----------------------------- | ------------ | -------------------------------------------- |
+|-------------------------------|--------------|----------------------------------------------|
 | `app-arm64-v8a-release.apk`   | ARM64        | **Most modern Android phones and tablets**   |
 | `app-armeabi-v7a-release.apk` | ARM32        | Older Android phones and tablets             |
 | `app-x86_64-release.apk`      | x86_64       | Android emulators and some x86-based devices |
@@ -101,8 +101,16 @@ If you're using an Android emulator, check its configured CPU architecture and d
 
 ### 📦 Google Play
 
-For Google Play distribution, use the **AAB (`app-release-aab`)**. Google Play automatically generates optimized APKs for supported device architectures.
+For Google Play distribution, use the **AAB (`app-release.aab`)**.
+
+Google Play automatically generates optimized APKs for supported device architectures.
 
 ### ⬇️ Download
 
-[Download Tic Tac Duel v1.0.0](https://github.com/piro-piyush/tictac-duel/releases/tag/v1.0.0)
+[Download Tic Tac Duel v2.0.0](https://github.com/piro-piyush/TicTac-Duel/releases/tag/v2.0.0)
+
+## 👨‍💻 Developer
+
+**Piyush Vishwakarma**
+
+Built with Flutter and a passion for clean, modern mobile experiences.
