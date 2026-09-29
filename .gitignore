@@ -1,15 +1,11 @@
 # ============================================================
-
 # Tic Tac Duel - Git Ignore
-
-# Flutter Frontend + Node.js Backend
-
+# Flutter Frontend
 # ============================================================
 
-# ============================================================
 
+# ============================================================
 # Miscellaneous
-
 # ============================================================
 
 *.class
@@ -20,8 +16,6 @@
 *.tmp
 *.temp
 *.bak
-*.pid
-*.pid.lock
 
 .DS_Store
 Thumbs.db
@@ -35,92 +29,78 @@ Desktop.ini
 .swiftpm/
 migrate_working_dir/
 
+
 # ============================================================
-
-# IDE - IntelliJ / Android Studio
-
+# IntelliJ / Android Studio
 # ============================================================
 
 *.iml
 *.ipr
 *.iws
-
 .idea/
 
-# ============================================================
-
-# IDE - VS Code
 
 # ============================================================
-
-# Uncomment if you don't want VS Code settings committed
+# VS Code
+# ============================================================
 
 # .vscode/
 
-# Local VS Code configuration
-
-.vscode/*.code-workspace
 
 # ============================================================
-
-# Frontend - Flutter / Dart
-
+# Flutter / Dart / Pub
 # ============================================================
 
-/frontend/.dart_tool/
-/frontend/.flutter-plugins
-/frontend/.flutter-plugins-dependencies
-/frontend/.pub-cache/
-/frontend/.pub/
-/frontend/build/
-/frontend/coverage/
+**/doc/api/
+**/ios/Flutter/.last_build_id
 
-/frontend/**/doc/api/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
 
-/frontend/ios/Flutter/.last_build_id
+build/
+coverage/
 
-# Flutter symbolication
-
-/frontend/app.*.symbols
-
-# Flutter obfuscation
-
-/frontend/app.*.map.json
-
-# Widget Preview
-
-/frontend/.widget_preview/
 
 # ============================================================
-
-# Frontend - Android Build Artifacts
-
+# Flutter Symbolication
 # ============================================================
 
-/frontend/android/app/debug/
-/frontend/android/app/profile/
-/frontend/android/app/release/
+app.*.symbols
 
-/frontend/android/.gradle/
-/frontend/android/local.properties/
-/frontend/android/.cxx/
-/frontend/android/.externalNativeBuild/
-
-# Android generated files
-
-/frontend/android/app/.cxx/
-/frontend/android/app/build/
 
 # ============================================================
+# Flutter Obfuscation
+# ============================================================
 
+app.*.map.json
+
+
+# ============================================================
+# Android Build Artifacts
+# ============================================================
+
+android/app/debug/
+android/app/profile/
+android/app/release/
+
+android/.gradle/
+android/local.properties
+
+android/.cxx/
+android/.externalNativeBuild/
+android/app/.cxx/
+android/app/build/
+
+
+# ============================================================
 # Android Signing - NEVER COMMIT
-
 # ============================================================
 
-/frontend/android/key.properties
-/frontend/android/app/upload-keystore.jks
-
-# All keystore / signing files
+android/key.properties
+android/app/upload-keystore.jks
 
 *.jks
 *.keystore
@@ -129,127 +109,19 @@ migrate_working_dir/
 *.pem
 *.key
 
-# ============================================================
-
-# Frontend - Environment / Secrets
 
 # ============================================================
-
-/frontend/.env
-/frontend/.env.*
-!/frontend/.env.example
-
-# ============================================================
-
-# Backend - Node.js
-
-# ============================================================
-
-/backend/node_modules/
-/backend/dist/
-/backend/build/
-/backend/coverage/
-
-/backend/.nyc_output/
-
-# ============================================================
-
-# Backend - TypeScript
-
-# ============================================================
-
-*.tsbuildinfo
-
-# ============================================================
-
-# Backend - Environment / Secrets
-
-# ============================================================
-
-/backend/.env
-/backend/.env.*
-!/backend/.env.example
-
-# ============================================================
-
-# Backend - Logs
-
-# ============================================================
-
-/backend/npm-debug.log*
-/backend/yarn-debug.log*
-/backend/yarn-error.log*
-/backend/pnpm-debug.log*
-
-# ============================================================
-
-# Backend - Runtime Data
-
-# ============================================================
-
-/backend/*.pid
-/backend/*.seed
-/backend/*.pid.lock
-
-# ============================================================
-
-# Backend - Editor Configuration
-
-# ============================================================
-
-/backend/.vscode/launch.json
-
-# ============================================================
-
-# Backend - Drizzle ORM
-
-# ============================================================
-
-# Drizzle migration metadata
-
-/backend/drizzle/meta/
-
-# Temporary Drizzle files
-
-/backend/drizzle/*.sql.bak
-/backend/drizzle/*.tmp
-
-# ============================================================
-
-# Backend - Test / Temporary Files
-
-# ============================================================
-
-/backend/.eslintcache
-/backend/.stylelintcache
-
-# ============================================================
-
-# Global Environment Files
-
+# Environment / Secrets
 # ============================================================
 
 .env
 .env.*
+
 !.env.example
 
-# ============================================================
-
-# Global Secrets / Credentials
 
 # ============================================================
-
-*.pem
-*.key
-*.p12
-*.pfx
-*.jks
-*.keystore
-
-# ============================================================
-
-# Local Database / Generated Data
-
+# Local Database
 # ============================================================
 
 *.sqlite
@@ -257,13 +129,13 @@ migrate_working_dir/
 *.db
 *.db-journal
 
+
 # ============================================================
-
 # OS / Tool Generated Files
-
 # ============================================================
 
 *.orig
 *.rej
-*.lock
-.DS_Store
+*.pid
+*.pid.lock
+release.text

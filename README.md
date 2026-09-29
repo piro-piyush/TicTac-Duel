@@ -1,55 +1,59 @@
-# 🎮 Tic Tac Duel
+name: tictac_duel
+description: "Real-time multiplayer Tic-Tac-Toe"
+publish_to: "none"
+version: 1.0.0+1
 
-> A futuristic neon Tic Tac Toe multiplayer game.
+environment:
+  sdk: ^3.13.2
 
-<!-- ![Tic Tac Duel](assets/banner.png) -->
+dependencies:
+  flutter:
+    sdk: flutter
 
-## 📱 App Icon
+#  cupertino_icons: ^2.0.0
+  flutter_svg: ^2.3.0
+  lottie: ^3.6.1
+  flutter_confetti: ^0.9.2
+  flutter_native_splash: ^2.4.8
+  get: ^4.7.3
+  flutter_secure_storage: ^11.2.0
+  just_audio: ^0.10.6
 
-<p align="center">
-  <img src="frontend/assets/app/logo.png" alt="Tic Tac Duel App Icon" width="180"/>
-</p>
-## ℹ️ Project Info
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  icons_launcher: ^3.1.0
+  change_app_package_name: ^1.5.0
 
-Tic Tac Duel is a futuristic neon-themed Tic Tac Toe game focused on a clean, competitive multiplayer experience with real-time gameplay.
+flutter:
+  uses-material-design: true
 
-## 🛠️ Tech Stack
+  assets:
+    - assets/animations/
+    - assets/audio/
 
-* **Frontend:** Flutter
-* **Backend:** Node.js
-* **Real-time:** WebSockets
+icons_launcher:
+  platforms:
+    android:
+      enable: true
+      image_path: "assets/app/icon_foreground.png"
+      adaptive_background_image: "assets/app/icon_background.png"
+      adaptive_foreground_image: "assets/app/icon_foreground.png"
 
-## ✨ Features
+    ios:
+      enable: true
+      image_path: "assets/app/icon_foreground.png"
 
-* 🎮 Real-time multiplayer Tic Tac Toe
-* ⚡ WebSocket-powered gameplay
-* 🌌 Futuristic neon UI
-* 👥 Create and join game rooms
-* 🔄 Real-time game state synchronization
-* 📱 Cross-platform Flutter frontend
+flutter_native_splash:
+  color: "#080B14"
+  image: assets/app/icon_foreground.png
+  fullscreen: true
 
-## 📂 Project Structure
+  android: true
+  ios: true
+  web: true
 
-```text
-TicTac-Duel/
-├── frontend/    # Flutter application
-└── backend/     # Node.js WebSocket server
-```
-
-## 🚀 Getting Started
-
-### Frontend
-
-```bash
-cd frontend
-flutter pub get
-flutter run
-```
-
-### Backend
-
-```bash
-cd backend
-npm install
-npm run dev
-```
+  android_12:
+    color: "#080B14"
+    image: assets/app/splash_android12.png
