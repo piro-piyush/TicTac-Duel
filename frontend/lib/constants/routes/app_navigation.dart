@@ -8,78 +8,23 @@ abstract final class AppNavigation {
   // ===========================================================================
 
   static void goToHome() {
-    Get.offAllNamed(AppRoutes.home);
-  }
-
-  static void replaceHome() {
-    Get.offAllNamed(AppRoutes.home);
+    Get.offAllNamed(AppRoutes.homePath);
   }
 
   // ===========================================================================
-  // CREATE ROOM
+  // GAME
   // ===========================================================================
 
-  static void pushCreateRoom() {
-    Get.toNamed(AppRoutes.createRoom);
+  static void pushGame() {
+    Get.toNamed(AppRoutes.gamePath);
   }
 
-  static void replaceCreateRoom() {
-    Get.offNamed(AppRoutes.createRoom);
+  static void pushGameBoard(GameModel game) {
+    Get.toNamed(AppRoutes.gameBoardPath, arguments: game);
   }
 
-  // ===========================================================================
-  // JOIN ROOM
-  // ===========================================================================
-
-  static void pushJoinRoom() {
-    Get.toNamed(AppRoutes.joinRoom);
-  }
-
-  static void replaceJoinRoom() {
-    Get.offNamed(AppRoutes.joinRoom);
-  }
-
-  // ===========================================================================
-  // WAITING ROOM
-  // ===========================================================================
-
-  static void replaceWaitingRoom(RoomModel room) {
-    Get.offNamed(AppRoutes.waitingRoom, arguments: room);
-  }
-
-  // ===========================================================================
-  // ONLINE GAME
-  // ===========================================================================
-
-  static void replaceGame(String roomCode) {
-    Get.offNamed(
-      AppRoutes.game.replaceFirst(':roomCode', roomCode),
-      arguments: roomCode,
-    );
-  }
-
-  // ===========================================================================
-  // QUICK MATCH
-  // ===========================================================================
-
-  static void pushQuickMatch() {
-    Get.toNamed(AppRoutes.quickMatch);
-  }
-
-  // ===========================================================================
-  // LOCAL GAME
-  // ===========================================================================
-
-  static void pushLocalGame() {
-    Get.toNamed(AppRoutes.localGame);
-  }
-
-  static void pushLocalGameBoard(LocalGameModel localGame) {
-    Get.toNamed(AppRoutes.localGameBoard, arguments: localGame);
-  }
-
-  static void replaceLocalGameBoard(LocalGameModel localGame) {
-    Get.offNamed(AppRoutes.localGameBoard, arguments: localGame);
+  static void replaceGameBoard(GameModel game) {
+    Get.offNamed(AppRoutes.gameBoardPath, arguments: game);
   }
 
   // ===========================================================================
@@ -87,11 +32,11 @@ abstract final class AppNavigation {
   // ===========================================================================
 
   static void pushResult(ResultModel result) {
-    Get.toNamed(AppRoutes.result, arguments: result);
+    Get.toNamed(AppRoutes.resultPath, arguments: result);
   }
 
   static void replaceResult(ResultModel result) {
-    Get.offNamed(AppRoutes.result, arguments: result);
+    Get.offNamed(AppRoutes.resultPath, arguments: result);
   }
 
   // ===========================================================================
@@ -99,7 +44,7 @@ abstract final class AppNavigation {
   // ===========================================================================
 
   static void pushSettings() {
-    Get.toNamed(AppRoutes.settings);
+    Get.toNamed(AppRoutes.settingsPath);
   }
 
   // ===========================================================================
@@ -107,7 +52,7 @@ abstract final class AppNavigation {
   // ===========================================================================
 
   static void pushHelp() {
-    Get.toNamed(AppRoutes.help);
+    Get.toNamed(AppRoutes.helpPath);
   }
 
   // ===========================================================================
@@ -115,23 +60,12 @@ abstract final class AppNavigation {
   // ===========================================================================
 
   static void pushPrivacyPolicy() {
-    Get.toNamed(AppRoutes.privacyPolicy);
+    Get.toNamed(AppRoutes.privacyPolicyPath);
   }
 
   // ===========================================================================
   // BACK
   // ===========================================================================
 
-  static void back() {
-    if (Get.isDialogOpen == true ||
-        Get.isBottomSheetOpen == true ||
-        Get.isSnackbarOpen) {
-      Get.back();
-      return;
-    }
 
-    // if (Get.canPop()) {
-    //   Get.back();
-    // }
-  }
 }
