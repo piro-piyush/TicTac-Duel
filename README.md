@@ -1,39 +1,38 @@
 # 🎮 Tic Tac Duel
 
-> A futuristic neon Tic Tac Toe multiplayer game.
-
-<!-- ![Tic Tac Duel](assets/banner.png) -->
+> A futuristic neon Tic Tac Toe game.
 
 ## 📱 App Icon
 
 <p align="center">
   <img src="frontend/assets/app/logo.png" alt="Tic Tac Duel App Icon" width="180"/>
 </p>
+
 ## ℹ️ Project Info
 
-Tic Tac Duel is a futuristic neon-themed Tic Tac Toe game focused on a clean, competitive multiplayer experience with real-time gameplay.
+Tic Tac Duel is a futuristic neon-themed Tic Tac Toe game built with Flutter, featuring a clean and competitive gameplay experience.
 
 ## 🛠️ Tech Stack
 
-* **Frontend:** Flutter
-* **Backend:** Node.js
-* **Real-time:** WebSockets
+* **Flutter** — Cross-platform mobile application
+* **Dart** — Application development
 
 ## ✨ Features
 
-* 🎮 Real-time multiplayer Tic Tac Toe
-* ⚡ WebSocket-powered gameplay
+* 🎮 Local Tic Tac Toe gameplay
+* 🤖 Play against the CPU
+* 👥 Play with a friend on the same device
 * 🌌 Futuristic neon UI
-* 👥 Create and join game rooms
-* 🔄 Real-time game state synchronization
-* 📱 Cross-platform Flutter frontend
+* 🎵 Game audio and sound effects
+* 📱 Responsive Flutter interface
+* 🏆 Multi-round gameplay
+* ⚡ Multiple CPU difficulty levels
 
 ## 📂 Project Structure
 
 ```text
 TicTac-Duel/
-├── frontend/    # Flutter application
-└── backend/     # Node.js WebSocket server
+└── frontend/       # Flutter application
 ```
 
 ## 🚀 Getting Started
@@ -42,14 +41,20 @@ TicTac-Duel/
 
 ```bash
 cd frontend
+
 flutter pub get
+
 flutter run
 ```
 
-### Backend
+## 📦 Release
 
-```bash
-cd backend
-npm install
-npm run dev
-```
+### v1.0.0
+
+The first release of Tic Tac Duel.
+
+**Version:** `1.0.0+1`
+
+**Download / Release:**
+
+https://github.com/piro-piyush/tictac-duel/releases/tag/v1.0.0
