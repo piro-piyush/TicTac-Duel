@@ -137,6 +137,7 @@ class Dimens {
   static double get threeHundredSixty => 360;
 
   static double get threeHundredSeventyFive => 375;
+  static double get threeHundredEighty => 380;
 
   static double get fourHundred => 400;
   static double get fourHundredSixty => 460;

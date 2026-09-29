@@ -17,140 +17,97 @@ class GameWidget extends StatelessWidget {
 
   final GameModel localGame;
 
-  // Board state
+  // Board state.
   final List<PlayerSymbol?> board;
   final Set<int> winningIndexes;
 
-  // Turn / round state
+  // Turn and round state.
   final PlayerModel currentPlayer;
-  final int turnIndex;
   final int currentRound;
+  final int turnIndex;
   final int playerOnePoints;
   final int playerTwoPoints;
 
-  // Interaction
+  // Interaction.
   final bool canMakeMove;
   final ValueChanged<int> onCellTap;
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
-      builder: (context, constraints) {
-        final width = constraints.maxWidth;
+      builder: (_, constraints) {
+        final availableWidth = constraints.maxWidth;
+        final isCompact = availableWidth < Dimens.threeHundredEighty;
+        final isWide = availableWidth >= Dimens.sixHundred;
 
-        final isCompact = width < 380;
-        final isWide = width >= 600;
-
-        final horizontalPadding = isCompact ? 4.0 : 12.0;
-        final sectionSpacing = isCompact ? 12.0 : 18.0;
+        final horizontalPadding = isCompact ? Dimens.four : Dimens.twelve;
+        final sectionSpacing = isCompact ? Dimens.twelve : Dimens.eighteen;
 
         return Padding(
           padding: EdgeInsets.fromLTRB(
             horizontalPadding,
-            8,
+            Dimens.eight,
             horizontalPadding,
-            16,
+            Dimens.sixteen,
           ),
           child: Column(
             children: [
-              _buildRoundIndicator(compact: isCompact),
+              GameRoundIndicatorWidget(
+                compact: isCompact,
+                currentRound: currentRound,
+                maxRounds: localGame.maxRounds,
+                color: AppColors.neonCyan,
+              ),
               SizedBox(height: sectionSpacing),
-
-              _buildPlayers(compact: isCompact),
+              Row(
+                spacing: isCompact ? Dimens.six : Dimens.ten,
+                children: [
+                  Expanded(
+                    child: GamePlayerCardWidget(
+                      player: localGame.playerOne,
+                      points: playerOnePoints,
+                      isTurn: turnIndex == 0,
+                      theme: localGame.theme,
+                      compact: isCompact,
+                    ),
+                  ),
+                  VersusWidget(compact: isCompact),
+                  Expanded(
+                    child: GamePlayerCardWidget(
+                      player: localGame.playerTwo,
+                      points: playerTwoPoints,
+                      isTurn: turnIndex == 1,
+                      theme: localGame.theme,
+                      compact: isCompact,
+                    ),
+                  ),
+                ],
+              ),
               SizedBox(height: sectionSpacing),
-
-              _buildBoard(isWide: isWide),
+              Align(
+                alignment: Alignment.center,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: isWide ? 460 : 420),
+                  child: GameBoardWidget(
+                    roomTheme: localGame.theme,
+                    values: board,
+                    isMyTurn: canMakeMove,
+                    winningIndexes: winningIndexes,
+                    onCellTap: onCellTap,
+                  ),
+                ),
+              ),
               SizedBox(height: sectionSpacing),
-
-              _buildStatus(compact: isCompact),
+              GameStatusWidget(
+                compact: isCompact,
+                player: currentPlayer,
+                status: '${currentPlayer.name}\'s turn',
+                theme: localGame.theme,
+              ),
             ],
           ),
         );
       },
-    );
-  }
-
-  // ===========================================================================
-  // ROUND
-  // ===========================================================================
-
-  Widget _buildRoundIndicator({required bool compact}) {
-    return GameRoundIndicatorWidget(
-      compact: compact,
-      currentRound: currentRound,
-      maxRounds: localGame.maxRounds,
-      color: AppColors.neonCyan,
-    );
-  }
-
-  // ===========================================================================
-  // PLAYERS
-  // ===========================================================================
-
-  Widget _buildPlayers({required bool compact}) {
-    // final isComputerGame = localGame.gameType == LocalGameType.computer;
-
-    return Row(
-      spacing: compact ? 6 : 10,
-      children: [
-        Expanded(
-          child: GamePlayerCardWidget(
-            player: localGame.playerOne,
-            points: playerOnePoints,
-            isTurn: turnIndex == 0,
-            theme: localGame.theme,
-            compact: compact,
-          ),
-        ),
-
-        VersusWidget(compact: compact),
-
-        Expanded(
-          child: GamePlayerCardWidget(
-            player: localGame.playerTwo,
-            points: playerTwoPoints,
-
-            isTurn: turnIndex == 1,
-            theme: localGame.theme,
-            compact: compact,
-            // isMe: isComputerGame ? false : true,
-            // isOnline: false,
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ===========================================================================
-  // BOARD
-  // ===========================================================================
-
-  Widget _buildBoard({required bool isWide}) {
-    return Align(
-      alignment: Alignment.center,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: isWide ? 460 : 420),
-        child: GameBoardWidget(
-          roomTheme: localGame.theme,
-          values: board,
-          isMyTurn: canMakeMove,
-          winningIndexes: winningIndexes,
-          onCellTap: onCellTap,
-        ),
-      ),
-    );
-  }
-
-  // ===========================================================================
-  // STATUS
-  // ===========================================================================
-
-  Widget _buildStatus({required bool compact}) {
-    return GameStatusWidget(
-      compact: compact,
-      player: currentPlayer,
-      status: '${currentPlayer.name}\'s turn',
-      theme: localGame.theme,
     );
   }
 }

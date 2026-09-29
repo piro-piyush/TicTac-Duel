@@ -34,7 +34,10 @@ class GameContentWidget extends StatelessWidget {
     return Column(
       spacing: Dimens.spaceBtwSections,
       children: [
-        _buildGameTypeSelector(),
+        GameTypeSelectorWidget(
+          gameType: gameType,
+          onGameTypeChanged: onGameTypeChanged,
+        ),
 
         if (gameType == LocalGameType.computer)
           GameDifficultySectionWidget(
@@ -61,29 +64,4 @@ class GameContentWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildGameTypeSelector() {
-    return Row(
-      spacing: Dimens.spaceBtwItems,
-      children: [
-        Expanded(
-          child: GameTypeOptionWidget(
-            icon: Icons.people_alt_rounded,
-            title: 'FRIEND',
-            subtitle: '2 Players',
-            isSelected: gameType == LocalGameType.friend,
-            onTap: () => onGameTypeChanged(LocalGameType.friend),
-          ),
-        ),
-        Expanded(
-          child: GameTypeOptionWidget(
-            icon: Icons.smart_toy_rounded,
-            title: 'COMPUTER',
-            subtitle: 'VS CPU',
-            isSelected: gameType == LocalGameType.computer,
-            onTap: () => onGameTypeChanged(LocalGameType.computer),
-          ),
-        ),
-      ],
-    );
-  }
 }

@@ -23,36 +23,50 @@ class ResultScreen extends GetView<ResultController> {
       return NeonBackgroundWidget(
         needScroll: false,
         title: 'Game Result',
-        bottomNavigationBar: _buildActions(),
-        child: _buildContent(state),
-      );
-    });
-  }
-
-  Widget _buildContent(ResultModel state) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      spacing: Dimens.spaceBtwSections,
-      children: [
-        Column(
-          spacing: Dimens.spaceBtwSections,
+        bottomNavigationBar: Row(
+          spacing: Dimens.sixteen,
           children: [
-            _buildResultIcon(hasWon: state.hasWon, isDraw: state.isDraw),
-            _buildResultHeader(state),
+            Expanded(
+              child: OutlinedButton(
+                onPressed: controller.goHome,
+                child: Text('HOME'),
+              ),
+            ),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: controller.newGame,
+                child: Text('NEW GAME'),
+              ),
+            ),
           ],
         ),
-        ResultScoreCardWidget(
-          state: state,
-          isPlayerOneMe: state.playerOne.id == GameConstants.localPlayerOneId,
-          isPlayerTwoMe: state.playerTwo.id == GameConstants.localPlayerOneId,
-          isOnline: state.isOnline,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          spacing: Dimens.spaceBtwSections,
+          children: [
+            Column(
+              spacing: Dimens.spaceBtwSections,
+              children: [
+                _buildResultIcon(hasWon: state.hasWon, isDraw: state.isDraw),
+                _buildResultHeader(state),
+              ],
+            ),
+            ResultScoreCardWidget(
+              state: state,
+              isPlayerOneMe:
+                  state.playerOne.id == GameConstants.localPlayerOneId,
+              isPlayerTwoMe:
+                  state.playerTwo.id == GameConstants.localPlayerOneId,
+              isOnline: state.isOnline,
+            ),
+            Text(
+              'ROUND ${state.currentRound} / ${state.maxRounds}',
+              style: Get.theme.textTheme.bodyMedium,
+            ),
+          ],
         ),
-        Text(
-          'ROUND ${state.currentRound} / ${state.maxRounds}',
-          style: Get.theme.textTheme.bodyMedium,
-        ),
-      ],
-    );
+      );
+    });
   }
 
   Widget _buildResultIcon({required bool hasWon, required bool isDraw}) {
@@ -116,26 +130,6 @@ class ResultScreen extends GetView<ResultController> {
           message,
           textAlign: TextAlign.center,
           style: Get.theme.textTheme.bodyMedium,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActions() {
-    return Row(
-      spacing: Dimens.sixteen,
-      children: [
-        Expanded(
-          child: OutlinedButton(
-            onPressed: controller.goHome,
-            child: Text('HOME'),
-          ),
-        ),
-        Expanded(
-          child: ElevatedButton(
-            onPressed: controller.newGame,
-            child: Text('NEW GAME'),
-          ),
         ),
       ],
     );
