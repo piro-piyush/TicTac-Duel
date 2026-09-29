@@ -4,9 +4,11 @@
 
 ## 📱 About
 
-Tic Tac Duel is a neon-themed Tic Tac Toe game designed around a clean, modern, and competitive gameplay experience.
+Tic Tac Duel is a neon-themed Tic Tac Toe game designed around a clean, modern, and competitive
+gameplay experience.
 
-The Flutter frontend currently focuses on **local gameplay**, allowing players to play against a friend on the same device or challenge the CPU.
+The game currently focuses on **local gameplay**, allowing players to play against a friend on the
+same device or challenge the CPU.
 
 ## ✨ Features
 
@@ -43,10 +45,16 @@ flutter doctor
 
 ### Installation
 
-Clone the repository and navigate to the frontend:
+Clone the repository:
 
 ```bash
-cd frontend
+git clone https://github.com/piro-piyush/tictac-duel.git
+```
+
+Navigate to the project:
+
+```bash
+cd tictac-duel
 ```
 
 Install dependencies:
@@ -65,8 +73,8 @@ flutter run
 
 ### v1.0.0
 
-The first release of Tic Tac Duel.
+The first release of Tic Tac Duel, featuring local Tic Tac Toe gameplay with friend and CPU modes.
 
 **Version:** `1.0.0+1`
 
-[Download Tic Tac Duel v1.0.0](https://github.com/piro-piyush/tictac-duel/releases/tag/v1.0.0?utm_source=chatgpt.com)
+[Download Tic Tac Duel v1.0.0](https://github.com/piro-piyush/tictac-duel/releases/tag/v1.0.0)
