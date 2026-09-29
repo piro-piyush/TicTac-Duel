@@ -43,7 +43,6 @@ flutter:
     - assets/app/
     - assets/animations/
     - assets/audio/
-    - .env
 
 # ─────────────────────────────────────────────────────────────
 # App Icons
