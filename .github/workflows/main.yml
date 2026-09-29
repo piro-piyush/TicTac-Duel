@@ -120,6 +120,7 @@ jobs:
         run: |
           cat > .env <<EOF
           SOCKET_URL=$SOCKET_URL
+          API_BASE_URL=$API_BASE_URL
           EOF
 
 
