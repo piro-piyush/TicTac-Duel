@@ -16,8 +16,6 @@
 *.tmp
 *.temp
 *.bak
-*.pid
-*.pid.lock
 
 .DS_Store
 Thumbs.db
@@ -33,7 +31,7 @@ migrate_working_dir/
 
 
 # ============================================================
-# IDE - IntelliJ / Android Studio
+# IntelliJ / Android Studio
 # ============================================================
 
 *.iml
@@ -43,64 +41,67 @@ migrate_working_dir/
 
 
 # ============================================================
-# IDE - VS Code
+# VS Code
 # ============================================================
 
-# Keep project-specific VS Code settings if needed.
-.vscode/*.code-workspace
+# .vscode/
 
 
 # ============================================================
-# Flutter / Dart
+# Flutter / Dart / Pub
 # ============================================================
 
-/frontend/.dart_tool/
-/frontend/.flutter-plugins
-/frontend/.flutter-plugins-dependencies
-/frontend/.pub-cache/
-/frontend/.pub/
-/frontend/build/
-/frontend/coverage/
+**/doc/api/
+**/ios/Flutter/.last_build_id
 
-/frontend/**/doc/api/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
 
-/frontend/ios/Flutter/.last_build_id
+build/
+coverage/
 
-# Flutter symbolication
-/frontend/app.*.symbols
 
-# Flutter obfuscation
-/frontend/app.*.map.json
+# ============================================================
+# Flutter Symbolication
+# ============================================================
 
-# Widget Preview
-/frontend/.widget_preview/
+app.*.symbols
+
+
+# ============================================================
+# Flutter Obfuscation
+# ============================================================
+
+app.*.map.json
 
 
 # ============================================================
 # Android Build Artifacts
 # ============================================================
 
-/frontend/android/app/debug/
-/frontend/android/app/profile/
-/frontend/android/app/release/
+android/app/debug/
+android/app/profile/
+android/app/release/
 
-/frontend/android/.gradle/
-/frontend/android/local.properties/
+android/.gradle/
+android/local.properties
 
-/frontend/android/.cxx/
-/frontend/android/.externalNativeBuild/
-/frontend/android/app/.cxx/
-/frontend/android/app/build/
+android/.cxx/
+android/.externalNativeBuild/
+android/app/.cxx/
+android/app/build/
 
 
 # ============================================================
 # Android Signing - NEVER COMMIT
 # ============================================================
 
-/frontend/android/key.properties
-/frontend/android/app/upload-keystore.jks
+android/key.properties
+android/app/upload-keystore.jks
 
-# All keystore / signing files
 *.jks
 *.keystore
 *.p12
@@ -113,12 +114,6 @@ migrate_working_dir/
 # Environment / Secrets
 # ============================================================
 
-/frontend/.env
-/frontend/.env.*
-
-!/frontend/.env.example
-
-# Global environment files
 .env
 .env.*
 
@@ -126,7 +121,7 @@ migrate_working_dir/
 
 
 # ============================================================
-# Local Database / Generated Data
+# Local Database
 # ============================================================
 
 *.sqlite
@@ -141,3 +136,5 @@ migrate_working_dir/
 
 *.orig
 *.rej
+*.pid
+*.pid.lock
