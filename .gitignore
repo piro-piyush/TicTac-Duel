@@ -1,12 +1,32 @@
 # ============================================================
+
+# Tic Tac Duel - Git Ignore
+
+# Flutter Frontend + Node.js Backend
+
+# ============================================================
+
+# ============================================================
+
 # Miscellaneous
+
 # ============================================================
 
 *.class
 *.log
 *.pyc
 *.swp
+*.swo
+*.tmp
+*.temp
+*.bak
+*.pid
+*.pid.lock
+
 .DS_Store
+Thumbs.db
+Desktop.ini
+
 .atom/
 .build/
 .buildlog/
@@ -15,34 +35,36 @@
 .swiftpm/
 migrate_working_dir/
 
-# Temporary / OS files
-*.tmp
-*.temp
-*.bak
-Thumbs.db
-Desktop.ini
-
-
 # ============================================================
-# IntelliJ / Android Studio
+
+# IDE - IntelliJ / Android Studio
+
 # ============================================================
 
 *.iml
 *.ipr
 *.iws
+
 .idea/
 
-
 # ============================================================
-# VS Code
+
+# IDE - VS Code
+
 # ============================================================
 
 # Uncomment if you don't want VS Code settings committed
+
 # .vscode/
 
+# Local VS Code configuration
+
+.vscode/*.code-workspace
 
 # ============================================================
+
 # Frontend - Flutter / Dart
+
 # ============================================================
 
 /frontend/.dart_tool/
@@ -52,26 +74,75 @@ Desktop.ini
 /frontend/.pub/
 /frontend/build/
 /frontend/coverage/
+
 /frontend/**/doc/api/
+
 /frontend/ios/Flutter/.last_build_id
 
 # Flutter symbolication
+
 /frontend/app.*.symbols
 
 # Flutter obfuscation
+
 /frontend/app.*.map.json
 
-# Android build artifacts
+# Widget Preview
+
+/frontend/.widget_preview/
+
+# ============================================================
+
+# Frontend - Android Build Artifacts
+
+# ============================================================
+
 /frontend/android/app/debug/
 /frontend/android/app/profile/
 /frontend/android/app/release/
 
-# Widget Preview
-/frontend/.widget_preview/
+/frontend/android/.gradle/
+/frontend/android/local.properties/
+/frontend/android/.cxx/
+/frontend/android/.externalNativeBuild/
 
+# Android generated files
+
+/frontend/android/app/.cxx/
+/frontend/android/app/build/
 
 # ============================================================
-# Backend - Node.js / TypeScript
+
+# Android Signing - NEVER COMMIT
+
+# ============================================================
+
+/frontend/android/key.properties
+/frontend/android/app/upload-keystore.jks
+
+# All keystore / signing files
+
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+*.key
+
+# ============================================================
+
+# Frontend - Environment / Secrets
+
+# ============================================================
+
+/frontend/.env
+/frontend/.env.*
+!/frontend/.env.example
+
+# ============================================================
+
+# Backend - Node.js
+
 # ============================================================
 
 /backend/node_modules/
@@ -79,73 +150,120 @@ Desktop.ini
 /backend/build/
 /backend/coverage/
 
-# TypeScript
+/backend/.nyc_output/
+
+# ============================================================
+
+# Backend - TypeScript
+
+# ============================================================
+
 *.tsbuildinfo
 
-# Environment files
+# ============================================================
+
+# Backend - Environment / Secrets
+
+# ============================================================
+
 /backend/.env
 /backend/.env.*
 !/backend/.env.example
 
-# Logs
+# ============================================================
+
+# Backend - Logs
+
+# ============================================================
+
 /backend/npm-debug.log*
 /backend/yarn-debug.log*
 /backend/yarn-error.log*
 /backend/pnpm-debug.log*
 
-# Runtime data
+# ============================================================
+
+# Backend - Runtime Data
+
+# ============================================================
+
 /backend/*.pid
 /backend/*.seed
 /backend/*.pid.lock
 
-# Backend editor settings
+# ============================================================
+
+# Backend - Editor Configuration
+
+# ============================================================
+
 /backend/.vscode/launch.json
 
 # ============================================================
+
 # Backend - Drizzle ORM
+
 # ============================================================
 
 # Drizzle migration metadata
+
 /backend/drizzle/meta/
 
 # Temporary Drizzle files
+
 /backend/drizzle/*.sql.bak
 /backend/drizzle/*.tmp
 
 # ============================================================
-# Test / Temporary files
+
+# Backend - Test / Temporary Files
+
 # ============================================================
 
-/backend/.nyc_output/
 /backend/.eslintcache
 /backend/.stylelintcache
 
-
-# ============================================================
-# Test / Temporary files
 # ============================================================
 
-/backend/.nyc_output/
-/backend/.eslintcache
-/backend/.stylelintcache
-
+# Global Environment Files
 
 # ============================================================
-# Secrets / Credentials
+
+.env
+.env.*
+!.env.example
+
+# ============================================================
+
+# Global Secrets / Credentials
+
 # ============================================================
 
 *.pem
 *.key
 *.p12
+*.pfx
 *.jks
 *.keystore
 
-# Environment variables
-.env
-.env.*
-!.env.example
+# ============================================================
 
-frontend/.env
-backend/.env
-frontend/.env.*
-backend/.env.*
+# Local Database / Generated Data
+
+# ============================================================
+
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+
+# ============================================================
+
+# OS / Tool Generated Files
+
+# ============================================================
+
+*.orig
+*.rej
+*.lock
+.DS_Store

@@ -13,7 +13,6 @@ jobs:
   build-android:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-
     environment: production
 
     defaults:
@@ -21,8 +20,17 @@ jobs:
         working-directory: frontend
 
     steps:
+      # ============================================================
+      # Checkout
+      # ============================================================
+
       - name: Checkout Repository
         uses: actions/checkout@v6
+
+
+      # ============================================================
+      # Java
+      # ============================================================
 
       - name: Setup Java
         uses: actions/setup-java@v5
@@ -30,6 +38,11 @@ jobs:
           distribution: temurin
           java-version: "17"
           cache: gradle
+
+
+      # ============================================================
+      # Flutter
+      # ============================================================
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -47,25 +60,78 @@ jobs:
       - name: Accept Android Licenses
         run: yes | flutter doctor --android-licenses || true
 
+
+      # ============================================================
+      # Restore Android Signing
+      # ============================================================
+
+      - name: Restore Android Keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
+
+      - name: Create key.properties
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          cat > android/key.properties <<EOF
+          storePassword=$KEYSTORE_PASSWORD
+          keyPassword=$KEY_PASSWORD
+          keyAlias=$KEY_ALIAS
+          storeFile=upload-keystore.jks
+          EOF
+
+      - name: Verify Signing Files
+        run: |
+          test -f android/app/upload-keystore.jks
+          test -f android/key.properties
+          echo "Android signing files restored successfully."
+
+
+      # ============================================================
+      # Clean
+      # ============================================================
+
       - name: Clean Project
         run: |
           flutter clean
           rm -rf .dart_tool
           rm -rf build
 
+
+      # ============================================================
+      # Dependencies
+      # ============================================================
+
       - name: Get Dependencies
         run: flutter pub get
 
+
+      # ============================================================
+      # Environment
+      # ============================================================
+
       - name: Create .env
+        env:
+          SOCKET_URL: ${{ secrets.SOCKET_URL }}
         run: |
           cat > .env <<EOF
-          SOCKET_URL=${{ secrets.SOCKET_URL }}
+          SOCKET_URL=$SOCKET_URL
           EOF
+
+
+      # ============================================================
+      # Version
+      # ============================================================
 
       - name: Read App Version
         id: version
         run: |
           VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //')
+
           APP_VERSION="${VERSION%%+*}"
           BUILD_NUMBER="${VERSION##*+}"
 
@@ -75,19 +141,39 @@ jobs:
           echo "App Version: $APP_VERSION"
           echo "Build Number: $BUILD_NUMBER"
 
+
+      # ============================================================
+      # Analyze
+      # ============================================================
+
       - name: Analyze
         continue-on-error: true
         run: flutter analyze
+
+
+      # ============================================================
+      # Build APK
+      # ============================================================
 
       - name: Build Release APK
         env:
           GRADLE_OPTS: "-Xmx4g"
         run: flutter build apk --release --no-pub
 
+
+      # ============================================================
+      # Build AAB
+      # ============================================================
+
       - name: Build Release AAB
         env:
           GRADLE_OPTS: "-Xmx4g"
         run: flutter build appbundle --release --no-pub
+
+
+      # ============================================================
+      # List Build Outputs
+      # ============================================================
 
       - name: List Build Outputs
         if: always()
@@ -96,8 +182,14 @@ jobs:
           find build -name "*.apk" || true
 
           echo ""
+
           echo "===== AAB ====="
           find build -name "*.aab" || true
+
+
+      # ============================================================
+      # Upload APK Artifact
+      # ============================================================
 
       - name: Upload APK
         if: success()
@@ -107,6 +199,11 @@ jobs:
           path: frontend/build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
 
+
+      # ============================================================
+      # Upload AAB Artifact
+      # ============================================================
+
       - name: Upload AAB
         if: success()
         uses: actions/upload-artifact@v5
@@ -115,7 +212,13 @@ jobs:
           path: frontend/build/app/outputs/bundle/release/app-release.aab
           if-no-files-found: error
 
+
+      # ============================================================
+      # GitHub Release
+      # ============================================================
+
       - name: Create GitHub Release
+        if: success()
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.version.outputs.version }}

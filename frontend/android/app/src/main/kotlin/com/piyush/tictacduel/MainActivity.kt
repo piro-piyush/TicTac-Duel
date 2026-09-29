@@ -1,4 +1,4 @@
-package com.example.tictac_duel
+package com.piyush.tictacduel
 import io.flutter.embedding.android.FlutterActivity
 
 class MainActivity : FlutterActivity()
