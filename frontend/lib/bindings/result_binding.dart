@@ -5,7 +5,6 @@ class ResultBinding extends Bindings {
   void dependencies() => Get.put<ResultController>(
     ResultController(
       initialState: Get.arguments as ResultModel,
-      playerController: Get.find<PlayerController>(),
       musicController: Get.find<MusicController>(),
     ),
   );

@@ -31,22 +31,6 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            spacing: Dimens.twelve,
-            children: [
-              QuickActionWidget(
-                icon: Icons.settings_rounded,
-                label: 'Settings',
-                onTap: AppNavigation.pushSettings,
-              ),
-              QuickActionWidget(
-                icon: Icons.help_outline_rounded,
-                label: 'Help',
-                onTap: AppNavigation.pushHelp,
-              ),
-            ],
-          ),
         ],
       ),
     );

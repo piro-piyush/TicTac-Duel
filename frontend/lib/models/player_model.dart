@@ -20,4 +20,5 @@ class PlayerModel {
       symbol: symbol ?? this.symbol,
     );
   }
+
 }

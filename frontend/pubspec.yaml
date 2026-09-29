@@ -1,8 +1,7 @@
 name: tictac_duel
 description: "Real-time multiplayer Tic-Tac-Toe"
 publish_to: "none"
-
-version: 1.0.0
+version: 1.0.0+1
 
 environment:
   sdk: ^3.13.2
@@ -17,29 +16,30 @@ dependencies:
   lottie: ^3.6.1
   flutter_confetti: ^0.9.2
   flutter_native_splash: ^2.4.8
-  get: ^4.7.3
-  # State Management & Navigation
-  provider: ^6.1.5+1
-  flutter_secure_storage: ^11.2.0
-  # Networking & Realtime
-  socket_io_client: ^3.1.6
-  flutter_dotenv: ^6.0.1
 
-  # Local Storage & Audio
-#  shared_preferences: ^2.5.5
+  # State Management & Navigation
+  get: ^4.7.3
+
+  # Local Storage & Security
+  flutter_secure_storage: ^11.2.0
+
+  # Networking & Realtime
+  flutter_dotenv: ^6.0.1
+  # socket_io_client: ^3.1.6
+
+  # Audio
   just_audio: ^0.10.6
-  equatable: ^3.0.0
-  dio: ^5.11.1
-  uuid: ^4.6.0
-  connectivity_plus: ^7.3.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
   flutter_lints: ^6.0.0
+
+  # App Configuration
   icons_launcher: ^3.1.0
   change_app_package_name: ^1.5.0
+
 flutter:
   uses-material-design: true
 
@@ -81,4 +81,3 @@ flutter_native_splash:
   android_12:
     color: "#080B14"
     image: assets/app/splash_android12.png
-    # icon_background_color: "#080B14"

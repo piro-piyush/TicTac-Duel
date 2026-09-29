@@ -5,46 +5,28 @@ class GameScreen extends GetView<GameController> {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      final room = controller.room;
-      final myPlayer = controller.myPlayer;
-
-      Widget child;
-
-      if (controller.isLoading && room == null) {
-        child = const RoomStateWidget.connecting();
-      } else if (room == null) {
-        child = const RoomStateWidget.notFound();
-      } else if (myPlayer == null) {
-        child = const RoomStateWidget.playerNotFound();
-      } else {
-        child = controller.showGame
-            ? Stack(
-                alignment: Alignment.center,
-                children: [
-                  GameWidget(
-                    room: room,
-                    playerId: controller.playerId,
-                    board: controller.board,
-                    isMyTurn: controller.isMyTurn,
-                    winningIndexes: controller.winningIndexes,
-                    onCellTap: controller.makeMove,
-                  ),
-                  GameRoundAnimationWidget(
-                    showRoundAnimation: controller.showRoundAnimation,
-                    animatedRound: controller.animatedRound,
-                  ),
-                ],
-              )
-            : WaitingForPlayersWidget(
-                room: room,
-                playerId: controller.playerId,
-                waitingForNextRound: controller.waitingForNextRound,
-                onStartGame: controller.startGame,
-              );
-      }
-
-      return NeonBackgroundWidget(title: 'Tic Tac Duel', child: child);
-    });
+    return Obx(
+      () => NeonBackgroundWidget(
+        title: 'Local Game',
+        bottomNavigationBar: NeonElevatedButton(
+          label: 'START GAME',
+          icon: Icons.sports_esports_rounded,
+          isLoading: controller.isStarting,
+          onPressed: controller.startGame,
+        ),
+        child: GameContentWidget(
+          gameType: controller.gameType,
+          selectedSymbol: controller.selectedSymbol,
+          selectedTheme: controller.selectedTheme,
+          selectedMaxRounds: controller.selectedMaxRounds,
+          selectedDifficulty: controller.selectedDifficulty,
+          onGameTypeChanged: controller.setGameType,
+          onSymbolChanged: controller.setSelectedSymbol,
+          onThemeChanged: controller.setSelectedTheme,
+          onRoundsChanged: controller.setSelectedMaxRounds,
+          onDifficultyChanged: controller.setSelectedDifficulty,
+        ),
+      ),
+    );
   }
 }

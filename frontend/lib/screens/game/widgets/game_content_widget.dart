@@ -1,7 +1,7 @@
 import 'package:tictac_duel/lib.dart';
 
-class LocalGameContentWidget extends StatelessWidget {
-  const LocalGameContentWidget({
+class GameContentWidget extends StatelessWidget {
+  const GameContentWidget({
     super.key,
     required this.gameType,
 

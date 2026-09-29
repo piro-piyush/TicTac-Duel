@@ -1,7 +1,7 @@
 import 'package:tictac_duel/lib.dart';
 
-class LocalGameBoardScreen extends GetView<LocalGameBoardController> {
-  const LocalGameBoardScreen({super.key});
+class GameBoardScreen extends GetView<GameBoardController> {
+  const GameBoardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -11,7 +11,7 @@ class LocalGameBoardScreen extends GetView<LocalGameBoardController> {
         child: Stack(
           alignment: Alignment.center,
           children: [
-            LocalGameWidget(
+            GameWidget(
               localGame: controller.game,
 
               // Board

@@ -4,13 +4,11 @@ import 'package:tictac_duel/lib.dart';
 class ResultController extends GetxController {
   ResultController({
     required ResultModel initialState,
-    required this._playerController,
     required this._musicController,
   }) : _state = initialState.obs;
 
   final Rx<ResultModel> _state;
 
-  final PlayerController _playerController;
   final MusicController _musicController;
 
   ResultModel get state => _state.value;
@@ -65,13 +63,13 @@ class ResultController extends GetxController {
     _state.value = state.copyWith(showConfetti: false);
   }
 
-  bool isMe(PlayerModel player) {
-    if (!_playerController.isInitialized) {
-      return false;
-    }
-
-    return player.id == _playerController.playerId;
-  }
+  // bool isMe(PlayerModel player) {
+  //   if (!_playerController.isInitialized) {
+  //     return false;
+  //   }
+  //
+  //   return player.id == _playerController.playerId;
+  // }
 
   bool isWinner(PlayerModel player) {
     return state.gameWinner?.id == player.id;
@@ -82,11 +80,6 @@ class ResultController extends GetxController {
   }
 
   void newGame() {
-    if (isLocal) {
-      AppNavigation.pushLocalGame();
-      return;
-    }
-
-    AppNavigation.replaceCreateRoom();
+    AppNavigation.pushGame();
   }
 }

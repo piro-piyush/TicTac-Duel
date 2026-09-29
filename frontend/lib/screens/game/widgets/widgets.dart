@@ -1,8 +1,5 @@
-export 'waiting_for_players_widget.dart';
-export 'game_round_indicator_widget.dart';
-export 'game_status_widget.dart';
-export 'versus_widget.dart';
-export 'game_player_card_widget.dart';
-export 'room_state_widget.dart';
-export 'game_widget.dart';
-export 'game_round_animation_widget.dart';
+export 'cpu_player_card_widget.dart';
+export 'game_difficulty_section_widget.dart';
+export 'game_type_option_widget.dart';
+export 'game_content_widget.dart';
+export 'selection_card_widget.dart';

@@ -1,7 +1,7 @@
 import 'package:tictac_duel/lib.dart';
 
-class LocalGameWidget extends StatelessWidget {
-  const LocalGameWidget({
+class GameWidget extends StatelessWidget {
+  const GameWidget({
     super.key,
     required this.localGame,
     required this.board,
@@ -15,7 +15,7 @@ class LocalGameWidget extends StatelessWidget {
     required this.playerTwoPoints,
   });
 
-  final LocalGameModel localGame;
+  final GameModel localGame;
 
   // Board state
   final List<PlayerSymbol?> board;
@@ -94,7 +94,7 @@ class LocalGameWidget extends StatelessWidget {
       spacing: compact ? 6 : 10,
       children: [
         Expanded(
-          child: GamePlayerCardWidget.local(
+          child: GamePlayerCardWidget(
             player: localGame.playerOne,
             points: playerOnePoints,
             isTurn: turnIndex == 0,
@@ -106,7 +106,7 @@ class LocalGameWidget extends StatelessWidget {
         VersusWidget(compact: compact),
 
         Expanded(
-          child: GamePlayerCardWidget.local(
+          child: GamePlayerCardWidget(
             player: localGame.playerTwo,
             points: playerTwoPoints,
 

@@ -28,7 +28,7 @@ class RoomModel {
   final RoundStatus roundStatus;
 
   final RoomTheme theme;
-  final List<OnlinePlayerModel> players;
+  final List<PlayerModel> players;
 
   final String? turnPlayerId;
   final int turnIndex;
@@ -36,7 +36,7 @@ class RoomModel {
 
   int get occupancy => players.length;
 
-  OnlinePlayerModel? get turn {
+  PlayerModel? get turn {
     final playerId = turnPlayerId;
 
     if (playerId == null) {
@@ -56,7 +56,7 @@ class RoomModel {
   // PLAYERS
   // ===========================================================================
 
-  OnlinePlayerModel get playerOne {
+  PlayerModel get playerOne {
     if (players.isEmpty) {
       throw StateError('Room does not have player one');
     }
@@ -64,7 +64,7 @@ class RoomModel {
     return players[0];
   }
 
-  OnlinePlayerModel get playerTwo {
+  PlayerModel get playerTwo {
     if (players.length < 2) {
       throw StateError('Room does not have player two');
     }
@@ -72,87 +72,4 @@ class RoomModel {
     return players[1];
   }
 
-  factory RoomModel.fromJson(dynamic json) {
-    if (json is! Map) {
-      throw const FormatException('Invalid room response');
-    }
-
-    final data = Map<String, dynamic>.from(json);
-
-    try {
-      final players = data['players'];
-
-      if (players is! List) {
-        throw const FormatException('Invalid players data');
-      }
-
-      return RoomModel(
-        id: _requiredString(data, 'id'),
-        roomCode: _requiredString(data, 'roomCode'),
-        isPrivate: _requiredBool(data, 'isPrivate'),
-        hostPlayerId: _requiredString(data, 'hostPlayerId'),
-        maxPlayers: _requiredInt(data, 'maxPlayers'),
-        maxRounds: _requiredInt(data, 'maxRounds'),
-        currentRound: _requiredInt(data, 'currentRound'),
-        roundStatus: RoundStatus.values.byName(
-          _requiredString(data, 'roundStatus'),
-        ),
-        theme: RoomTheme.values.byName(_requiredString(data, 'theme')),
-        players: players
-            .map((player) => OnlinePlayerModel.fromJson(player))
-            .toList(),
-        turnPlayerId: _optionalString(data, 'turnPlayerId'),
-        turnIndex: _requiredInt(data, 'turnIndex'),
-        boardSize: _requiredInt(data, 'boardSize'),
-      );
-    } on FormatException {
-      rethrow;
-    } catch (_) {
-      throw const FormatException('Invalid room response');
-    }
-  }
-
-  static String _requiredString(Map<String, dynamic> json, String key) {
-    final value = json[key];
-
-    if (value is! String || value.isEmpty) {
-      throw FormatException('Invalid $key');
-    }
-
-    return value;
-  }
-
-  static String? _optionalString(Map<String, dynamic> json, String key) {
-    final value = json[key];
-
-    if (value == null) {
-      return null;
-    }
-
-    if (value is! String || value.isEmpty) {
-      throw FormatException('Invalid $key');
-    }
-
-    return value;
-  }
-
-  static bool _requiredBool(Map<String, dynamic> json, String key) {
-    final value = json[key];
-
-    if (value is! bool) {
-      throw FormatException('Invalid $key');
-    }
-
-    return value;
-  }
-
-  static int _requiredInt(Map<String, dynamic> json, String key) {
-    final value = json[key];
-
-    if (value is! num) {
-      throw FormatException('Invalid $key');
-    }
-
-    return value.toInt();
-  }
 }
