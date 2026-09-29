@@ -9,10 +9,6 @@ class ResultScreen extends GetView<ResultController> {
     return Obx(() {
       final state = controller.state;
 
-      if (!state.isValid) {
-        return const SizedBox.shrink();
-      }
-
       if (state.showConfetti) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!context.mounted) {
@@ -27,144 +23,99 @@ class ResultScreen extends GetView<ResultController> {
       return NeonBackgroundWidget(
         needScroll: false,
         title: 'Game Result',
+        bottomNavigationBar: _buildActions(),
         child: _buildContent(state),
       );
     });
   }
 
   Widget _buildContent(ResultModel state) {
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          _buildResultIcon(hasWon: state.hasWon),
-          const SizedBox(height: 24),
-          _buildTitle(hasWon: state.hasWon),
-          const SizedBox(height: 8),
-          Text(
-            state.isDraw
-                ? 'The game ended in a draw!'
-                : '${state.gameWinner!.name} wins the game!',
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 13,
-            ),
-          ),
-          const SizedBox(height: 32),
-          _buildScoreCard(
-            playerOne: state.playerOne!,
-            playerTwo: state.playerTwo!,
-            winner: state.gameWinner,
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'ROUND ${state.room!.currentRound} / ${state.room!.maxRounds}',
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 2,
-            ),
-          ),
-          const SizedBox(height: 32),
-          _buildActions(),
-        ],
-      ),
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      spacing: Dimens.spaceBtwSections,
+      children: [
+        Column(
+          spacing: Dimens.spaceBtwSections,
+          children: [
+            _buildResultIcon(hasWon: state.hasWon, isDraw: state.isDraw),
+            _buildResultHeader(state),
+          ],
+        ),
+        ResultScoreCardWidget(
+          state: state,
+          isPlayerOneMe: state.playerOne.id == GameConstants.localPlayerOneId,
+          isPlayerTwoMe: state.playerTwo.id == GameConstants.localPlayerOneId,
+          isOnline: state.isOnline,
+        ),
+        Text(
+          'ROUND ${state.currentRound} / ${state.maxRounds}',
+          style: Get.theme.textTheme.bodyMedium,
+        ),
+      ],
     );
   }
 
-  Widget _buildResultIcon({required bool hasWon}) {
+  Widget _buildResultIcon({required bool hasWon, required bool isDraw}) {
+    if (isDraw) {
+      return Icon(
+        Icons.handshake_rounded,
+        color: AppColors.neonCyan,
+        size: Dimens.oneHundred,
+      );
+    }
+
     return Lottie.asset(
       hasWon
           ? AnimationConstants.trophyAnimation
           : AnimationConstants.loseAnimation,
-      width: 110,
-      height: 110,
+      width: Dimens.oneHundred,
+      height: Dimens.oneHundred,
       repeat: !hasWon,
     );
   }
 
-  Widget _buildTitle({required bool hasWon}) {
-    return Text(
-      hasWon ? 'YOU WON!' : 'YOU LOSE',
-      textAlign: TextAlign.center,
-      style: const TextStyle(
-        color: AppColors.textPrimary,
-        fontSize: 26,
-        fontWeight: FontWeight.w900,
-        letterSpacing: 3,
-      ),
-    );
-  }
+  Widget _buildResultHeader(ResultModel state) {
+    final String title;
+    final String message;
 
-  Widget _buildScoreCard({
-    required PlayerModel playerOne,
-    required PlayerModel playerTwo,
-    required PlayerModel? winner,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        children: [
-          _buildPlayerScore(player: playerOne, winner: winner),
-          const SizedBox(height: 14),
-          const Divider(color: AppColors.border, height: 1),
-          const SizedBox(height: 14),
-          _buildPlayerScore(player: playerTwo, winner: winner),
-        ],
-      ),
-    );
-  }
+    if (state.isDraw) {
+      title = 'DRAW';
+      message = 'The game ended in a draw.';
+    } else if (state.isLocal) {
+      final winner = state.gameWinner;
 
-  Widget _buildPlayerScore({
-    required PlayerModel player,
-    required PlayerModel? winner,
-  }) {
-    final isWinner = controller.isWinner(player);
-    final isMe = controller.isMe(player);
+      if (winner == null) {
+        return const SizedBox.shrink();
+      }
 
-    return Row(
+      final isPlayerOneWinner = winner.id == state.playerOne.id;
+
+      title = isPlayerOneWinner ? 'YOU WON!' : 'YOU LOSE';
+      message = '${winner.name} wins the game.';
+    } else {
+      final winner = state.gameWinner;
+
+      if (winner == null) {
+        return const SizedBox.shrink();
+      }
+
+      title = state.hasWon ? 'YOU WON!' : 'YOU LOSE';
+      message = state.hasWon
+          ? 'Congratulations! You won the game.'
+          : '${winner.name} won the game.';
+    }
+
+    return Column(
       children: [
-        Expanded(
-          child: Row(
-            children: [
-              if (isWinner) ...[
-                const Icon(
-                  Icons.emoji_events_rounded,
-                  color: AppColors.neonPurple,
-                  size: 18,
-                ),
-                const SizedBox(width: 8),
-              ],
-              Flexible(
-                child: Text(
-                  isMe ? '${player.name} (You)' : player.name,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: isWinner
-                        ? AppColors.textPrimary
-                        : AppColors.textSecondary,
-                    fontWeight: isWinner ? FontWeight.w800 : FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
+        Text(
+          title,
+          textAlign: TextAlign.center,
+          style: Get.theme.textTheme.headlineLarge,
         ),
         Text(
-          '${player.points}',
-          style: const TextStyle(
-            color: AppColors.neonCyan,
-            fontSize: 22,
-            fontWeight: FontWeight.w900,
-          ),
+          message,
+          textAlign: TextAlign.center,
+          style: Get.theme.textTheme.bodyMedium,
         ),
       ],
     );
@@ -172,7 +123,7 @@ class ResultScreen extends GetView<ResultController> {
 
   Widget _buildActions() {
     return Row(
-      spacing: 12,
+      spacing: Dimens.sixteen,
       children: [
         Expanded(
           child: NeonOutlinedButtonWidget(

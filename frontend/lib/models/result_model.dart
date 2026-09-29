@@ -1,42 +1,89 @@
 import 'package:tictac_duel/lib.dart';
 
-class ResultModel{
-  const ResultModel({
-    this.room,
-    this.playerOne,
-    this.playerTwo,
+class ResultModel {
+  const ResultModel.local({
+    required this.playerOne,
+    required this.playerTwo,
+    required this.playerOnePoints,
+    required this.playerTwoPoints,
+    required this.currentRound,
+    required this.maxRounds,
     this.gameWinner,
     this.hasWon = false,
     this.isDraw = false,
     this.showConfetti = false,
-  });
+  }) : isOnline = false;
 
-  final RoomModel? room;
-  final PlayerModel? playerOne;
-  final PlayerModel? playerTwo;
+  ResultModel.online({
+    required OnlinePlayerModel playerOne,
+    required OnlinePlayerModel playerTwo,
+    required this.currentRound,
+    required this.maxRounds,
+    this.gameWinner,
+    this.hasWon = false,
+    this.isDraw = false,
+    this.showConfetti = false,
+  }) : playerOne = playerOne,
+       playerTwo = playerTwo,
+       playerOnePoints = playerOne.points,
+       playerTwoPoints = playerTwo.points,
+       isOnline = true;
+
+  final PlayerModel playerOne;
+  final PlayerModel playerTwo;
+
+  final int playerOnePoints;
+  final int playerTwoPoints;
+
+  final int currentRound;
+  final int maxRounds;
+
   final PlayerModel? gameWinner;
 
   final bool hasWon;
   final bool isDraw;
   final bool showConfetti;
 
-  bool get isValid {
-    return room != null && playerOne != null && playerTwo != null;
-  }
+  final bool isOnline;
+
+  bool get isLocal => !isOnline;
 
   ResultModel copyWith({
-    RoomModel? room,
     PlayerModel? playerOne,
     PlayerModel? playerTwo,
+    int? playerOnePoints,
+    int? playerTwoPoints,
+    int? currentRound,
+    int? maxRounds,
     PlayerModel? gameWinner,
     bool? hasWon,
     bool? isDraw,
     bool? showConfetti,
   }) {
-    return ResultModel(
-      room: room ?? this.room,
+    if (isOnline) {
+      return ResultModel.online(
+        playerOne: playerOne is OnlinePlayerModel
+            ? playerOne
+            : this.playerOne as OnlinePlayerModel,
+        playerTwo: playerTwo is OnlinePlayerModel
+            ? playerTwo
+            : this.playerTwo as OnlinePlayerModel,
+        currentRound: currentRound ?? this.currentRound,
+        maxRounds: maxRounds ?? this.maxRounds,
+        gameWinner: gameWinner ?? this.gameWinner,
+        hasWon: hasWon ?? this.hasWon,
+        isDraw: isDraw ?? this.isDraw,
+        showConfetti: showConfetti ?? this.showConfetti,
+      );
+    }
+
+    return ResultModel.local(
       playerOne: playerOne ?? this.playerOne,
       playerTwo: playerTwo ?? this.playerTwo,
+      playerOnePoints: playerOnePoints ?? this.playerOnePoints,
+      playerTwoPoints: playerTwoPoints ?? this.playerTwoPoints,
+      currentRound: currentRound ?? this.currentRound,
+      maxRounds: maxRounds ?? this.maxRounds,
       gameWinner: gameWinner ?? this.gameWinner,
       hasWon: hasWon ?? this.hasWon,
       isDraw: isDraw ?? this.isDraw,

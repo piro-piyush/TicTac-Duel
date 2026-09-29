@@ -5,45 +5,70 @@ class ResultController extends GetxController {
   ResultController({
     required ResultModel initialState,
     required this._playerController,
+    required this._musicController,
   }) : _state = initialState.obs;
 
   final Rx<ResultModel> _state;
 
   final PlayerController _playerController;
+  final MusicController _musicController;
 
   ResultModel get state => _state.value;
+
+  bool get isLocal => state.isLocal;
+
+  bool get isOnline => state.isOnline;
+
+  bool get isDraw => state.isDraw;
+
+  bool get hasWon => state.hasWon;
+
+  bool get hasWinner => state.gameWinner != null;
+
+  String get animationPath => state.isDraw
+      ? AnimationConstants.trophyAnimation
+      : state.hasWon
+      ? AnimationConstants.trophyAnimation
+      : AnimationConstants.loseAnimation;
 
   @override
   void onInit() {
     super.onInit();
-    playResultFeedback();
+    _playResultFeedback();
   }
 
-  void playResultFeedback() {
-    if (!state.isValid) {
+  void _playResultFeedback() {
+    if (state.isDraw) {
+      _musicController.playRoundStart();
       return;
     }
 
-    final musicController = Get.find<MusicController>();
-
     if (state.hasWon) {
-      musicController.playWin();
-    } else if (state.isDraw) {
-      musicController.playRoundStart();
-    } else {
-      musicController.playLose();
+      _musicController.playWin();
+      _showConfetti();
+      return;
     }
 
-    if (state.hasWon) {
-      _state.value = state.copyWith(showConfetti: true);
-    }
+    _musicController.playLose();
+  }
+
+  void _showConfetti() {
+    _state.value = state.copyWith(showConfetti: true);
   }
 
   void dismissConfetti() {
+    if (!state.showConfetti) {
+      return;
+    }
+
     _state.value = state.copyWith(showConfetti: false);
   }
 
   bool isMe(PlayerModel player) {
+    if (!_playerController.isInitialized) {
+      return false;
+    }
+
     return player.id == _playerController.playerId;
   }
 
@@ -56,12 +81,11 @@ class ResultController extends GetxController {
   }
 
   void newGame() {
-    AppNavigation.replaceCreateRoom();
-  }
+    if (isLocal) {
+      AppNavigation.pushLocalGame();
+      return;
+    }
 
-  String get animationPath {
-    return state.hasWon
-        ? AnimationConstants.trophyAnimation
-        : AnimationConstants.loseAnimation;
+    AppNavigation.replaceCreateRoom();
   }
 }
