@@ -6,6 +6,7 @@ class ResultBinding extends Bindings {
     ResultController(
       initialState: Get.arguments as ResultModel,
       playerController: Get.find<PlayerController>(),
+      musicController: Get.find<MusicController>(),
     ),
   );
 }

@@ -9,21 +9,27 @@ class PlayerApiService {
   // CREATE PLAYER
   // ===========================================================================
 
-  Future<PlayerModel> create() async {
+  Future<LocalUserModel> create() async {
     final data = await _httpService.post<Map<String, dynamic>>('/players');
 
-    return PlayerModel.fromJson(data);
+    return LocalUserModel(
+      id: data['id'] as String,
+      createdAt: DateTime.parse(data['createdAt'] as String),
+    );
   }
 
   // ===========================================================================
   // GET PLAYER
   // ===========================================================================
 
-  Future<PlayerModel> get(String playerId) async {
+  Future<LocalUserModel> get(String playerId) async {
     final data = await _httpService.get<Map<String, dynamic>>(
       '/players/$playerId',
     );
 
-    return PlayerModel.fromJson(data);
+    return LocalUserModel(
+      id: data['id'] as String,
+      createdAt: DateTime.parse(data['createdAt'] as String),
+    );
   }
 }

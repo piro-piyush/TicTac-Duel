@@ -54,6 +54,7 @@ class ResultController extends GetxController {
 
   void _showConfetti() {
     _state.value = state.copyWith(showConfetti: true);
+    _musicController.playConfetti();
   }
 
   void dismissConfetti() {

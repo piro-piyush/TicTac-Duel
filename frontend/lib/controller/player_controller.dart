@@ -20,6 +20,8 @@ class PlayerController extends GetxController {
     return id;
   }
 
+  bool get isInitialized => _playerId.value?.isNotEmpty ?? false;
+
   @override
   void onInit() {
     super.onInit();
@@ -30,17 +32,17 @@ class PlayerController extends GetxController {
     try {
       var playerId = await _storage.getString(_playerIdKey);
 
-      if (playerId == null) {
-        final player = await _playerApiService.create();
+      if (playerId == null || playerId.isEmpty) {
+        final user = await _playerApiService.create();
 
-        playerId = player.id;
+        playerId = user.id;
 
         await _storage.setString(_playerIdKey, playerId);
       }
 
       _playerId.value = playerId;
     } catch (error, stackTrace) {
-      LoggerUtils.error('Failed to initialize player', error, stackTrace);
+      LoggerUtils.error('PlayerController._initialize', error, stackTrace);
     }
   }
 }
