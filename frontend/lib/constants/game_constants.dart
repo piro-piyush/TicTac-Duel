@@ -1,4 +1,4 @@
-import 'package:tictac_duel/constants/constants.dart';
+import 'package:tictac_duel/lib.dart';
 
 class GameConstants {
   GameConstants._();
@@ -20,7 +20,7 @@ class GameConstants {
   static const int boardSize = 3;
   static const int totalCells = boardSize * boardSize;
 
-  static const List<int> roundOptions = [1, 3, 5, 7];
+  static const List<int> roundOptions = [3, 5, 7];
 
   static const List<PlayerSymbol?> themePreviewSymbols = [
     PlayerSymbol.x,
@@ -42,6 +42,7 @@ class GameConstants {
   static const String localPlayerTwoId = 'local_player_2';
   static const String localCpuId = 'local_cpu';
 
+  static const String localPlayerName = 'You';
   static const String localPlayerOneName = 'Player One';
   static const String localPlayerTwoName = 'Player Two';
   static const String localCpuName = 'CPU';

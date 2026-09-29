@@ -4,13 +4,13 @@ class GameStatusWidget extends StatelessWidget {
   const GameStatusWidget({
     super.key,
     required this.player,
-    required this.isMyTurn,
+    required this.status,
     required this.theme,
     this.compact = false,
   });
 
   final PlayerModel player;
-  final bool isMyTurn;
+  final String status;
   final RoomTheme theme;
   final bool compact;
 
@@ -19,8 +19,6 @@ class GameStatusWidget extends StatelessWidget {
     final color = player.symbol == PlayerSymbol.x
         ? theme.primary
         : theme.secondary;
-
-    final text = isMyTurn ? 'Your turn' : '${player.name}\'s turn';
 
     return Container(
       constraints: const BoxConstraints(maxWidth: 420),
@@ -40,7 +38,7 @@ class GameStatusWidget extends StatelessWidget {
           const SizedBox(width: 7),
           Flexible(
             child: Text(
-              text,
+              status,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: color,

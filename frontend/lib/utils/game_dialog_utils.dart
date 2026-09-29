@@ -67,21 +67,29 @@ class GameDialogUtils {
   // ===========================================================================
 
   static Future<void> showGameFinished({
-    required PlayerModel playerOne,
-    required PlayerModel playerTwo,
+    required String playerOneName,
+    required PlayerSymbol playerOneSymbol,
     required int playerOneScore,
+    required String playerTwoName,
+    required PlayerSymbol playerTwoSymbol,
     required int playerTwoScore,
     required PlayerSymbol mySymbol,
   }) {
     final isDraw = playerOneScore == playerTwoScore;
 
-    final overallWinner = isDraw
+    final winnerName = isDraw
         ? null
         : playerOneScore > playerTwoScore
-        ? playerOne
-        : playerTwo;
+        ? playerOneName
+        : playerTwoName;
 
-    final hasWon = overallWinner?.symbol == mySymbol;
+    final winnerSymbol = isDraw
+        ? null
+        : playerOneScore > playerTwoScore
+        ? playerOneSymbol
+        : playerTwoSymbol;
+
+    final hasWon = winnerSymbol == mySymbol;
 
     final title = isDraw
         ? 'Game Draw'
@@ -109,7 +117,7 @@ class GameDialogUtils {
               Text(
                 isDraw
                     ? 'The game ended in a draw.'
-                    : '${overallWinner!.name} wins the game!',
+                    : '$winnerName wins the game!',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Get.theme.colorScheme.onSurface,
@@ -117,12 +125,13 @@ class GameDialogUtils {
               ),
               const SizedBox(height: 20),
               _buildScoreRow(
-                playerOne,
-
+                playerOneName,
+                playerOneScore,
               ),
               const SizedBox(height: 8),
               _buildScoreRow(
-                playerTwo,
+                playerTwoName,
+                playerTwoScore,
               ),
             ],
           ),
@@ -254,12 +263,15 @@ class GameDialogUtils {
     ),
   );
 
-  static Widget _buildScoreRow(PlayerModel player) {
+  static Widget _buildScoreRow(
+      String playerName,
+      int score,
+      ) {
     return Row(
       children: [
         Expanded(
           child: Text(
-            player.name,
+            playerName,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: Get.theme.colorScheme.onSurface,
@@ -268,7 +280,7 @@ class GameDialogUtils {
           ),
         ),
         Text(
-          '${player.points}',
+          '$score',
           style: TextStyle(
             color: Get.theme.colorScheme.secondary,
             fontSize: 18,

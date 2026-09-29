@@ -15,9 +15,7 @@ class GameController extends GetxController {
   // ===========================================================================
 
   final RoomSocketService _roomSocketService;
-
   final MusicController _musicController;
-
   final PlayerController _playerController;
 
   // ===========================================================================
@@ -42,15 +40,17 @@ class GameController extends GetxController {
 
   final RxInt _animatedRound = 0.obs;
 
+  Timer? _roundAnimationTimer;
+
   // ===========================================================================
   // GETTERS
   // ===========================================================================
 
   RoomModel? get room => _room.value;
 
-  List<PlayerSymbol?> get board => _board;
+  List<PlayerSymbol?> get board => _board.toList();
 
-  Set<int> get winningIndexes => _winningIndexes;
+  Set<int> get winningIndexes => _winningIndexes.toSet();
 
   String? get errorMessage => _errorMessage.value;
 
@@ -79,7 +79,7 @@ class GameController extends GetxController {
 
   Future<void> _initialize() async {
     _isLoading.value = true;
-    _errorMessage.value = null;
+    clearError();
 
     try {
       _listenToSocketEvents();
@@ -89,10 +89,11 @@ class GameController extends GetxController {
         playerId: playerId,
         onConnected: _handleRoomConnected,
       );
+    } catch (error, stackTrace) {
+      LoggerUtils.error('GameController._initialize', error, stackTrace);
 
-      _isLoading.value = false;
-    } catch (error) {
-      _errorMessage.value = error.toString();
+      setError(error.toString());
+    } finally {
       _isLoading.value = false;
     }
   }
@@ -102,29 +103,22 @@ class GameController extends GetxController {
   // ===========================================================================
 
   void _listenToSocketEvents() {
-    // _roomSocketService.onRoomConnected(_handleRoomConnected);
-
     _roomSocketService.onPlayerJoined(_handlePlayerJoined);
     _roomSocketService.onPlayerLeft(_handlePlayerLeft);
     _roomSocketService.onReadyUpdated(_handleReadyUpdated);
     _roomSocketService.onRoundStarted(_handleRoundStarted);
     _roomSocketService.onRoomClosed(_handleRoomClosed);
     _roomSocketService.onGameDismissed(_handleGameDismissed);
-
-    _roomSocketService.onReadyUpdated(_handleReadyUpdated);
-
     _roomSocketService.onMoveMade(_handleMoveMade);
-
     _roomSocketService.onRoundResult(_handleRoundResult);
-
     _roomSocketService.onRoomError(_handleRoomError);
   }
 
   void _handleRoomConnected(RoomModel connectedRoom) {
     _setRoom(connectedRoom);
 
-    _infoMessage.value = null;
-    _errorMessage.value = null;
+    clearError();
+    clearInfo();
   }
 
   void _handleReadyUpdated(RoomModel updatedRoom) {
@@ -133,6 +127,7 @@ class GameController extends GetxController {
 
   void _handleRoundStarted(RoomModel updatedRoom) {
     _setRoom(updatedRoom);
+    _prepareNewRound(updatedRoom);
   }
 
   void _handlePlayerJoined(RoomModel updatedRoom) {
@@ -147,29 +142,45 @@ class GameController extends GetxController {
     setError(message);
   }
 
-  void _handleRoomClosed(String reason) =>
-      GameDialogUtils.showRoomClosed(reason: reason);
+  void _handleRoomClosed(String reason) {
+    GameDialogUtils.showRoomClosed(reason: reason);
+  }
 
-  void _handleGameDismissed(GameDismissedResponse response) =>
-      GameDialogUtils.showGameDismissed(reason: response.reason);
+  void _handleGameDismissed(GameDismissedResponse response) {
+    GameDialogUtils.showGameDismissed(reason: response.reason);
+  }
 
   // ===========================================================================
   // ROOM STATE
   // ===========================================================================
 
   void _setRoom(RoomModel value) {
-    final previousRound = _room.value?.currentRound;
+    final previousRoom = _room.value;
+    final previousRound = previousRoom?.currentRound;
 
     _room.value = value;
 
     if (_board.length != value.boardSize) {
-      _board.assignAll(List<PlayerSymbol?>.filled(value.boardSize, null));
+      _resetBoard(value.boardSize);
     }
 
-    if (previousRound != null &&
-        previousRound != value.currentRound &&
-        value.roundStatus == RoundStatus.playing) {
+    final roundChanged =
+        previousRound != null && previousRound != value.currentRound;
+
+    final roundStarted = value.roundStatus == RoundStatus.playing;
+
+    if (roundChanged && roundStarted) {
       _showRoundAnimationFor(value);
+    }
+  }
+
+  void _prepareNewRound(RoomModel currentRoom) {
+    _roundResult.value = null;
+
+    clearBoard();
+
+    if (currentRoom.roundStatus == RoundStatus.playing) {
+      _showRoundAnimationFor(currentRoom);
     }
   }
 
@@ -177,7 +188,7 @@ class GameController extends GetxController {
   // PLAYER
   // ===========================================================================
 
-  PlayerModel? get myPlayer {
+  OnlinePlayerModel? get myPlayer {
     final currentRoom = room;
 
     if (currentRoom == null) {
@@ -185,7 +196,7 @@ class GameController extends GetxController {
     }
 
     return currentRoom.players
-        .where((player) => player.id == _playerController.playerId)
+        .where((player) => player.id == playerId)
         .firstOrNull;
   }
 
@@ -206,14 +217,6 @@ class GameController extends GetxController {
         (currentRoom.roundStatus == RoundStatus.result && !amIReady);
   }
 
-  bool get waitingForNextRound {
-    return (room?.currentRound ?? 0) > 0;
-  }
-
-  void startGame() {
-    _roomSocketService.startGame(roomCode: room!.roomCode);
-  }
-
   bool get isMyTurn {
     final currentRoom = room;
 
@@ -221,7 +224,33 @@ class GameController extends GetxController {
       return false;
     }
 
-    return currentRoom.turn?.id == _playerController.playerId;
+    return currentRoom.turnPlayerId == playerId;
+  }
+
+  bool get isGamePlaying {
+    return room?.roundStatus == RoundStatus.playing;
+  }
+
+  bool get isRoundResult {
+    return room?.roundStatus == RoundStatus.result;
+  }
+
+  // bool get isGameFinished {
+  //   return room?.roundStatus == RoundStatus.completed;
+  // }
+
+  // ===========================================================================
+  // GAME
+  // ===========================================================================
+
+  void startGame() {
+    final currentRoom = room;
+
+    if (currentRoom == null) {
+      return;
+    }
+
+    _roomSocketService.startGame(roomCode: currentRoom.roomCode);
   }
 
   // ===========================================================================
@@ -249,7 +278,7 @@ class GameController extends GetxController {
       return;
     }
 
-    if (!isMyTurn) {
+    if (!isGamePlaying || !isMyTurn) {
       return;
     }
 
@@ -269,17 +298,20 @@ class GameController extends GetxController {
   // ===========================================================================
 
   void _showRoundAnimationFor(RoomModel currentRoom) {
+    _roundAnimationTimer?.cancel();
+
     _musicController.playRoundStart();
 
     _animatedRound.value = currentRoom.currentRound;
     _showRoundAnimation.value = true;
 
-    Future.delayed(const Duration(milliseconds: 900), () {
+    _roundAnimationTimer = Timer(const Duration(milliseconds: 900), () {
       if (isClosed) {
         return;
       }
 
       _showRoundAnimation.value = false;
+      _roundAnimationTimer = null;
     });
   }
 
@@ -288,23 +320,60 @@ class GameController extends GetxController {
   // ===========================================================================
 
   void _handleRoundResult(RoundResultResponse response) {
+    _roundResult.value = response;
+
     _setRoom(response.room);
 
-    setWinningIndexes(winningIndexes.toSet());
+    if (response.winningIndexes.isNotEmpty) {
+      setWinningIndexes(response.winningIndexes.toSet());
+    }
 
-    /*
-     * Create GameRoundResultModel here once its constructor
-     * is available.
-     */
+    if (!response.gameFinished) {
+      return;
+    }
 
-    if (response.gameFinished) {
-      setInfo('Game completed.');
+    _showFinalResult(response.room);
+  }
+
+  void _showFinalResult(RoomModel room) {
+    try {
+      final playerOne = room.playerOne;
+      final playerTwo = room.playerTwo;
+
+      final isDraw = playerOne.points == playerTwo.points;
+
+      final winner = isDraw
+          ? null
+          : playerOne.points > playerTwo.points
+          ? playerOne
+          : playerTwo;
+
+      final result = ResultModel.online(
+        playerOne: playerOne,
+        playerTwo: playerTwo,
+        currentRound: room.currentRound,
+        maxRounds: room.maxRounds,
+        gameWinner: winner,
+        hasWon: winner?.id == playerId,
+        isDraw: isDraw,
+        showConfetti: winner?.id == playerId,
+      );
+
+      AppNavigation.replaceResult(result);
+    } catch (error, stackTrace) {
+      LoggerUtils.error(
+        'GameController._showFinalResult',
+        error,
+        stackTrace,
+      );
+
+      setInfo('Unable to load game result.');
     }
   }
 
   void prepareNextRound() {
     _roundResult.value = null;
-    _winningIndexes.clear();
+    clearBoard();
   }
 
   // ===========================================================================
@@ -354,14 +423,13 @@ class GameController extends GetxController {
   }
 
   void clearBoard() {
-    final currentRoom = room;
+    final boardSize = room?.boardSize ?? GameConstants.boardSize;
 
-    _board.assignAll(
-      List<PlayerSymbol?>.filled(
-        currentRoom?.boardSize ?? GameConstants.boardSize,
-        null,
-      ),
-    );
+    _resetBoard(boardSize);
+  }
+
+  void _resetBoard(int boardSize) {
+    _board.assignAll(List<PlayerSymbol?>.filled(boardSize, null));
 
     _winningIndexes.clear();
   }
@@ -376,13 +444,19 @@ class GameController extends GetxController {
     updateBoardValue(response.index, response.symbol);
   }
 
+  bool get waitingForNextRound {
+    return (room?.currentRound ?? 0) > 0;
+  }
+
   // ===========================================================================
   // DISPOSE
   // ===========================================================================
 
   @override
   void onClose() {
-    // _roomSocketService.offRoomConnected();
+    _roundAnimationTimer?.cancel();
+    _roundAnimationTimer = null;
+
     _roomSocketService.offReadyUpdated();
     _roomSocketService.offMoveMade();
     _roomSocketService.offRoundResult();

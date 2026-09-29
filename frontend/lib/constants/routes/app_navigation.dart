@@ -44,10 +44,7 @@ abstract final class AppNavigation {
   // ===========================================================================
 
   static void replaceWaitingRoom(RoomModel room) {
-    Get.offNamed(
-      AppRoutes.waitingRoom,
-      arguments: room,
-    );
+    Get.offNamed(AppRoutes.waitingRoom, arguments: room);
   }
 
   // ===========================================================================
@@ -78,29 +75,23 @@ abstract final class AppNavigation {
   }
 
   static void pushLocalGameBoard(LocalGameModel localGame) {
-    Get.toNamed(
-      AppRoutes.localGameBoard,
-      arguments: localGame,
-    );
+    Get.toNamed(AppRoutes.localGameBoard, arguments: localGame);
   }
 
   static void replaceLocalGameBoard(LocalGameModel localGame) {
-    Get.offNamed(
-      AppRoutes.localGameBoard,
-      arguments: localGame,
-    );
+    Get.offNamed(AppRoutes.localGameBoard, arguments: localGame);
   }
 
   // ===========================================================================
   // RESULT
   // ===========================================================================
 
-  static void pushResult() {
-    Get.toNamed(AppRoutes.result);
+  static void pushResult(ResultModel result) {
+    Get.toNamed(AppRoutes.result, arguments: result);
   }
 
-  static void replaceResult() {
-    Get.offNamed(AppRoutes.result);
+  static void replaceResult(ResultModel result) {
+    Get.offNamed(AppRoutes.result, arguments: result);
   }
 
   // ===========================================================================

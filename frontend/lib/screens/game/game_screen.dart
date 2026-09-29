@@ -33,8 +33,7 @@ class GameScreen extends GetView<GameController> {
                   GameRoundAnimationWidget(
                     showRoundAnimation: controller.showRoundAnimation,
                     animatedRound: controller.animatedRound,
-
-                  )
+                  ),
                 ],
               )
             : WaitingForPlayersWidget(
@@ -45,12 +44,7 @@ class GameScreen extends GetView<GameController> {
               );
       }
 
-      return NeonBackgroundWidget(
-        title: 'Tic Tac Duel',
-        child: child,
-      );
+      return NeonBackgroundWidget(title: 'Tic Tac Duel', child: child);
     });
   }
-
-
 }

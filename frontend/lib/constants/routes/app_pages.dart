@@ -42,7 +42,7 @@ abstract final class AppPages {
     GetPage(
       name: AppRoutes.result,
       page: ResultScreen.new,
-      // binding: ResultBinding(),
+      binding: ResultBinding(),
     ),
 
     GetPage(name: AppRoutes.settings, page: SettingsScreen.new),

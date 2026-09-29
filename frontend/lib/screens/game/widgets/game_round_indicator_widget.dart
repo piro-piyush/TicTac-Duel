@@ -36,7 +36,7 @@ class GameRoundIndicatorWidget extends StatelessWidget {
             size: compact ? 14 : 15,
           ),
           Text(
-            'ROUND ${currentRound + 1}',
+            'ROUND $currentRound',
             style: TextStyle(
               color: color,
               fontSize: compact ? 9 : 10,
