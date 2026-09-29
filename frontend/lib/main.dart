@@ -35,8 +35,7 @@ class MyApp extends StatelessWidget {
       title: GameConstants.appName,
       theme: AppTheme.darkTheme,
       initialBinding: GlobalBindings(),
-      initialRoute: AppRoutes.home,
-
+      initialRoute: AppRoutes.homePath,
       getPages: AppPages.routes,
       builder: (context, child) {
         return Listener(

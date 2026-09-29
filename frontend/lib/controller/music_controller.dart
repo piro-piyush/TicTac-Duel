@@ -216,19 +216,7 @@ class MusicController extends GetxController {
     }
   }
 
-  void playJoin() {
-    if (!isInitialized) {
-      return;
-    }
 
-    if (_effectsEnabled.value) {
-      _queueEffect(AudioConstants.joinSound);
-    }
-
-    if (_vibrationEnabled.value) {
-      unawaited(HapticFeedback.lightImpact());
-    }
-  }
 
   // ===========================================================================
   // SOUND EFFECT QUEUE

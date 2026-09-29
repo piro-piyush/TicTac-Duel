@@ -1,12 +1,12 @@
 import 'package:tictac_duel/lib.dart';
 
-class LocalGameBoardController extends GetxController {
-  LocalGameBoardController({
+class GameBoardController extends GetxController {
+  GameBoardController({
     required this.game,
     required this._musicController,
   });
 
-  final LocalGameModel game;
+  final GameModel game;
 
   final MusicController _musicController;
   Timer? _cpuMoveTimer;
@@ -68,10 +68,10 @@ class LocalGameBoardController extends GetxController {
 
   bool get showRoundAnimation => _showRoundAnimation.value;
 
-  LocalPlayerModel get currentPlayer =>
+  PlayerModel get currentPlayer =>
       turnIndex == 0 ? game.playerOne : game.playerTwo;
 
-  LocalPlayerModel get opponentPlayer =>
+  PlayerModel get opponentPlayer =>
       turnIndex == 0 ? game.playerTwo : game.playerOne;
 
   PlayerSymbol get currentSymbol => currentPlayer.symbol;
@@ -242,7 +242,7 @@ class LocalGameBoardController extends GetxController {
 
     final hasWon = winner?.id == game.playerOne.id;
 
-    final result = ResultModel.local(
+    final result = ResultModel(
       playerOne: game.playerOne,
       playerTwo: game.playerTwo,
       playerOnePoints: playerOnePoints,
@@ -328,7 +328,7 @@ class LocalGameBoardController extends GetxController {
 
   bool get _isFinalRound => currentRound >= game.maxRounds;
 
-  LocalPlayerModel? get gameWinner {
+  PlayerModel? get gameWinner {
     if (!_isFinalRound) {
       return null;
     }
