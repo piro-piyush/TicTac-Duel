@@ -16,7 +16,7 @@ class QuickMatchContentWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       spacing: Dimens.eight,
       children: [
-        SectionTitleWidget(title: 'Choose your opponent'),
+        const SectionTitleWidget(title: 'Choose your opponent'),
 
         QuickMatchOptionWidget(
           icon: Icons.public_rounded,
@@ -26,7 +26,7 @@ class QuickMatchContentWidget extends StatelessWidget {
           onPressed: onOnlinePressed,
         ),
 
-        SizedBox(height: Dimens.spaceBtwSections),
+        const SizedBox(height: Dimens.spaceBtwSections),
 
         QuickMatchOptionWidget(
           icon: Icons.smart_toy_rounded,

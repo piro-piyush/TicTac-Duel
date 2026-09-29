@@ -11,7 +11,7 @@ class JoinRoomHintWidget extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       spacing: Dimens.eight,
       children: [
-        Icon(
+        const Icon(
           Icons.info_outline_rounded,
           color: AppColors.textSecondary,
           size: Dimens.iconSm,

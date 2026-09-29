@@ -5,7 +5,7 @@ class OnlineDuelsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SectionTitleAndOptionsWidget(
+    return const SectionTitleAndOptionsWidget(
       title: 'ONLINE DUELS',
       children: [
         SectionTileWidget(

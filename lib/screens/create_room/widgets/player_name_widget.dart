@@ -24,12 +24,11 @@ class PlayerNameWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         spacing: Dimens.eight,
         children: [
-          SectionTitleWidget(title: 'YOUR NAME'),
+          const SectionTitleWidget(title: 'YOUR NAME'),
           GameTextFormFieldWidget(
             controller: _playerNameController,
             focusNode: _playerNameFocusNode,
             textCapitalization: TextCapitalization.words,
-            textInputAction: TextInputAction.done,
             validator: ValidatorUtils.gameName,
             hintText: 'ENTER YOUR NAME',
             suffixIcon: IconButton(

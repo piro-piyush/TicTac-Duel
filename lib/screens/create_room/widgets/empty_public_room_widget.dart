@@ -13,7 +13,7 @@ class EmptyPublicRoomWidget extends StatelessWidget {
         borderRadius: Dimens.radius14,
         border: Border.all(color: AppColors.border),
       ),
-      child: Column(
+      child: const Column(
         children: [
           Icon(Icons.sports_esports_outlined, color: AppColors.textSecondary),
           SizedBox(height: Dimens.ten),

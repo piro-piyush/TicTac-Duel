@@ -43,7 +43,7 @@ class RoomStateWidget extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(config.icon, color: config.color, size: Dimens.icon2Xl),
-          SizedBox(height: Dimens.sixteen),
+          const SizedBox(height: Dimens.sixteen),
           Text(
             config.title,
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
@@ -52,7 +52,7 @@ class RoomStateWidget extends StatelessWidget {
             ),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: Dimens.six),
+          const SizedBox(height: Dimens.six),
           Text(
             config.message,
             style: Theme.of(context).textTheme.labelSmall
@@ -60,7 +60,7 @@ class RoomStateWidget extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           if (onRetry != null) ...[
-            SizedBox(height: Dimens.twenty),
+            const SizedBox(height: Dimens.twenty),
             TextButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh_rounded),

@@ -116,7 +116,6 @@ class GameWidget extends StatelessWidget {
 
   Widget _buildBoard({required bool isWide}) {
     return Align(
-      alignment: Alignment.center,
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: isWide ? 460 : 420),
         child: GameBoardWidget(

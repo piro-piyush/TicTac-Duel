@@ -5,7 +5,7 @@ class QuickTipsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SectionTitleAndOptionsWidget(
+    return const SectionTitleAndOptionsWidget(
       title: 'QUICK TIPS',
       titleIcon: Icons.tips_and_updates_outlined,
       children: [

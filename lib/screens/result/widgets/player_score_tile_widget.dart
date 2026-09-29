@@ -54,7 +54,7 @@ class PlayerScoreTileWidget extends StatelessWidget {
                     _playerName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: Dimens.sixteen,
                       fontWeight: FontWeight.w700,
@@ -71,7 +71,7 @@ class PlayerScoreTileWidget extends StatelessWidget {
                         color: AppColors.neonPurple.withValues(alpha: 0.25),
                       ),
                     ),
-                    child: Text(
+                    child: const Text(
                       'WINNER',
                       style: TextStyle(
                         color: AppColors.neonPurple,

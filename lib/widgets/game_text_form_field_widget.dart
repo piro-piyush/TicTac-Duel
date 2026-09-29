@@ -69,7 +69,7 @@ class GameTextFormFieldWidget extends StatelessWidget {
           color: AppColors.neonPink,
           width: 1.5,
         ),
-        contentPadding: EdgeInsets.symmetric(
+        contentPadding: const EdgeInsets.symmetric(
           horizontal: Dimens.eighteen,
           vertical: Dimens.sixteen,
         ),

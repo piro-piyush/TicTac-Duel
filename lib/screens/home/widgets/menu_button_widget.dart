@@ -21,9 +21,9 @@ class MenuButtonWidget extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     return Material(
       color: AppColors.surface,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: Dimens.radius16,
-        side: const BorderSide(color: AppColors.border),
+        side: BorderSide(color: AppColors.border),
       ),
       clipBehavior: Clip.antiAlias,
       child: ListTile(

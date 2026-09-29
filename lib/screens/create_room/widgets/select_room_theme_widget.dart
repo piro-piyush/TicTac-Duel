@@ -93,7 +93,7 @@ class SelectRoomThemeWidget extends StatelessWidget {
                               color: theme.primary,
                               size: Dimens.iconSm,
                             )
-                          : SizedBox(
+                          : const SizedBox(
                               key: ValueKey('unselected'),
                               width: Dimens.iconSm,
                               height: Dimens.iconSm,
@@ -201,7 +201,7 @@ class SelectRoomThemeWidget extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         padding: EdgeInsets.zero,
         itemCount: GameConstants.themePreviewSymbols.length,
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: GameConstants.boardSize,
           crossAxisSpacing: Dimens.four,
           mainAxisSpacing: Dimens.four,

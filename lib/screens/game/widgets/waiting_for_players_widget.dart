@@ -131,11 +131,11 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
           mainAxisSize: MainAxisSize.min,
           children: [
             _buildPlayers(player),
-            SizedBox(height: Dimens.spaceBtwSections),
+            const SizedBox(height: Dimens.spaceBtwSections),
             _buildStatus(),
-            SizedBox(height: Dimens.spaceBtwItems),
+            const SizedBox(height: Dimens.spaceBtwItems),
             _buildAction(),
-            SizedBox(height: Dimens.spaceBtwSections),
+            const SizedBox(height: Dimens.spaceBtwSections),
             _buildRoomCode(),
           ],
         ),
@@ -159,8 +159,8 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
       key: const ValueKey('waiting-player'),
       mainAxisSize: MainAxisSize.min,
       children: [
-        PlayerAvatarWidget(player: player, isMe: true, isTurn: false),
-        SizedBox(height: Dimens.spaceBtwItems),
+        PlayerAvatarWidget(player: player, isMe: true),
+        const SizedBox(height: Dimens.spaceBtwItems),
         _buildPlayerName(player),
       ],
     );
@@ -178,7 +178,7 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _buildPlayerColumn(player: myPlayer, isMe: true),
-        SizedBox(width: Dimens.spaceBtwSections),
+        const SizedBox(width: Dimens.spaceBtwSections),
         _buildOpponentColumn(opponent),
       ],
     );
@@ -188,8 +188,8 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        PlayerAvatarWidget(player: player, isMe: isMe, isTurn: false),
-        SizedBox(height: Dimens.spaceBtwItems),
+        PlayerAvatarWidget(player: player, isMe: isMe),
+        const SizedBox(height: Dimens.spaceBtwItems),
         _buildPlayerName(player),
       ],
     );
@@ -245,7 +245,7 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
         if (!_hasOpponent)
           _buildWaitingIndicator()
         else
-          Icon(
+          const Icon(
             Icons.check_circle_outline_rounded,
             color: AppColors.neonGreen,
             size: Dimens.iconLg,
@@ -285,7 +285,7 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
             child: child,
           );
         },
-        child: Icon(
+        child: const Icon(
           Icons.people_outline_rounded,
           color: AppColors.neonPurple,
           size: Dimens.iconMd,
@@ -327,12 +327,12 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.hourglass_top_rounded,
             color: AppColors.neonCyan,
             size: Dimens.iconSm,
           ),
-          SizedBox(width: Dimens.eight),
+          const SizedBox(width: Dimens.eight),
           Flexible(
             child: Text(
               'WAITING FOR HOST TO START',
@@ -382,8 +382,8 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
                       letterSpacing: 4,
                     ),
                   ),
-                  SizedBox(width: Dimens.eight),
-                  Icon(
+                  const SizedBox(width: Dimens.eight),
+                  const Icon(
                     Icons.copy_rounded,
                     color: AppColors.neonCyan,
                     size: Dimens.iconSm,

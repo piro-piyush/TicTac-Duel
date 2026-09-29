@@ -5,16 +5,15 @@ class HelpScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return NeonBackgroundWidget(
+    return const NeonBackgroundWidget(
       title: 'HELP',
-      needScroll: true,
       child: Column(
         spacing: Dimens.thirty,
         children: [
           Column(
             spacing: Dimens.twentyEight,
             children: [
-              const HeaderSectionWidget(
+              HeaderSectionWidget(
                 title: 'NEED A HAND?',
                 subtitle: 'Everything you need to dominate the board.',
                 icon: Icons.help_outline_rounded,

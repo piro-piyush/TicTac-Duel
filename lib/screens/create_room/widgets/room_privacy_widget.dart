@@ -22,7 +22,7 @@ class RoomPrivacyWidget extends StatelessWidget {
         value: isPrivate,
         onChanged: onChanged,
         contentPadding: Dimens.edgeInsets14,
-        secondary: Icon(
+        secondary: const Icon(
           Icons.lock_rounded,
           color: AppColors.neonPink,
           size: Dimens.iconMd,

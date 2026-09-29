@@ -151,7 +151,6 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     gradient: RadialGradient(
-                      center: Alignment.center,
                       radius: 0.85,
                       colors: [
                         Colors.transparent,
@@ -169,7 +168,7 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
             Positioned.fill(
               child: Center(
                 child: ConstrainedBox(
-                  constraints: BoxConstraints(
+                  constraints: const BoxConstraints(
                     maxWidth: Dimens.fourHundredSixty,
                   ),
                   child: SafeArea(

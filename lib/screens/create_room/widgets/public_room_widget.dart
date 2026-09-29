@@ -36,7 +36,7 @@ class PublicRoomWidget extends StatelessWidget {
               onPressed: onRefresh,
               visualDensity: VisualDensity.compact,
               tooltip: 'Refresh',
-              icon: Icon(
+              icon: const Icon(
                 Icons.refresh_rounded,
                 color: AppColors.textSecondary,
                 size: Dimens.iconMd,

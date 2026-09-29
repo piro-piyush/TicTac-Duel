@@ -17,7 +17,7 @@ class SettingsAboutSectionWidget extends StatelessWidget {
           color: AppColors.neonCyan,
           onTap: () => _showAbout(context),
         ),
-        SectionTileWidget.withAction(
+        const SectionTileWidget.withAction(
           icon: Icons.privacy_tip_outlined,
           title: 'Privacy Policy',
           subtitle: 'How your data is handled',
