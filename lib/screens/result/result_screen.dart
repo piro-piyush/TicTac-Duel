@@ -126,15 +126,15 @@ class ResultScreen extends GetView<ResultController> {
       spacing: Dimens.sixteen,
       children: [
         Expanded(
-          child: NeonOutlinedButtonWidget(
-            label: 'HOME',
+          child: OutlinedButton(
             onPressed: controller.goHome,
+            child: Text('HOME'),
           ),
         ),
         Expanded(
-          child: NeonElevatedButton(
-            label: 'NEW GAME',
+          child: ElevatedButton(
             onPressed: controller.newGame,
+            child: Text('NEW GAME'),
           ),
         ),
       ],
@@ -144,7 +144,7 @@ class ResultScreen extends GetView<ResultController> {
   void _showConfetti(BuildContext context) {
     Confetti.launch(
       context,
-      options: const ConfettiOptions(particleCount: 100, spread: 70, y: 0.55,),
+      options: const ConfettiOptions(particleCount: 100, spread: 70, y: 0.55),
     );
   }
 }

@@ -3,8 +3,6 @@ import 'package:tictac_duel/lib.dart';
 class SettingsAboutSectionWidget extends StatelessWidget {
   const SettingsAboutSectionWidget({super.key});
 
-  static const _version = '1.0.0';
-
   @override
   Widget build(BuildContext context) {
     return SectionTitleAndOptionsWidget(
@@ -13,7 +11,7 @@ class SettingsAboutSectionWidget extends StatelessWidget {
         SectionTileWidget.withAction(
           icon: Icons.info_outline_rounded,
           title: 'About',
-          subtitle: 'Tic Tac Duel • Version $_version',
+          subtitle: '${GameConstants.appName} v${GameConstants.appVersion}',
           color: AppColors.neonCyan,
           onTap: () => _showAbout(context),
         ),
@@ -22,14 +20,14 @@ class SettingsAboutSectionWidget extends StatelessWidget {
           title: 'Privacy Policy',
           subtitle: 'How your data is handled',
           color: AppColors.textSecondary,
-          onTap: AppNavigation.pushPrivacyPolicy,
+          onTap: () => _showPrivacyPolicy(context),
         ),
       ],
     );
   }
 
   void _showAbout(BuildContext context) {
-    return showAboutDialog(
+    showAboutDialog(
       context: context,
       applicationName: GameConstants.appName,
       applicationVersion: 'Version ${GameConstants.appVersion}',
@@ -43,6 +41,37 @@ class SettingsAboutSectionWidget extends StatelessWidget {
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.5),
         ),
       ],
+    );
+  }
+
+  void _showPrivacyPolicy(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Privacy Policy'),
+          content: SingleChildScrollView(
+            child: Text(
+              'Tic Tac Duel does not collect, store, or transmit any personal '
+              'information.\n\n'
+              'The app does not require an account or personal information to '
+              'play.\n\n'
+              'Game-related information used during gameplay is processed '
+              'locally on your device and is not collected by us.\n\n'
+              'Tic Tac Duel does not use analytics, advertising, or tracking '
+              'services to monitor your activity.',
+              style: Theme.of(context).textTheme.bodyMedium
+                  ?.copyWith(height: 1.5),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

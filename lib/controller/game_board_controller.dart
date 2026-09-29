@@ -1,14 +1,11 @@
 import 'package:tictac_duel/lib.dart';
 
 class GameBoardController extends GetxController {
-  GameBoardController({
-    required this.game,
-    required this._musicController,
-  });
+  GameBoardController({required this.game, required this._musicController});
 
   final GameModel game;
-
   final MusicController _musicController;
+
   Timer? _cpuMoveTimer;
   Timer? _roundAnimationTimer;
   Timer? _resultTimer;
@@ -83,6 +80,24 @@ class GameBoardController extends GetxController {
 
   bool get canMakeMove => !isBoardFull && !isCpuTurn;
 
+  bool get _isFinalRound => currentRound >= game.maxRounds;
+
+  PlayerModel? get gameWinner {
+    if (!_isFinalRound) {
+      return null;
+    }
+
+    if (playerOnePoints > playerTwoPoints) {
+      return game.playerOne;
+    }
+
+    if (playerTwoPoints > playerOnePoints) {
+      return game.playerTwo;
+    }
+
+    return null;
+  }
+
   // ===========================================================================
   // LIFECYCLE
   // ===========================================================================
@@ -106,7 +121,6 @@ class GameBoardController extends GetxController {
   void _startGame() {
     _playerOnePoints.value = 0;
     _playerTwoPoints.value = 0;
-
     _currentRound.value = 0;
 
     startNextRound(game.playerOne.symbol);
@@ -193,29 +207,15 @@ class GameBoardController extends GetxController {
   }
 
   // ===========================================================================
-  // MOVE VALIDATION
-  // ===========================================================================
-
-  // bool _canMakeMove(int index) {
-  //   if (index < 0 || index >= _board.length) {
-  //     return false;
-  //   }
-  //
-  //   if (!canMakeMove) {
-  //     return false;
-  //   }
-  //
-  //   return _board[index] == null;
-  // }
-
-  // ===========================================================================
   // ROUND RESULT
   // ===========================================================================
 
   void _handleRoundResult(GameResult result) {
     _cancelCpuTimer();
     _cancelResultTimer();
+
     _isRoundFinished.value = true;
+
     if (result.hasWinner) {
       final winner = result.winner;
 
@@ -229,33 +229,6 @@ class GameBoardController extends GetxController {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showRoundResultDialog(result);
     });
-  }
-
-  void _showFinalResult() {
-    final isDraw = playerOnePoints == playerTwoPoints;
-
-    final winner = isDraw
-        ? null
-        : playerOnePoints > playerTwoPoints
-        ? game.playerOne
-        : game.playerTwo;
-
-    final hasWon = winner?.id == game.playerOne.id;
-
-    final result = ResultModel(
-      playerOne: game.playerOne,
-      playerTwo: game.playerTwo,
-      playerOnePoints: playerOnePoints,
-      playerTwoPoints: playerTwoPoints,
-      currentRound: currentRound,
-      maxRounds: game.maxRounds,
-      gameWinner: winner,
-      isDraw: isDraw,
-      hasWon: hasWon,
-      showConfetti: hasWon,
-    );
-
-    AppNavigation.replaceResult(result);
   }
 
   void _showRoundResultDialog(GameResult result) {
@@ -289,6 +262,33 @@ class GameBoardController extends GetxController {
     });
   }
 
+  void _showFinalResult() {
+    final isDraw = playerOnePoints == playerTwoPoints;
+
+    final winner = isDraw
+        ? null
+        : playerOnePoints > playerTwoPoints
+        ? game.playerOne
+        : game.playerTwo;
+
+    final hasWon = winner?.id == game.playerOne.id;
+
+    final result = ResultModel(
+      playerOne: game.playerOne,
+      playerTwo: game.playerTwo,
+      playerOnePoints: playerOnePoints,
+      playerTwoPoints: playerTwoPoints,
+      currentRound: currentRound,
+      maxRounds: game.maxRounds,
+      gameWinner: winner,
+      isDraw: isDraw,
+      hasWon: hasWon,
+      showConfetti: hasWon,
+    );
+
+    AppNavigation.replaceResult(result);
+  }
+
   void _updateWinnerScore(PlayerSymbol winner) {
     if (winner == game.playerOne.symbol) {
       _playerOnePoints.value++;
@@ -318,33 +318,6 @@ class GameBoardController extends GetxController {
   }
 
   // ===========================================================================
-  // GAME WINNER
-  // ===========================================================================
-
-  // int get _requiredWins => (game.maxRounds ~/ 2) + 1;
-  //
-  // bool get _hasGameWinner =>
-  //     playerOneScore >= _requiredWins || playerTwoScore >= _requiredWins;
-
-  bool get _isFinalRound => currentRound >= game.maxRounds;
-
-  PlayerModel? get gameWinner {
-    if (!_isFinalRound) {
-      return null;
-    }
-
-    if (playerOnePoints > playerTwoPoints) {
-      return game.playerOne;
-    }
-
-    if (playerTwoPoints > playerOnePoints) {
-      return game.playerTwo;
-    }
-
-    return null;
-  }
-
-  // ===========================================================================
   // NEXT ROUND
   // ===========================================================================
 
@@ -354,14 +327,11 @@ class GameBoardController extends GetxController {
     }
 
     _cancelRoundTimers();
-
     _resetBoard();
 
     _currentRound.value++;
 
     _turnIndex.value = startingSymbol == game.playerOne.symbol ? 0 : 1;
-
-    _musicController.playRoundStart();
 
     _showRoundStartAnimation();
     _scheduleCpuMove();
@@ -376,6 +346,8 @@ class GameBoardController extends GetxController {
 
     _animatedRound.value = currentRound;
     _showRoundAnimation.value = true;
+
+    _musicController.playRoundStart();
 
     _roundAnimationTimer = Timer(GameConstants.roundAnimationDuration, () {
       _showRoundAnimation.value = false;
@@ -434,15 +406,20 @@ class GameBoardController extends GetxController {
     _resultTimer = null;
   }
 
+  void _cancelRoundAnimationTimer() {
+    _roundAnimationTimer?.cancel();
+    _roundAnimationTimer = null;
+  }
+
   void _cancelRoundTimers() {
     _cancelCpuTimer();
     _cancelResultTimer();
+    _cancelRoundAnimationTimer();
   }
 
   void _cancelTimers() {
-    _cancelRoundTimers();
-
-    _roundAnimationTimer?.cancel();
-    _roundAnimationTimer = null;
+    _cancelCpuTimer();
+    _cancelResultTimer();
+    _cancelRoundAnimationTimer();
   }
 }

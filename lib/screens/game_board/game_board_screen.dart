@@ -6,7 +6,7 @@ class GameBoardScreen extends GetView<GameBoardController> {
   @override
   Widget build(BuildContext context) {
     return Obx(
-          () => NeonBackgroundWidget(
+      () => NeonBackgroundWidget(
         title: 'LOCAL GAME',
         child: Stack(
           alignment: Alignment.center,
