@@ -1,15 +1,11 @@
 # ============================================================
-
 # Tic Tac Duel - Git Ignore
-
-# Flutter Frontend + Node.js Backend
-
+# Flutter Frontend
 # ============================================================
 
-# ============================================================
 
+# ============================================================
 # Miscellaneous
-
 # ============================================================
 
 *.class
@@ -35,36 +31,27 @@ Desktop.ini
 .swiftpm/
 migrate_working_dir/
 
+
 # ============================================================
-
 # IDE - IntelliJ / Android Studio
-
 # ============================================================
 
 *.iml
 *.ipr
 *.iws
-
 .idea/
 
-# ============================================================
 
+# ============================================================
 # IDE - VS Code
-
 # ============================================================
 
-# Uncomment if you don't want VS Code settings committed
-
-# .vscode/
-
-# Local VS Code configuration
-
+# Keep project-specific VS Code settings if needed.
 .vscode/*.code-workspace
 
+
 # ============================================================
-
-# Frontend - Flutter / Dart
-
+# Flutter / Dart
 # ============================================================
 
 /frontend/.dart_tool/
@@ -80,21 +67,17 @@ migrate_working_dir/
 /frontend/ios/Flutter/.last_build_id
 
 # Flutter symbolication
-
 /frontend/app.*.symbols
 
 # Flutter obfuscation
-
 /frontend/app.*.map.json
 
 # Widget Preview
-
 /frontend/.widget_preview/
 
+
 # ============================================================
-
-# Frontend - Android Build Artifacts
-
+# Android Build Artifacts
 # ============================================================
 
 /frontend/android/app/debug/
@@ -103,25 +86,21 @@ migrate_working_dir/
 
 /frontend/android/.gradle/
 /frontend/android/local.properties/
+
 /frontend/android/.cxx/
 /frontend/android/.externalNativeBuild/
-
-# Android generated files
-
 /frontend/android/app/.cxx/
 /frontend/android/app/build/
 
+
 # ============================================================
-
 # Android Signing - NEVER COMMIT
-
 # ============================================================
 
 /frontend/android/key.properties
 /frontend/android/app/upload-keystore.jks
 
 # All keystore / signing files
-
 *.jks
 *.keystore
 *.p12
@@ -129,127 +108,25 @@ migrate_working_dir/
 *.pem
 *.key
 
+
 # ============================================================
-
-# Frontend - Environment / Secrets
-
+# Environment / Secrets
 # ============================================================
 
 /frontend/.env
 /frontend/.env.*
+
 !/frontend/.env.example
 
-# ============================================================
-
-# Backend - Node.js
-
-# ============================================================
-
-/backend/node_modules/
-/backend/dist/
-/backend/build/
-/backend/coverage/
-
-/backend/.nyc_output/
-
-# ============================================================
-
-# Backend - TypeScript
-
-# ============================================================
-
-*.tsbuildinfo
-
-# ============================================================
-
-# Backend - Environment / Secrets
-
-# ============================================================
-
-/backend/.env
-/backend/.env.*
-!/backend/.env.example
-
-# ============================================================
-
-# Backend - Logs
-
-# ============================================================
-
-/backend/npm-debug.log*
-/backend/yarn-debug.log*
-/backend/yarn-error.log*
-/backend/pnpm-debug.log*
-
-# ============================================================
-
-# Backend - Runtime Data
-
-# ============================================================
-
-/backend/*.pid
-/backend/*.seed
-/backend/*.pid.lock
-
-# ============================================================
-
-# Backend - Editor Configuration
-
-# ============================================================
-
-/backend/.vscode/launch.json
-
-# ============================================================
-
-# Backend - Drizzle ORM
-
-# ============================================================
-
-# Drizzle migration metadata
-
-/backend/drizzle/meta/
-
-# Temporary Drizzle files
-
-/backend/drizzle/*.sql.bak
-/backend/drizzle/*.tmp
-
-# ============================================================
-
-# Backend - Test / Temporary Files
-
-# ============================================================
-
-/backend/.eslintcache
-/backend/.stylelintcache
-
-# ============================================================
-
-# Global Environment Files
-
-# ============================================================
-
+# Global environment files
 .env
 .env.*
+
 !.env.example
 
-# ============================================================
-
-# Global Secrets / Credentials
 
 # ============================================================
-
-*.pem
-*.key
-*.p12
-*.pfx
-*.jks
-*.keystore
-
-# ============================================================
-
 # Local Database / Generated Data
-
 # ============================================================
 
 *.sqlite
@@ -257,13 +134,10 @@ migrate_working_dir/
 *.db
 *.db-journal
 
+
 # ============================================================
-
 # OS / Tool Generated Files
-
 # ============================================================
 
 *.orig
 *.rej
-*.lock
-.DS_Store
