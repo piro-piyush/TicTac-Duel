@@ -25,6 +25,8 @@ class MusicController extends GetxController {
   final RxBool _vibrationEnabled = true.obs;
   final RxBool _isInitialized = false.obs;
 
+  Future<void> _effectQueue = Future<void>.value();
+
   // ===========================================================================
   // GETTERS
   // ===========================================================================
@@ -46,7 +48,6 @@ class MusicController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-
     unawaited(_init());
   }
 
@@ -58,11 +59,9 @@ class MusicController extends GetxController {
     try {
       _isEnabled.value = await _storage.getBool(_musicEnabledKey) ?? true;
 
-      _effectsEnabled.value =
-          await _storage.getBool(_effectsEnabledKey) ?? true;
+      _effectsEnabled.value = await _storage.getBool(_effectsEnabledKey) ?? true;
 
-      _vibrationEnabled.value =
-          await _storage.getBool(_vibrationEnabledKey) ?? true;
+      _vibrationEnabled.value = await _storage.getBool(_vibrationEnabledKey) ?? true;
 
       // -----------------------------------------------------------------------
       // Background music
@@ -86,8 +85,7 @@ class MusicController extends GetxController {
         unawaited(play());
       }
     } catch (e, st) {
-      await _player.dispose();
-      await _effectPlayer.dispose();
+      await _disposePlayers();
 
       dev.log(
         'Failed to initialize music controller',
@@ -172,7 +170,7 @@ class MusicController extends GetxController {
     }
 
     if (_effectsEnabled.value) {
-      unawaited(_playEffect(AudioConstants.touchSound));
+      _queueEffect(AudioConstants.touchSound);
     }
 
     if (_vibrationEnabled.value) {
@@ -185,7 +183,7 @@ class MusicController extends GetxController {
       return;
     }
 
-    unawaited(_playEffect(AudioConstants.confettiSound));
+    _queueEffect(AudioConstants.confettiSound);
   }
 
   void playWin() {
@@ -193,7 +191,7 @@ class MusicController extends GetxController {
       return;
     }
 
-    unawaited(_playEffect(AudioConstants.winSound));
+    _queueEffect(AudioConstants.winSound);
   }
 
   void playLose() {
@@ -201,15 +199,17 @@ class MusicController extends GetxController {
       return;
     }
 
-    unawaited(_playEffect(AudioConstants.loseSound));
+    _queueEffect(AudioConstants.loseSound);
   }
 
   void playRoundStart() {
-    if (!isInitialized || !_effectsEnabled.value) {
+    if (!isInitialized) {
       return;
     }
 
-    unawaited(_playEffect(AudioConstants.roundSound));
+    if (_effectsEnabled.value) {
+      _queueEffect(AudioConstants.roundSound);
+    }
 
     if (_vibrationEnabled.value) {
       unawaited(HapticFeedback.lightImpact());
@@ -222,12 +222,34 @@ class MusicController extends GetxController {
     }
 
     if (_effectsEnabled.value) {
-      unawaited(_playEffect(AudioConstants.joinSound));
+      _queueEffect(AudioConstants.joinSound);
     }
 
     if (_vibrationEnabled.value) {
       unawaited(HapticFeedback.lightImpact());
     }
+  }
+
+  // ===========================================================================
+  // SOUND EFFECT QUEUE
+  // ===========================================================================
+
+  void _queueEffect(String asset) {
+    if (!isInitialized || !_effectsEnabled.value) {
+      return;
+    }
+
+    _effectQueue = _effectQueue.then((_) => _playEffect(asset)).catchError((
+      error,
+      stackTrace,
+    ) {
+      dev.log(
+        'Sound effect queue failed: $asset',
+        name: _logName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    });
   }
 
   Future<void> _playEffect(String asset) async {
@@ -236,8 +258,6 @@ class MusicController extends GetxController {
     }
 
     try {
-      await _effectPlayer.stop();
-
       await _effectPlayer.setAsset(asset);
 
       await _effectPlayer.seek(Duration.zero);
@@ -305,6 +325,10 @@ class MusicController extends GetxController {
       _effectsEnabled.value = enabled;
 
       await _storage.setBool(_effectsEnabledKey, enabled);
+
+      if (!enabled) {
+        await _effectPlayer.stop();
+      }
     } catch (e, st) {
       dev.log(
         'Failed to update sound effects setting: $enabled',
@@ -351,7 +375,16 @@ class MusicController extends GetxController {
       return;
     }
 
-    await HapticFeedback.lightImpact();
+    try {
+      await HapticFeedback.lightImpact();
+    } catch (e, st) {
+      dev.log(
+        'Failed to trigger light vibration',
+        name: _logName,
+        error: e,
+        stackTrace: st,
+      );
+    }
   }
 
   Future<void> mediumVibration() async {
@@ -376,7 +409,16 @@ class MusicController extends GetxController {
       return;
     }
 
-    await HapticFeedback.heavyImpact();
+    try {
+      await HapticFeedback.heavyImpact();
+    } catch (e, st) {
+      dev.log(
+        'Failed to trigger heavy vibration',
+        name: _logName,
+        error: e,
+        stackTrace: st,
+      );
+    }
   }
 
   // ===========================================================================
@@ -423,10 +465,17 @@ class MusicController extends GetxController {
       return;
     }
 
+    _isInitialized.value = false;
+
     try {
       await Future.wait([_player.dispose(), _effectPlayer.dispose()]);
-    } finally {
-      _isInitialized.value = false;
+    } catch (e, st) {
+      dev.log(
+        'Failed to dispose audio players',
+        name: _logName,
+        error: e,
+        stackTrace: st,
+      );
     }
   }
 }
