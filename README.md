@@ -1,55 +1,72 @@
 # 🎮 Tic Tac Duel
 
-> A futuristic neon Tic Tac Toe multiplayer game.
+> A futuristic neon Tic Tac Toe game built with Flutter.
 
-<!-- ![Tic Tac Duel](assets/banner.png) -->
+## 📱 About
 
-## 📱 App Icon
+Tic Tac Duel is a neon-themed Tic Tac Toe game designed around a clean, modern, and competitive gameplay experience.
 
-<p align="center">
-  <img src="frontend/assets/app/logo.png" alt="Tic Tac Duel App Icon" width="180"/>
-</p>
-## ℹ️ Project Info
-
-Tic Tac Duel is a futuristic neon-themed Tic Tac Toe game focused on a clean, competitive multiplayer experience with real-time gameplay.
-
-## 🛠️ Tech Stack
-
-* **Frontend:** Flutter
-* **Backend:** Node.js
-* **Real-time:** WebSockets
+The Flutter frontend currently focuses on **local gameplay**, allowing players to play against a friend on the same device or challenge the CPU.
 
 ## ✨ Features
 
-* 🎮 Real-time multiplayer Tic Tac Toe
-* ⚡ WebSocket-powered gameplay
+* 🎮 Local Tic Tac Toe gameplay
+* 👥 Play with a friend
+* 🤖 Challenge the CPU
+* ⚡ Multiple CPU difficulty levels
+* 🏆 Multi-round gameplay
+* 🎵 Background music and sound effects
 * 🌌 Futuristic neon UI
-* 👥 Create and join game rooms
-* 🔄 Real-time game state synchronization
-* 📱 Cross-platform Flutter frontend
+* 📱 Responsive Flutter interface
 
-## 📂 Project Structure
+## 🛠️ Tech Stack
 
-```text
-TicTac-Duel/
-├── frontend/    # Flutter application
-└── backend/     # Node.js WebSocket server
-```
+* **Flutter**
+* **Dart**
+* **GetX**
+* **Flutter Secure Storage**
+* **just_audio**
+* **Lottie**
+* **Flutter Confetti**
 
 ## 🚀 Getting Started
 
-### Frontend
+### Prerequisites
+
+Make sure Flutter is installed and configured on your system.
+
+Check your Flutter installation:
+
+```bash
+flutter doctor
+```
+
+### Installation
+
+Clone the repository and navigate to the frontend:
 
 ```bash
 cd frontend
+```
+
+Install dependencies:
+
+```bash
 flutter pub get
+```
+
+Run the application:
+
+```bash
 flutter run
 ```
 
-### Backend
+## 📦 Release
 
-```bash
-cd backend
-npm install
-npm run dev
-```
+### v1.0.0
+
+The first release of Tic Tac Duel.
+
+**Version:** `1.0.0+1`
+
+[Download Tic Tac Duel v1.0.0](https://github.com/piro-piyush/tictac-duel/releases/tag/v1.0.0?utm_source=chatgpt.com)
