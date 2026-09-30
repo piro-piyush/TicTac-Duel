@@ -2,10 +2,10 @@ abstract final class AvatarConstants {
   AvatarConstants._();
 
   static const List<String> all = [
-    'assets/avatars/avatar-01.svg',
-    'assets/avatars/avatar-02.svg',
-    'assets/avatars/avatar-03.svg',
-    'assets/avatars/avatar-04.svg',
-    'assets/avatars/avatar-05.svg',
+    'assets/avatars/avatar_1.svg',
+    'assets/avatars/avatar_2.svg',
+    'assets/avatars/avatar_3.svg',
+    'assets/avatars/avatar_4.svg',
+    'assets/avatars/avatar_5.svg',
   ];
 }
