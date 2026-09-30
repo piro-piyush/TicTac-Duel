@@ -19,3 +19,6 @@ export 'game_player_card_widget.dart';
 export 'game_round_indicator_widget.dart';
 export 'versus_widget.dart';
 export 'game_status_widget.dart';
+export 'painter/painter.dart';
+export 'neon_glow_widget.dart';
+export 'effects/effects.dart';

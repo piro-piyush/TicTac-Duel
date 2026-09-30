@@ -28,13 +28,13 @@ class ResultScreen extends GetView<ResultController> {
           children: [
             Expanded(
               child: OutlinedButton(
-                onPressed: controller.goHome,
+                onPressed: AppNavigation.goToHome,
                 child: Text('HOME'),
               ),
             ),
             Expanded(
               child: ElevatedButton(
-                onPressed: controller.newGame,
+                onPressed: AppNavigation.back,
                 child: Text('NEW GAME'),
               ),
             ),

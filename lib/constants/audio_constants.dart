@@ -1,5 +1,5 @@
 class AudioConstants {
-  static const String backgroundMusic = 'assets/audio/background_music.mp3';
+  static const String backgroundMusic = 'assets/audio/background-music.mp3';
 
   static const String touchSound = 'assets/audio/touch.wav';
 

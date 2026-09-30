@@ -4,12 +4,15 @@ class GameBoardScreen extends GetView<GameBoardController> {
   const GameBoardScreen({super.key});
 
   Future<bool> _confirmQuit() async {
-    final shouldQuit = await Get.dialog<bool>(
+    final result = await Get.dialog<bool>(
       AlertDialog(
         title: const Text('Quit Game?'),
         content: const Text('Are you sure you want to quit the current game?'),
         actions: [
-          TextButton(onPressed: Get.back, child: const Text('CANCEL')),
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: const Text('CANCEL'),
+          ),
           TextButton(
             onPressed: () => Get.back(result: true),
             child: const Text('QUIT'),
@@ -19,7 +22,7 @@ class GameBoardScreen extends GetView<GameBoardController> {
       barrierDismissible: false,
     );
 
-    return shouldQuit ?? false;
+    return result == true;
   }
 
   @override
@@ -33,9 +36,11 @@ class GameBoardScreen extends GetView<GameBoardController> {
 
         final shouldQuit = await _confirmQuit();
 
-        if (shouldQuit) {
-          AppNavigation.goToHome();
+        if (!shouldQuit || !context.mounted) {
+          return;
         }
+
+        AppNavigation.back();
       },
       child: Obx(
         () => NeonBackgroundWidget(

@@ -62,24 +62,9 @@ class ResultController extends GetxController {
 
     _state.value = state.copyWith(showConfetti: false);
   }
-
-  // bool isMe(PlayerModel player) {
-  //   if (!_playerController.isInitialized) {
-  //     return false;
-  //   }
-  //
-  //   return player.id == _playerController.playerId;
-  // }
-
   bool isWinner(PlayerModel player) {
     return state.gameWinner?.id == player.id;
   }
 
-  void goHome() {
-    AppNavigation.goToHome();
-  }
 
-  void newGame() {
-    AppNavigation.pushGame();
-  }
 }
