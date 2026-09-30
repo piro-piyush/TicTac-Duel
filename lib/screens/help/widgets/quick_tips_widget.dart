@@ -11,21 +11,27 @@ class QuickTipsWidget extends StatelessWidget {
       children: [
         SectionTileWidget(
           icon: Icons.visibility_rounded,
-          title: 'Think Ahead',
-          subtitle: 'Watch your opponent’s possible winning moves.',
           color: AppColors.neonCyan,
+          title: 'Watch the Board',
+          subtitle:
+              'Look for your opponent’s winning moves and block them '
+              'before they complete a line.',
         ),
         SectionTileWidget(
           icon: Icons.my_location_rounded,
-          title: 'Control the Center',
-          subtitle: 'The center can be part of multiple winning combinations.',
           color: AppColors.neonPurple,
+          title: 'Take the Center',
+          subtitle:
+              'The center connects to more winning lines, making it '
+              'a valuable position to control.',
         ),
         SectionTileWidget(
           icon: Icons.bolt_rounded,
-          title: 'Create Pressure',
-          subtitle: 'Try to create multiple possible winning moves at once.',
           color: AppColors.neonPink,
+          title: 'Set Up a Win',
+          subtitle:
+              'Create two possible winning moves at once to make it '
+              'harder for your opponent to block both.',
         ),
       ],
     );

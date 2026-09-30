@@ -19,7 +19,7 @@ class HomeScreen extends StatelessWidget {
           ),
           QuickActionWidget(
             icon: Icons.info_outline,
-            label: 'About',
+            label: 'Help',
             onTap: AppNavigation.pushHelp,
           ),
         ],

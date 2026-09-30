@@ -15,18 +15,14 @@ class HelpScreen extends StatelessWidget {
             children: [
               HeaderSectionWidget(
                 title: 'NEED A HAND?',
-                subtitle: 'Everything you need to dominate the board.',
+                subtitle: 'Everything you need to master the board.',
                 icon: Icons.help_outline_rounded,
               ),
-
               HowToPlayWidget(),
-
-              OnlineDuelsWidget(),
-
+              GameModesWidget(),
               QuickTipsWidget(),
             ],
           ),
-
           FooterCardWidget(),
         ],
       ),

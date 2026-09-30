@@ -368,7 +368,7 @@ class _ForegroundLayer extends StatelessWidget {
             constraints: BoxConstraints(maxWidth: maxWidth),
             child: Column(
               children: [
-                if (title != null) _NeonAppBar(title: title!, actions: actions),
+                _NeonAppBar(title: title, actions: actions),
                 Expanded(
                   child: _NeonContent(
                     padding: padding,
@@ -397,7 +397,7 @@ class _ForegroundLayer extends StatelessWidget {
 class _NeonAppBar extends StatelessWidget {
   const _NeonAppBar({required this.title, required this.actions});
 
-  final String title;
+  final String? title;
   final List<Widget>? actions;
 
   @override
@@ -405,7 +405,9 @@ class _NeonAppBar extends StatelessWidget {
     return SizedBox(
       height: kToolbarHeight,
       child: AppBar(
-        title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
+        title: title != null
+            ? Text(title!, maxLines: 1, overflow: TextOverflow.ellipsis)
+            : null,
         actions: actions,
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
