@@ -32,6 +32,7 @@ flutter:
   assets:
     - assets/animations/
     - assets/audio/
+    - assets/avatars/
 
 icons_launcher:
   platforms:

@@ -44,7 +44,7 @@ class GameBoardScreen extends GetView<GameBoardController> {
       },
       child: Obx(
         () => NeonBackgroundWidget(
-          title: '',
+
           needScroll: false,
           child: Stack(
             alignment: Alignment.center,

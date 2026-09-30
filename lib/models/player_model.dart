@@ -11,14 +11,24 @@ class PlayerModel {
   final String name;
   final PlayerSymbol symbol;
 
-  String get imageUrl => 'https://api.dicebear.com/10.x/pixelbot/svg?seed=$id';
+  String get avatarAsset {
+    final hash = id.codeUnits.fold<int>(
+      0,
+          (value, codeUnit) => value + codeUnit,
+    );
 
-  PlayerModel copyWith({String? id, String? name, PlayerSymbol? symbol}) {
+    return AvatarConstants.all[hash % AvatarConstants.all.length];
+  }
+
+  PlayerModel copyWith({
+    String? id,
+    String? name,
+    PlayerSymbol? symbol,
+  }) {
     return PlayerModel(
       id: id ?? this.id,
       name: name ?? this.name,
       symbol: symbol ?? this.symbol,
     );
   }
-
 }

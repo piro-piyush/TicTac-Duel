@@ -20,29 +20,43 @@ class PlayerAvatarWidget extends StatefulWidget {
 
 class _PlayerAvatarWidgetState extends State<PlayerAvatarWidget>
     with SingleTickerProviderStateMixin {
+  static const _glowDuration = Duration(milliseconds: 1200);
+
   late final AnimationController _glowController;
+
+  PlayerSymbol get _symbol => widget.player.symbol;
+
+  Color get _color =>
+      _symbol == PlayerSymbol.x ? AppColors.neonCyan : AppColors.neonPink;
+
+  double get _padding => widget.size * 0.025;
+
+  double get _radius => widget.size * 0.167;
+
+  double get _imageRadius => _radius - _padding;
 
   @override
   void initState() {
     super.initState();
 
-    _glowController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1200),
-    );
+    _glowController = AnimationController(vsync: this, duration: _glowDuration);
 
-    if (widget.isTurn) {
-      _glowController.repeat(reverse: true);
-    }
+    _updateGlowAnimation();
   }
 
   @override
   void didUpdateWidget(covariant PlayerAvatarWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (widget.isTurn && !oldWidget.isTurn) {
+    if (widget.isTurn != oldWidget.isTurn) {
+      _updateGlowAnimation();
+    }
+  }
+
+  void _updateGlowAnimation() {
+    if (widget.isTurn) {
       _glowController.repeat(reverse: true);
-    } else if (!widget.isTurn && oldWidget.isTurn) {
+    } else {
       _glowController
         ..stop()
         ..value = 0;
@@ -57,81 +71,68 @@ class _PlayerAvatarWidgetState extends State<PlayerAvatarWidget>
 
   @override
   Widget build(BuildContext context) {
-    final color = widget.player.symbol == PlayerSymbol.x
-        ? AppColors.neonCyan
-        : AppColors.neonPink;
-
-    final padding = widget.size * 0.025;
-    final imageSize = widget.size - (padding * 2);
-    final radius = widget.size * 0.167;
-    final imageRadius = radius - padding;
-
     return AnimatedBuilder(
       animation: _glowController,
       builder: (context, child) {
-        final pulse = widget.isTurn
-            ? Curves.easeInOut.transform(_glowController.value)
-            : 0.0;
+        return _buildAvatar(pulse: _getPulse(), child: child!);
+      },
+      child: _buildAvatarImage(),
+    );
+  }
 
-        return Container(
-          width: widget.size,
-          height: widget.size,
-          padding: EdgeInsets.all(padding),
+  double _getPulse() {
+    if (!widget.isTurn) {
+      return 0;
+    }
+
+    return Curves.easeInOut.transform(_glowController.value);
+  }
+
+  Widget _buildAvatar({required double pulse, required Widget child}) {
+    final borderWidth = widget.isTurn ? 2.0 : 1.0;
+
+    final glowAlpha = widget.isTurn ? 0.20 + (pulse * 0.25) : 0.20;
+
+    final blurRadius = widget.isTurn
+        ? (widget.size * 0.15) + (pulse * widget.size * 0.20)
+        : widget.size * 0.15;
+
+    final spreadRadius = widget.isTurn
+        ? (widget.size * 0.017) + (pulse * widget.size * 0.058)
+        : widget.size * 0.017;
+
+    return SizedBox.square(
+      dimension: widget.size,
+      child: Padding(
+        padding: EdgeInsets.all(_padding),
+        child: DecoratedBox(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(radius),
+            borderRadius: BorderRadius.circular(_radius),
             border: Border.all(
-              color: color.withValues(
-                alpha: widget.isTurn ? 0.8 : 0.45,
-              ),
-              width: widget.isTurn ? 2 : 1,
+              color: _color.withValues(alpha: widget.isTurn ? 0.8 : 0.45),
+              width: borderWidth,
             ),
             boxShadow: [
               BoxShadow(
-                color: color.withValues(
-                  alpha: widget.isTurn
-                      ? 0.20 + (pulse * 0.25)
-                      : 0.20,
-                ),
-                blurRadius: widget.isTurn
-                    ? (widget.size * 0.15) + (pulse * widget.size * 0.20)
-                    : widget.size * 0.15,
-                spreadRadius: widget.isTurn
-                    ? (widget.size * 0.017) + (pulse * widget.size * 0.058)
-                    : widget.size * 0.017,
+                color: _color.withValues(alpha: glowAlpha),
+                blurRadius: blurRadius,
+                spreadRadius: spreadRadius,
               ),
             ],
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(imageRadius),
-            child: SizedBox(
-              width: imageSize,
-              height: imageSize,
-              child: child,
-            ),
+            borderRadius: BorderRadius.circular(_imageRadius),
+            child: child,
           ),
-        );
-      },
-      child: SvgPicture.network(
-        widget.player.imageUrl,
-        width: imageSize,
-        height: imageSize,
-        fit: BoxFit.cover,
-        placeholderBuilder: (context) {
-          return ColoredBox(
-            color: AppColors.card,
-            child: Center(
-              child: SizedBox(
-                width: widget.size * 0.18,
-                height: widget.size * 0.18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: color,
-                ),
-              ),
-            ),
-          );
-        },
+        ),
       ),
+    );
+  }
+
+  Widget _buildAvatarImage() {
+    return SizedBox.square(
+      dimension: widget.size - (_padding * 2),
+      child: SvgPicture.asset(widget.player.avatarAsset, fit: BoxFit.cover),
     );
   }
 }
