@@ -64,27 +64,27 @@ The game also supports configurable rounds, multiple visual themes, background m
 
 ### 🏠 Main Navigation
 
-| Home | Settings | Help |
-|------|----------|------|
-|      |          |      |
+|                Home                |                  Settings                  |                Help                |
+|:----------------------------------:|:------------------------------------------:|:----------------------------------:|
+| ![Home](./assets/screens/home.png) | ![Settings](./assets/screens/settings.png) | ![Help](./assets/screens/help.png) |
 
 ### 🕹️ Game Setup Modes
 
-| Friend Mode Setup | CPU Mode Setup |
-|-------------------|----------------|
-|                   |                |
+|                Friend Mode Setup                 |               CPU Mode Setup               |
+|:------------------------------------------------:|:------------------------------------------:|
+| ![Friend Mode](./assets/screens/friend_mode.png) | ![CPU Mode](./assets/screens/cpu_mode.png) |
 
 ### 🎮 Active Gameplay Boards
 
-| Friend Game Board | CPU Game Board |
-|-------------------|----------------|
-|                   |                |
+|                         Friend Game Board                         |                       CPU Game Board                        |
+|:-----------------------------------------------------------------:|:-----------------------------------------------------------:|
+| ![Friend Game Board](./assets/screens/game_board_with_friend.png) | ![CPU Game Board](./assets/screens/game_board_with_cpu.png) |
 
 ### 🏆 Match Results
 
-| Win Result | Lose Result | Draw Result |
-|------------|-------------|-------------|
-|            |             |             |
+|               Win Result                |                Lose Result                |                Draw Result                |
+|:---------------------------------------:|:-----------------------------------------:|:-----------------------------------------:|
+| ![Win Result](./assets/screens/win.png) | ![Lose Result](./assets/screens/lose.png) | ![Draw Result](./assets/screens/draw.png) |
 
 ---
 
