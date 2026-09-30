@@ -2,11 +2,15 @@
 
 > A futuristic neon Tic Tac Toe game built with Flutter.
 
-<p align="center">
-  <img src="./assets/screens/header_new.png" alt="Tic Tac Duel — Your Move. Your Glory." width="100%">
-</p>
----
+<div style="text-align: center;">
+  <img
+    src="./assets/screens/header_new.png"
+    alt="Tic Tac Duel — Your Move. Your Glory."
+    width="1280"
+  />
+</div>
 
+---
 ## 📱 About
 
 **Tic Tac Duel** is a futuristic Tic Tac Toe game built with Flutter, designed around a clean, competitive, and neon-themed gameplay experience.
