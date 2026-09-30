@@ -8,7 +8,7 @@ class GlobalBindings extends Bindings {
     // =========================================================================
 
     Get.put<LocalStorageService>(
-      LocalStorageService(storage: const FlutterSecureStorage()),
+      const LocalStorageService(storage: FlutterSecureStorage()),
       permanent: true,
     );
 

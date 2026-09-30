@@ -112,7 +112,7 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
   }
 
   Color get _randomNeonColor {
-    final colors = AppColors.neonColors;
+    const colors = AppColors.neonColors;
 
     if (colors.isEmpty) {
       return AppColors.neonCyan;
@@ -228,7 +228,6 @@ class _AmbientGlows extends StatelessWidget {
             color: AppColors.neonPink,
             size: 280,
             opacity: 0.025,
-            blurRadius: 120,
           ),
         ),
       ],
@@ -319,7 +318,6 @@ class _VignetteLayer extends StatelessWidget {
         child: DecoratedBox(
           decoration: BoxDecoration(
             gradient: RadialGradient(
-              center: Alignment.center,
               radius: 0.9,
               colors: [
                 Colors.transparent,
@@ -362,8 +360,6 @@ class _ForegroundLayer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Positioned.fill(
       child: SafeArea(
-        top: true,
-        bottom: true,
         left: false,
         right: false,
         child: Align(
@@ -409,7 +405,6 @@ class _NeonAppBar extends StatelessWidget {
     return SizedBox(
       height: kToolbarHeight,
       child: AppBar(
-        automaticallyImplyLeading: true,
         title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
         actions: actions,
         backgroundColor: Colors.transparent,

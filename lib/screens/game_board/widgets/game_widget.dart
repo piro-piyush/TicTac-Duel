@@ -56,7 +56,6 @@ class GameWidget extends StatelessWidget {
                 compact: isCompact,
                 currentRound: currentRound,
                 maxRounds: localGame.maxRounds,
-                color: AppColors.neonCyan,
               ),
               SizedBox(height: sectionSpacing),
               Row(
@@ -85,7 +84,6 @@ class GameWidget extends StatelessWidget {
               ),
               SizedBox(height: sectionSpacing),
               Align(
-                alignment: Alignment.center,
                 child: ConstrainedBox(
                   constraints: BoxConstraints(maxWidth: isWide ? 460 : 420),
                   child: GameBoardWidget(

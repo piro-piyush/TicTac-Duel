@@ -20,7 +20,7 @@ class RoundSelectorWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       spacing: Dimens.eight,
       children: [
-        SectionTitleWidget(title: 'ROUNDS'),
+        const SectionTitleWidget(title: 'ROUNDS'),
 
         Container(
           padding: Dimens.edgeInsets6,

@@ -5,12 +5,12 @@ class LocalStorageService {
 
   final FlutterSecureStorage _storage;
 
-  static final _iOSOptions = IOSOptions(
+  static const _iOSOptions = IOSOptions(
     accessibility: KeychainAccessibility.first_unlock,
   );
 
-  static final _androidOptions = AndroidOptions(
-    storageCipherAlgorithm: StorageCipherAlgorithm.AES_GCM_NoPadding,
+  static const _androidOptions = AndroidOptions(
+    
   );
 
   Future<String?> getString(String key) async {

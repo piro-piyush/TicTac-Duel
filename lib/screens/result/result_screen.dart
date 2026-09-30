@@ -23,7 +23,7 @@ class ResultScreen extends GetView<ResultController> {
       return NeonBackgroundWidget(
         needScroll: false,
         title: 'Game Result',
-        bottomNavigationBar: Row(
+        bottomNavigationBar: const Row(
           spacing: Dimens.sixteen,
           children: [
             Expanded(
@@ -71,7 +71,7 @@ class ResultScreen extends GetView<ResultController> {
 
   Widget _buildResultIcon({required bool hasWon, required bool isDraw}) {
     if (isDraw) {
-      return Icon(
+      return const Icon(
         Icons.handshake_rounded,
         color: AppColors.neonCyan,
         size: Dimens.oneHundred,

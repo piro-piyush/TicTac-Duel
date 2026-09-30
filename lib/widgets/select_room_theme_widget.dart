@@ -58,12 +58,12 @@ class SelectRoomThemeWidget extends StatelessWidget {
               ),
               boxShadow: isSelected
                   ? [
-                BoxShadow(
-                  color: theme.primary.withValues(alpha: 0.10),
-                  blurRadius: 12,
-                  spreadRadius: 1,
-                ),
-              ]
+                      BoxShadow(
+                        color: theme.primary.withValues(alpha: 0.10),
+                        blurRadius: 12,
+                        spreadRadius: 1,
+                      ),
+                    ]
                   : null,
             ),
             child: Column(
@@ -88,16 +88,16 @@ class SelectRoomThemeWidget extends StatelessWidget {
                       duration: const Duration(milliseconds: 150),
                       child: isSelected
                           ? Icon(
-                        Icons.check_circle_rounded,
-                        key: const ValueKey('selected'),
-                        color: theme.primary,
-                        size: Dimens.iconSm,
-                      )
-                          : SizedBox(
-                        key: ValueKey('unselected'),
-                        width: Dimens.iconSm,
-                        height: Dimens.iconSm,
-                      ),
+                              Icons.check_circle_rounded,
+                              key: const ValueKey('selected'),
+                              color: theme.primary,
+                              size: Dimens.iconSm,
+                            )
+                          : const SizedBox(
+                              key: ValueKey('unselected'),
+                              width: Dimens.iconSm,
+                              height: Dimens.iconSm,
+                            ),
                     ),
                   ],
                 ),
@@ -201,7 +201,7 @@ class SelectRoomThemeWidget extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         padding: EdgeInsets.zero,
         itemCount: GameConstants.themePreviewSymbols.length,
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: GameConstants.boardSize,
           crossAxisSpacing: Dimens.four,
           mainAxisSpacing: Dimens.four,
@@ -219,15 +219,15 @@ class SelectRoomThemeWidget extends StatelessWidget {
               child: symbol == null
                   ? null
                   : Text(
-                symbol.value.toString().toUpperCase(),
-                style: TextStyle(
-                  color: symbol == PlayerSymbol.x
-                      ? theme.primary
-                      : theme.secondary,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
+                      symbol.value.toString().toUpperCase(),
+                      style: TextStyle(
+                        color: symbol == PlayerSymbol.x
+                            ? theme.primary
+                            : theme.secondary,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
             ),
           );
         },

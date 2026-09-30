@@ -29,7 +29,7 @@ class SettingsAudioSectionWidget extends StatelessWidget {
           subtitle: 'Play music while you play',
           value: musicEnabled,
           color: AppColors.neonPurple,
-          onChanged: (value) => onMusicChanged(value),
+          onChanged: onMusicChanged,
         ),
         SectionTileWidget.withSwitch(
           icon: Icons.volume_up_rounded,
@@ -37,7 +37,7 @@ class SettingsAudioSectionWidget extends StatelessWidget {
           subtitle: 'Play sounds during the game',
           value: soundEnabled,
           color: AppColors.neonCyan,
-          onChanged: (value) => onSoundChanged(value),
+          onChanged: onSoundChanged,
         ),
         SectionTileWidget.withSwitch(
           icon: Icons.vibration_rounded,
@@ -45,7 +45,7 @@ class SettingsAudioSectionWidget extends StatelessWidget {
           subtitle: 'Vibrate when making a move',
           value: vibrationEnabled,
           color: AppColors.neonPink,
-          onChanged: (value) => onVibrationChanged(value),
+          onChanged: onVibrationChanged,
         ),
       ],
     );

@@ -1,2 +1,2 @@
-export 'widgets/widgets.dart';
 export 'game_screen.dart';
+export 'widgets/widgets.dart';

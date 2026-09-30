@@ -9,7 +9,7 @@ class HomeScreen extends StatelessWidget {
 
     return NeonBackgroundWidget(
       needScroll: false,
-      bottomNavigationBar: Row(
+      bottomNavigationBar: const Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           QuickActionWidget(
@@ -31,15 +31,15 @@ class HomeScreen extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  SizedBox(height: Dimens.twentyTwo),
-                  AppLogoWidget(),
-                  SizedBox(height: Dimens.twentyTwo),
+                  const SizedBox(height: Dimens.twentyTwo),
+                  const AppLogoWidget(),
+                  const SizedBox(height: Dimens.twentyTwo),
                   Text(GameConstants.appName, style: textTheme.headlineLarge),
-                  SizedBox(height: Dimens.eight),
+                  const SizedBox(height: Dimens.eight),
                   Text(GameConstants.appSlogan, style: textTheme.labelSmall),
-                  SizedBox(height: Dimens.fortyEight),
+                  const SizedBox(height: Dimens.fortyEight),
                   const HomeActionsWidget(),
-                  SizedBox(height: Dimens.twenty),
+                  const SizedBox(height: Dimens.twenty),
                   const ReadyIndicatorWidget(),
                 ],
               ),

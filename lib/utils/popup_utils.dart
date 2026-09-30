@@ -116,7 +116,6 @@ class PopupUtils {
       title,
       message,
       snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(seconds: 3),
       backgroundColor: AppColors.surface,
       colorText: AppColors.textPrimary,
       margin: Dimens.edgeInsets8.copyWith(bottom: 12),

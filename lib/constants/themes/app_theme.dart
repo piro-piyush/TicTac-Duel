@@ -32,7 +32,7 @@ class AppTheme {
         surfaceContainerHighest: AppColors.card,
       ),
 
-      appBarTheme: AppBarTheme(
+      appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.transparent,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
@@ -48,7 +48,7 @@ class AppTheme {
         ),
       ),
 
-      textTheme: TextTheme(
+      textTheme: const TextTheme(
         displayLarge: TextStyle(
           color: AppColors.textPrimary,
           fontSize: Dimens.font9Xl,
@@ -154,10 +154,10 @@ class AppTheme {
 
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ButtonStyle(
-          minimumSize: WidgetStatePropertyAll(
+          minimumSize: const WidgetStatePropertyAll(
             Size(double.infinity, Dimens.elevatedButtonHeight),
           ),
-          padding: WidgetStatePropertyAll(
+          padding: const WidgetStatePropertyAll(
             EdgeInsets.symmetric(
               horizontal: Dimens.twentyFour,
               vertical: Dimens.eight,
@@ -190,7 +190,7 @@ class AppTheme {
               borderRadius: BorderRadius.circular(Dimens.radiusMd),
             ),
           ),
-          textStyle: WidgetStatePropertyAll(
+          textStyle: const WidgetStatePropertyAll(
             TextStyle(
               fontSize: Dimens.fontSm,
               fontWeight: FontWeight.w700,
@@ -202,10 +202,10 @@ class AppTheme {
 
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: ButtonStyle(
-          minimumSize: WidgetStatePropertyAll(
+          minimumSize: const WidgetStatePropertyAll(
             Size(double.infinity, Dimens.elevatedButtonHeight),
           ),
-          padding: WidgetStatePropertyAll(
+          padding: const WidgetStatePropertyAll(
             EdgeInsets.symmetric(
               horizontal: Dimens.twentyFour,
               vertical: Dimens.eight,
@@ -248,7 +248,7 @@ class AppTheme {
               borderRadius: BorderRadius.circular(Dimens.radiusMd),
             ),
           ),
-          textStyle: WidgetStatePropertyAll(
+          textStyle: const WidgetStatePropertyAll(
             TextStyle(
               fontSize: Dimens.fontSm,
               fontWeight: FontWeight.w700,
@@ -260,10 +260,10 @@ class AppTheme {
 
       textButtonTheme: TextButtonThemeData(
         style: ButtonStyle(
-          minimumSize: WidgetStatePropertyAll(
+          minimumSize: const WidgetStatePropertyAll(
             Size(0, Dimens.elevatedButtonHeight),
           ),
-          padding: WidgetStatePropertyAll(
+          padding: const WidgetStatePropertyAll(
             EdgeInsets.symmetric(
               horizontal: Dimens.sixteen,
               vertical: Dimens.eight,
@@ -288,7 +288,7 @@ class AppTheme {
               borderRadius: BorderRadius.circular(Dimens.radiusMd),
             ),
           ),
-          textStyle: WidgetStatePropertyAll(
+          textStyle: const WidgetStatePropertyAll(
             TextStyle(
               fontSize: Dimens.fontSm,
               fontWeight: FontWeight.w600,

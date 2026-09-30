@@ -5,7 +5,7 @@ class HowToPlayWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return  SectionTitleAndOptionsWidget(
+    return  const SectionTitleAndOptionsWidget(
       titleIcon: Icons.sports_esports_rounded,
       title: 'HOW TO PLAY',
       children: [

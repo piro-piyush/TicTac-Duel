@@ -58,7 +58,6 @@ class GameContentWidget extends StatelessWidget {
         RoundSelectorWidget(
           onRoundChanged: onRoundsChanged,
           selectedRounds: selectedMaxRounds,
-          roundOptions: GameConstants.roundOptions,
         ),
       ],
     );

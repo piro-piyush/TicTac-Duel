@@ -5,7 +5,7 @@ class HomeActionsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MenuButtonWidget(
+    return const MenuButtonWidget(
       title: 'Local Game',
       subtitle: 'Play with a friend or challenge the CPU',
       icon: Icons.smartphone_rounded,

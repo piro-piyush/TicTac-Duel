@@ -31,7 +31,7 @@ class GameBoardCellWidget extends StatelessWidget {
         if (isMyTurn && symbol == null) {
           onCellTap?.call(index);
         }
-        LoggerUtils.debug("Tapped");
+        LoggerUtils.debug('Tapped');
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
