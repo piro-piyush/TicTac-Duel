@@ -2,24 +2,62 @@
 
 > A futuristic neon Tic Tac Toe game built with Flutter.
 
+<div style="text-align: center;">
+  <img
+    src="./assets/screens/header_new.png"
+    alt="Tic Tac Duel — Your Move. Your Glory."
+    width="1280"
+  />
+</div>
+
 ## 📱 About
 
-Tic Tac Duel is a neon-themed Tic Tac Toe game designed around a clean, modern, and competitive gameplay experience.
+Tic Tac Duel is a modern Tic Tac Toe experience featuring a futuristic neon interface, local multiplayer gameplay, and CPU challenges.
 
-The game supports **local gameplay**, allowing players to play against a friend on the same device or challenge the CPU.
+The game combines classic Tic Tac Toe mechanics with a polished arcade-inspired visual style.
 
 ## ✨ Features
 
-* 🎮 Local Tic Tac Toe gameplay
-* 👥 Play with a friend
+* 🎮 Classic Tic Tac Toe gameplay
+* 👥 Play against a friend
 * 🤖 Challenge the CPU
 * ⚡ Multiple CPU difficulty levels
 * 🏆 Multi-round gameplay
+* 🎨 Multiple visual themes
 * 🎵 Background music and sound effects
-* 🌌 Futuristic neon UI
-* 📱 Responsive Flutter interface
+* ✨ Neon animations and effects
+* 📱 Responsive mobile interface
+* 🌌 Futuristic cyberpunk-inspired UI
 
-## 🛠️ Tech Stack
+## 🎮 Game Modes
+
+### 👥 Friend Mode
+
+Play Tic Tac Toe against another player on the same device.
+
+### 🤖 CPU Mode
+
+Challenge the CPU with different difficulty levels and test your skills.
+
+## 🎨 Themes
+
+Tic Tac Duel includes multiple neon-inspired themes designed to give each game a distinct visual atmosphere.
+
+* 💜 **Classic**
+* 🔥 **Inferno**
+* 💚 **Cyber**
+
+## 🕹️ Gameplay
+
+Choose your game mode, configure your match, and take turns placing your symbol on the board.
+
+The objective is simple:
+
+> Get three of your symbols in a row before your opponent does.
+
+Play across multiple rounds and keep track of your progress throughout the match.
+
+## 🛠️ Built With
 
 * **Flutter**
 * **Dart**
@@ -61,39 +99,82 @@ Install dependencies:
 flutter pub get
 ```
 
-Run the application:
+## ⚙️ Environment Setup
+
+Tic Tac Duel uses environment variables for app configuration.
+
+Create a `.env` file in the project root:
+
+```env
+BASE_URL=YOUR_BASE_URL
+```
+
+Replace `YOUR_BASE_URL` with the appropriate URL for your environment.
+
+> **Note:** The `.env` file contains environment-specific configuration and should not be committed to the repository.
+
+Make sure the `.env` file is available before running or building the application.
+
+### Run the Application
 
 ```bash
 flutter run
 ```
 
+## 🖼️ Screenshots
+
+### 🏠 Main Navigation
+
+|                Home                |                  Settings                  |                Help                |
+|:----------------------------------:|:------------------------------------------:|:----------------------------------:|
+| ![Home](./assets/screens/home.png) | ![Settings](./assets/screens/settings.png) | ![Help](./assets/screens/help.png) |
+
+### 🕹️ Game Setup Modes
+
+|                Friend Mode Setup                 |               CPU Mode Setup               |
+|:------------------------------------------------:|:------------------------------------------:|
+| ![Friend Mode](./assets/screens/friend_mode.png) | ![CPU Mode](./assets/screens/cpu_mode.png) |
+
+### 🎮 Active Gameplay Boards
+
+|                         Friend Game Board                         |                       CPU Game Board                        |
+|:-----------------------------------------------------------------:|:-----------------------------------------------------------:|
+| ![Friend Game Board](./assets/screens/game_board_with_friend.png) | ![CPU Game Board](./assets/screens/game_board_with_cpu.png) |
+
+### 🏆 Match Results
+
+|               Win Result                |                Lose Result                |                Draw Result                |
+|:---------------------------------------:|:-----------------------------------------:|:-----------------------------------------:|
+| ![Win Result](./assets/screens/win.png) | ![Lose Result](./assets/screens/lose.png) | ![Draw Result](./assets/screens/draw.png) |
+
+---
 ## 📦 Release
 
 ### v2.0.0
 
-The **v2.0.0** release brings the latest Tic Tac Duel gameplay and project updates, including the current local Tic Tac Toe experience with friend and CPU modes.
+The **v2.0.0** release introduces the latest Tic Tac Duel gameplay experience, including local multiplayer, CPU gameplay, multiple rounds, themes, and the updated neon interface.
 
 **Version:** `2.0.0+1`
 
-### 📱 Which APK should I download?
+### 📱 Which APK Should I Download?
 
-The release APKs are split by Android CPU architecture to reduce download size.
+The Android release includes APKs for different CPU architectures.
 
-| APK                           | Architecture | Recommended for                              |
-|-------------------------------|--------------|----------------------------------------------|
-| `app-arm64-v8a-release.apk`   | ARM64        | **Most modern Android phones and tablets**   |
-| `app-armeabi-v7a-release.apk` | ARM32        | Older Android phones and tablets             |
-| `app-x86_64-release.apk`      | x86_64       | Android emulators and some x86-based devices |
+| APK                           | Architecture | Recommended For                        |
+|-------------------------------|--------------|----------------------------------------|
+| `app-arm64-v8a-release.apk`   | ARM64        | Most modern Android phones and tablets |
+| `app-armeabi-v7a-release.apk` | ARM32        | Older Android devices                  |
+| `app-x86_64-release.apk`      | x86_64       | Android emulators and x86 devices      |
 
-### ⭐ Most Android phones
-
-If you're using a modern Android phone or tablet, download:
-
-**`app-arm64-v8a-release.apk`**
-
-### 🔍 Not sure which one to download?
+### ⭐ Most Android Phones
 
 Most modern Android phones use **ARM64**.
+
+If you are using a modern Android phone or tablet, download:
+
+```text
+app-arm64-v8a-release.apk
+```
 
 If you're using an Android emulator, check its configured CPU architecture and download the matching APK.
 
@@ -103,7 +184,7 @@ If you're using an Android emulator, check its configured CPU architecture and d
 
 For Google Play distribution, use the **AAB (`app-release.aab`)**.
 
-Google Play automatically generates optimized APKs for supported device architectures.
+Google Play automatically generates optimized APKs for supported devices.
 
 ### ⬇️ Download
 
@@ -113,4 +194,4 @@ Google Play automatically generates optimized APKs for supported device architec
 
 **Piyush Vishwakarma**
 
-Built with Flutter and a passion for clean, modern mobile experiences.
+Built with Flutter and a passion for creating clean, modern mobile experiences.

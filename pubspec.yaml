@@ -32,6 +32,7 @@ dependencies:
   just_audio: ^0.10.6
   equatable: ^3.0.0
   uuid: ^4.6.0
+  flutter_native_splash: ^2.4.8
 
 dev_dependencies:
   flutter_test:

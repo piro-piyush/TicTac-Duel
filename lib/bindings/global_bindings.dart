@@ -7,12 +7,14 @@ class GlobalBindings extends Bindings {
     // CORE
     // =========================================================================
 
+    final baseUrl = dotenv.get(
+      'BASE_URL',
+      fallback: 'http://localhost:3000',
+    );
+
     Get.put<HttpService>(
       HttpService(
-        baseUrl: dotenv.get(
-          'API_BASE_URL',
-          fallback: 'http://localhost:3000/api',
-        ),
+        baseUrl: '$baseUrl/api',
       ),
       permanent: true,
     );
@@ -32,7 +34,9 @@ class GlobalBindings extends Bindings {
     // );
 
     Get.lazyPut<PlayerApiService>(
-      () => PlayerApiService(httpService: Get.find<HttpService>()),
+          () => PlayerApiService(
+        httpService: Get.find<HttpService>(),
+      ),
     );
 
     Get.put<PlayerController>(
@@ -48,7 +52,9 @@ class GlobalBindings extends Bindings {
     // =========================================================================
 
     Get.lazyPut<RoomApiService>(
-      () => RoomApiService(Get.find<HttpService>()),
+          () => RoomApiService(
+        Get.find<HttpService>(),
+      ),
       fenix: true,
     );
 
@@ -57,14 +63,16 @@ class GlobalBindings extends Bindings {
     // =========================================================================
 
     Get.lazyPut<SocketService>(
-      () => SocketService(
-        url: dotenv.get('SOCKET_URL', fallback: 'http://localhost:3000'),
+          () => SocketService(
+        url: baseUrl,
       ),
       fenix: true,
     );
 
     Get.lazyPut<RoomSocketService>(
-      () => RoomSocketService(Get.find<SocketService>()),
+          () => RoomSocketService(
+        Get.find<SocketService>(),
+      ),
       fenix: true,
     );
 
@@ -81,6 +89,10 @@ class GlobalBindings extends Bindings {
       permanent: true,
     );
 
-    Get.put<NetworkService>(NetworkService(connectivity: Connectivity()));
+    Get.put<NetworkService>(
+      NetworkService(
+        connectivity: Connectivity(),
+      ),
+    );
   }
 }
