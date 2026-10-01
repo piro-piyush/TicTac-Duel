@@ -9,42 +9,74 @@ class GameScreen extends GetView<GameController> {
       final room = controller.room;
       final myPlayer = controller.myPlayer;
 
-      Widget child;
-
       if (controller.isLoading && room == null) {
-        child = const RoomStateWidget.connecting();
-      } else if (room == null) {
-        child = const RoomStateWidget.notFound();
-      } else if (myPlayer == null) {
-        child = const RoomStateWidget.playerNotFound();
-      } else {
-        child = controller.showGame
-            ? Stack(
-                alignment: Alignment.center,
-                children: [
-                  GameWidget(
-                    room: room,
-                    playerId: controller.playerId,
-                    board: controller.board,
-                    isMyTurn: controller.isMyTurn,
-                    winningIndexes: controller.winningIndexes,
-                    onCellTap: controller.makeMove,
-                  ),
-                  GameRoundAnimationWidget(
-                    showRoundAnimation: controller.showRoundAnimation,
-                    animatedRound: controller.animatedRound,
-                  ),
-                ],
-              )
-            : WaitingForPlayersWidget(
-                room: room,
-                playerId: controller.playerId,
-                waitingForNextRound: controller.waitingForNextRound,
-                onStartGame: controller.startGame,
-              );
+        return const RoomStateWidget.connecting();
       }
 
-      return NeonBackgroundWidget(title: 'Tic Tac Duel', child: child);
+      if (room == null) {
+        return const RoomStateWidget.notFound();
+      }
+
+      if (myPlayer == null) {
+        return const RoomStateWidget.playerNotFound();
+      }
+
+      final child = controller.showGame
+          ? Stack(
+        alignment: Alignment.center,
+        children: [
+          TicTacToeGameWidget(
+            theme: room.theme,
+            board: controller.board,
+            winningIndexes: controller.winningIndexes,
+            turnIndex: room.turnIndex,
+            isMyTurn: controller.isMyTurn,
+            onCellTap: controller.makeMove,
+
+            playerOneBuilder: (compact) {
+              return GamePlayerCardWidget.online(
+                player: room.playerOne,
+                isTurn: room.turnIndex == 0,
+                theme: room.theme,
+                compact: compact,
+                isMe: controller.playerId == room.playerOne.id,
+              );
+            },
+
+            playerTwoBuilder: (compact) {
+              return GamePlayerCardWidget.online(
+                player: room.playerTwo,
+                isTurn: room.turnIndex == 1,
+                theme: room.theme,
+                compact: compact,
+                isMe: controller.playerId == room.playerTwo.id,
+              );
+            },
+          ),
+          GameRoundAnimationWidget(
+            showRoundAnimation: controller.showRoundAnimation,
+            animatedRound: controller.animatedRound,
+          ),
+        ],
+      )
+          : WaitingForPlayersWidget(
+        room: room,
+        playerId: controller.playerId,
+        waitingForNextRound: controller.waitingForNextRound,
+        onStartGame: controller.startGame,
+      );
+
+      return TicTacToeGameScreen(
+        title: 'ONLINE GAME',
+        currentRound: room.currentRound,
+        maxRounds: room.maxRounds,
+        player: myPlayer,
+        status: controller.isMyTurn
+            ? 'Your turn'
+            : 'Opponent\'s turn',
+        theme: room.theme,
+        child: child,
+      );
     });
   }
 }

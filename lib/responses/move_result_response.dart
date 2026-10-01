@@ -41,7 +41,7 @@ class MoveResultResponse {
     return MoveResultResponse(
       room: RoomModel.fromJson(Map<String, dynamic>.from(roomData)),
       index: index,
-      symbol: PlayerSymbol.fromValue(symbolValue),
+      symbol: PlayerSymbol.values.byName(symbolValue),
     );
   }
 }

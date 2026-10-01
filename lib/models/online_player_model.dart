@@ -18,8 +18,8 @@ class OnlinePlayerModel extends PlayerModel {
     return OnlinePlayerModel(
       id: json['id'] as String? ?? '',
       name: json['name'] as String? ?? '',
-      symbol: PlayerSymbol.fromValue(
-        json['symbol'] as String? ?? '',
+      symbol: PlayerSymbol.values.byName(
+        json['symbol'],
       ),
       points: (json['points'] as num?)?.toInt() ?? 0,
       isReady: json['isReady'] as bool? ?? false,

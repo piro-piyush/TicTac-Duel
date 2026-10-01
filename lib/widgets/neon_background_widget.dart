@@ -9,6 +9,7 @@ class NeonBackgroundWidget extends StatefulWidget {
     this.title,
     this.actions,
     this.padding,
+    this.bottom,
     this.bottomNavigationBar,
     this.showGrid = true,
     this.showParticles = true,
@@ -19,6 +20,7 @@ class NeonBackgroundWidget extends StatefulWidget {
   });
 
   final Widget child;
+  final PreferredSizeWidget? bottom;
   final String? title;
   final List<Widget>? actions;
   final EdgeInsets? padding;
@@ -162,6 +164,7 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
 
             _ForegroundLayer(
               title: widget.title,
+              bottom: widget.bottom,
               actions: widget.actions,
               padding: widget.padding,
               bottomNavigationBar: widget.bottomNavigationBar,
@@ -343,6 +346,7 @@ class _ForegroundLayer extends StatelessWidget {
     required this.title,
     required this.actions,
     required this.padding,
+     this.bottom,
     required this.bottomNavigationBar,
     required this.needScroll,
     required this.maxWidth,
@@ -355,7 +359,7 @@ class _ForegroundLayer extends StatelessWidget {
   final Widget? bottomNavigationBar;
   final bool needScroll;
   final double maxWidth;
-
+  final PreferredSizeWidget? bottom;
   @override
   Widget build(BuildContext context) {
     return Positioned.fill(
@@ -368,7 +372,7 @@ class _ForegroundLayer extends StatelessWidget {
             constraints: BoxConstraints(maxWidth: maxWidth),
             child: Column(
               children: [
-                _NeonAppBar(title: title, actions: actions),
+                _NeonAppBar(title: title, bottom: bottom, actions: actions),
                 Expanded(
                   child: _NeonContent(
                     padding: padding,
@@ -395,20 +399,30 @@ class _ForegroundLayer extends StatelessWidget {
 // =============================================================================
 
 class _NeonAppBar extends StatelessWidget {
-  const _NeonAppBar({required this.title, required this.actions});
+  const _NeonAppBar({
+    required this.title,
+    required this.actions,
+    this.bottom,
+  });
 
   final String? title;
   final List<Widget>? actions;
+  final PreferredSizeWidget? bottom;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: kToolbarHeight,
+      height: kToolbarHeight + (bottom?.preferredSize.height ?? 0),
       child: AppBar(
         title: title != null
-            ? Text(title!, maxLines: 1, overflow: TextOverflow.ellipsis)
+            ? Text(
+          title!,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        )
             : null,
         actions: actions,
+        bottom: bottom,
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
@@ -417,7 +431,6 @@ class _NeonAppBar extends StatelessWidget {
     );
   }
 }
-
 // =============================================================================
 // CONTENT
 // =============================================================================
