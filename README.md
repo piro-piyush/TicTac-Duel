@@ -123,16 +123,20 @@ flutter run
 
 ## 🖼️ Screenshots
 
-|                               Home                                |                        Settings                        |                                 Help                                 |
-|:-----------------------------------------------------------------:|:------------------------------------------------------:|:--------------------------------------------------------------------:|
-|        <img src="./assets/screens/home.png" height="320">         | <img src="./assets/screens/settings.png" height="320"> |          <img src="./assets/screens/help.png" height="320">          |
-|                       **Friend Mode Setup**                       |                   **CPU Mode Setup**                   |                        **Friend Game Board**                         |
-|     <img src="./assets/screens/friend_mode.png" height="320">     | <img src="./assets/screens/cpu_mode.png" height="320"> | <img src="./assets/screens/game_board_with_friend.png" height="320"> |
-|                        **CPU Game Board**                         |                     **Win Result**                     |                           **Lose Result**                            |
-| <img src="./assets/screens/game_board_with_cpu.png" height="320"> |   <img src="./assets/screens/win.png" height="320">    |          <img src="./assets/screens/lose.png" height="320">          |
-|                          **Draw Result**                          |                                                        |                                                                      |
-|        <img src="./assets/screens/draw.png" height="320">         |                                                        |                                                                      |
+<div align="center">
 
+<img src="./assets/screens/home.png" height="320" alt="Home">
+<img src="./assets/screens/settings.png" height="320" alt="Settings">
+<img src="./assets/screens/help.png" height="320" alt="Help">
+<img src="./assets/screens/friend_mode.png" height="320" alt="Friend Mode Setup">
+<img src="./assets/screens/cpu_mode.png" height="320" alt="CPU Mode Setup">
+<img src="./assets/screens/game_board_with_friend.png" height="320" alt="Friend Game Board">
+<img src="./assets/screens/game_board_with_cpu.png" height="320" alt="CPU Game Board">
+<img src="./assets/screens/win.png" height="320" alt="Win Result">
+<img src="./assets/screens/lose.png" height="320" alt="Lose Result">
+<img src="./assets/screens/draw.png" height="320" alt="Draw Result">
+
+</div>
 
 
 ---
