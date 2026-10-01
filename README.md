@@ -123,21 +123,25 @@ flutter run
 
 ## 🖼️ Screenshots
 
-<div align="center">
+<strong>Home</strong><br> <img src="./assets/screens/home.png" height="320" alt="Home">
 
-<img src="./assets/screens/home.png" height="320" alt="Home">
-<img src="./assets/screens/settings.png" height="320" alt="Settings">
-<img src="./assets/screens/help.png" height="320" alt="Help">
-<img src="./assets/screens/friend_mode.png" height="320" alt="Friend Mode Setup">
-<img src="./assets/screens/cpu_mode.png" height="320" alt="CPU Mode Setup">
-<img src="./assets/screens/game_board_with_friend.png" height="320" alt="Friend Game Board">
-<img src="./assets/screens/game_board_with_cpu.png" height="320" alt="CPU Game Board">
-<img src="./assets/screens/win.png" height="320" alt="Win Result">
-<img src="./assets/screens/lose.png" height="320" alt="Lose Result">
-<img src="./assets/screens/draw.png" height="320" alt="Draw Result">
+<strong>Settings</strong><br> <img src="./assets/screens/settings.png" height="320" alt="Settings">
 
-</div>
+<strong>Help</strong><br> <img src="./assets/screens/help.png" height="320" alt="Help">
 
+<strong>Friend Mode Setup</strong><br> <img src="./assets/screens/friend_mode.png" height="320" alt="Friend Mode Setup">
+
+<strong>CPU Mode Setup</strong><br> <img src="./assets/screens/cpu_mode.png" height="320" alt="CPU Mode Setup">
+
+<strong>Friend Game Board</strong><br> <img src="./assets/screens/game_board_with_friend.png" height="320" alt="Friend Game Board">
+
+<strong>CPU Game Board</strong><br> <img src="./assets/screens/game_board_with_cpu.png" height="320" alt="CPU Game Board">
+
+<strong>Win Result</strong><br> <img src="./assets/screens/win.png" height="320" alt="Win Result">
+
+<strong>Lose Result</strong><br> <img src="./assets/screens/lose.png" height="320" alt="Lose Result">
+
+<strong>Draw Result</strong><br> <img src="./assets/screens/draw.png" height="320" alt="Draw Result">
 
 ---
 ## 📦 Release
