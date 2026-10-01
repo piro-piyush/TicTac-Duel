@@ -36,7 +36,6 @@ class MyApp extends StatelessWidget {
       theme: AppTheme.darkTheme,
       initialBinding: GlobalBindings(),
       initialRoute: AppRoutes.home,
-
       getPages: AppPages.routes,
       builder: (context, child) {
         return Listener(

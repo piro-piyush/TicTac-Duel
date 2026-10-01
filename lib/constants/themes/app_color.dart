@@ -34,4 +34,9 @@ class AppColors {
   static const Color darkerGrey = Color(0xFF4F4F4F);
   static const Color grey = Color(0xFFE0E0E0);
 
+  static const List<Color> neonColors = [
+    AppColors.neonCyan,
+    AppColors.neonPink,
+    AppColors.neonPurple,
+  ];
 }
