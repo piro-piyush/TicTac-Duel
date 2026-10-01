@@ -123,55 +123,22 @@ flutter run
 
 ## 🖼️ Screenshots
 
-<span>
-<strong>Home</strong><br>
+<div style="center">
+
 <img src="./assets/screens/home.png" height="320" alt="Home">
-</span>
-
-<span>
-<strong>Settings</strong><br>
 <img src="./assets/screens/settings.png" height="320" alt="Settings">
-</span>
-
-<span>
-<strong>Help</strong><br>
 <img src="./assets/screens/help.png" height="320" alt="Help">
-</span>
-
-<span>
-<strong>Friend Mode Setup</strong><br>
 <img src="./assets/screens/friend_mode.png" height="320" alt="Friend Mode Setup">
-</span>
-
-<span>
-<strong>CPU Mode Setup</strong><br>
 <img src="./assets/screens/cpu_mode.png" height="320" alt="CPU Mode Setup">
-</span>
-
-<span>
-<strong>Friend Game Board</strong><br>
 <img src="./assets/screens/game_board_with_friend.png" height="320" alt="Friend Game Board">
-</span>
-
-<span>
-<strong>CPU Game Board</strong><br>
 <img src="./assets/screens/game_board_with_cpu.png" height="320" alt="CPU Game Board">
-</span>
-
-<span>
-<strong>Win Result</strong><br>
 <img src="./assets/screens/win.png" height="320" alt="Win Result">
-</span>
-
-<span>
-<strong>Lose Result</strong><br>
 <img src="./assets/screens/lose.png" height="320" alt="Lose Result">
-</span>
-
-<span>
-<strong>Draw Result</strong><br>
 <img src="./assets/screens/draw.png" height="320" alt="Draw Result">
-</span>
+
+</div>
+
+
 ---
 ## 📦 Release
 
