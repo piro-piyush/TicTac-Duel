@@ -125,27 +125,27 @@ flutter run
 
 ### 🏠 Main Navigation
 
-|                Home                |                  Settings                  |                Help                |
-|:----------------------------------:|:------------------------------------------:|:----------------------------------:|
-| ![Home](./assets/screens/home.png) | ![Settings](./assets/screens/settings.png) | ![Help](./assets/screens/help.png) |
+|                       Home                        |                       Settings                        |                       Help                        |
+|:-------------------------------------------------:|:-----------------------------------------------------:|:-------------------------------------------------:|
+| <img src="./assets/screens/home.png" width="180"> | <img src="./assets/screens/settings.png" width="180"> | <img src="./assets/screens/help.png" width="180"> |
 
 ### 🕹️ Game Setup Modes
 
-|                Friend Mode Setup                 |               CPU Mode Setup               |
-|:------------------------------------------------:|:------------------------------------------:|
-| ![Friend Mode](./assets/screens/friend_mode.png) | ![CPU Mode](./assets/screens/cpu_mode.png) |
+|                    Friend Mode Setup                     |                    CPU Mode Setup                     |
+|:--------------------------------------------------------:|:-----------------------------------------------------:|
+| <img src="./assets/screens/friend_mode.png" width="180"> | <img src="./assets/screens/cpu_mode.png" width="180"> |
 
 ### 🎮 Active Gameplay Boards
 
-|                         Friend Game Board                         |                       CPU Game Board                        |
-|:-----------------------------------------------------------------:|:-----------------------------------------------------------:|
-| ![Friend Game Board](./assets/screens/game_board_with_friend.png) | ![CPU Game Board](./assets/screens/game_board_with_cpu.png) |
+|                          Friend Game Board                          |                          CPU Game Board                          |
+|:-------------------------------------------------------------------:|:----------------------------------------------------------------:|
+| <img src="./assets/screens/game_board_with_friend.png" width="180"> | <img src="./assets/screens/game_board_with_cpu.png" width="180"> |
 
 ### 🏆 Match Results
 
-|               Win Result                |                Lose Result                |                Draw Result                |
-|:---------------------------------------:|:-----------------------------------------:|:-----------------------------------------:|
-| ![Win Result](./assets/screens/win.png) | ![Lose Result](./assets/screens/lose.png) | ![Draw Result](./assets/screens/draw.png) |
+|                    Win Result                    |                    Lose Result                    |                    Draw Result                    |
+|:------------------------------------------------:|:-------------------------------------------------:|:-------------------------------------------------:|
+| <img src="./assets/screens/win.png" width="180"> | <img src="./assets/screens/lose.png" width="180"> | <img src="./assets/screens/draw.png" width="180"> |
 
 ---
 ## 📦 Release
