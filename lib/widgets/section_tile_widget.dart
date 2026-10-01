@@ -14,7 +14,7 @@ class SectionTileWidget extends StatelessWidget {
     this.borderColor,
   }) : _type = SectionTileType.normal,
        value = false,
-       isSelected = false,
+       isSelected = false, actionIcon  = null,
        onChanged = null;
 
   const SectionTileWidget.withSwitch({
@@ -29,7 +29,7 @@ class SectionTileWidget extends StatelessWidget {
     this.borderRadius,
     this.borderColor,
   }) : _type = SectionTileType.switchTile,
-       trailing = null,
+       trailing = null, actionIcon  = null,
        isSelected = false,
        onTap = null;
 
@@ -41,6 +41,7 @@ class SectionTileWidget extends StatelessWidget {
     required this.color,
     required this.onTap,
     this.tileColor,
+    this.actionIcon,
     this.borderRadius,
     this.borderColor,
   }) : _type = SectionTileType.action,
@@ -63,6 +64,7 @@ class SectionTileWidget extends StatelessWidget {
   }) : _type = SectionTileType.select,
        value = false,
        trailing = null,
+        actionIcon  = null,
        onChanged = null;
 
   final IconData icon;
@@ -80,7 +82,7 @@ class SectionTileWidget extends StatelessWidget {
 
   final BorderRadius? borderRadius;
   final Color? borderColor;
-
+  final IconData? actionIcon;
   final SectionTileType _type;
 
   BorderRadius get _resolvedBorderRadius => borderRadius ?? Dimens.radius14;
@@ -159,7 +161,10 @@ class SectionTileWidget extends StatelessWidget {
         );
 
       case SectionTileType.action:
-        return Icon(Icons.chevron_right_rounded, color: color);
+        return Icon(
+          actionIcon ?? Icons.chevron_right_rounded,
+          color: color,
+        );
 
       case SectionTileType.select:
         return _SelectionIndicator(color: color, isSelected: isSelected);

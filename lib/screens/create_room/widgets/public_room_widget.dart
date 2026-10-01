@@ -50,9 +50,16 @@ class PublicRoomWidget extends StatelessWidget {
           Column(
             spacing: Dimens.ten,
             children: rooms.map((room) {
-              return PublicRoomCardWidget(
-                room: room,
-                onJoin: () => onJoinRoom(room),
+              return SectionTileWidget.withAction(
+                icon: Icons.sports_esports_rounded,
+                title: room.players.first.name,
+                subtitle:
+                    '${room.theme.displayName} • '
+                    '${room.maxRounds} '
+                    '${room.maxRounds == 1 ? 'Round' : 'Rounds'}',
+                color: room.theme.primary,
+                actionIcon: Icons.arrow_forward_rounded,
+                onTap: () => onJoinRoom(room),
               );
             }).toList(),
           ),

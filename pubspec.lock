@@ -49,6 +49,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.2"
+  cached_network_svg_image:
+    dependency: "direct main"
+    description:
+      name: cached_network_svg_image
+      sha256: "8c8f73cbe43e52b6b9bbf2c5dea889a1293ff12e03bc7d232f692394f406a023"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0"
   change_app_package_name:
     dependency: "direct dev"
     description:
@@ -199,7 +207,7 @@ packages:
     source: sdk
     version: "0.0.0"
   flutter_cache_manager:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: flutter_cache_manager
       sha256: f94fc6f5480977e3eb7b622ed488f671ba96c971bd0e274e6bd0f0ba9b044816
