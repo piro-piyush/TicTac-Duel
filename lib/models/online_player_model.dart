@@ -12,18 +12,18 @@ class OnlinePlayerModel extends PlayerModel {
   final int points;
   final bool isReady;
 
-  factory OnlinePlayerModel.fromJson(
-      Map<String, dynamic> json,
-      ) {
-    return OnlinePlayerModel(
-      id: json['id'] as String? ?? '',
-      name: json['name'] as String? ?? '',
-      symbol: PlayerSymbol.values.byName(
-        json['symbol'],
-      ),
-      points: (json['points'] as num?)?.toInt() ?? 0,
-      isReady: json['isReady'] as bool? ?? false,
-    );
+  factory OnlinePlayerModel.fromJson(Map<String, dynamic> json) {
+    try {
+      return OnlinePlayerModel(
+        id: json['id'] as String? ?? '',
+        name: json['name'] as String? ?? '',
+        symbol: PlayerSymbol.values.byName(json['symbol']),
+        points: (json['points'] as num?)?.toInt() ?? 0,
+        isReady: json['isReady'] as bool? ?? false,
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @override
