@@ -493,6 +493,7 @@ class _NeonBottomNavigation extends StatelessWidget {
       padding: EdgeInsets.only(
         left: contentPadding.left,
         right: contentPadding.right,
+        bottom: Dimens.twentyFour,
       ),
       child: navigationBar,
     );

@@ -6,6 +6,11 @@ extension PlayerSymbolX on PlayerSymbol {
     PlayerSymbol.o => 'Circle',
   };
 
+  Color get symbolColor => switch (this) {
+    PlayerSymbol.x => AppColors.neonCyan,
+    PlayerSymbol.o => AppColors.neonPink,
+  };
+
   String get value => name;
 
   static Color color(

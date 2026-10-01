@@ -1,54 +1,46 @@
-import 'dart:io';
-
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:tictac_duel/lib.dart';
+import 'package:cached_network_svg_image/cached_network_svg_image.dart';
 
-class CachedSvgNetworkImageWidget extends StatelessWidget {
-  const CachedSvgNetworkImageWidget({
+class CacheSvgNetworkImageWidget extends StatelessWidget {
+  const CacheSvgNetworkImageWidget({
     super.key,
     required this.url,
-    required this.width,
-    required this.height,
+    required this.size,
     required this.color,
   });
 
   final String url;
-  final double width;
-  final double height;
+  final double size;
   final Color color;
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<File>(
-      future: DefaultCacheManager().getSingleFile(url),
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          return SvgPicture.file(
-            snapshot.data!,
-            width: width,
-            height: height,
-            fit: BoxFit.cover,
-          );
-        }
-
-        if (snapshot.hasError) {
-          return const ColoredBox(
-            color: AppColors.card,
-            child: Icon(Icons.person_outline),
-          );
-        }
-
-        return ColoredBox(
-          color: AppColors.card,
-          child: Center(
-            child: SizedBox(
-              width: width * 0.18,
-              height: height * 0.18,
-              child: CircularProgressIndicator(strokeWidth: 2, color: color),
+    return CachedNetworkSVGImage(
+      url,
+      width: size,
+      height: size,
+      fit: BoxFit.cover,
+      placeholder: ColoredBox(
+        color: AppColors.card,
+        child: Center(
+          child: SizedBox(
+            width: size * 0.18,
+            height: size * 0.18,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: color,
             ),
           ),
-        );
-      },
+        ),
+      ),
+      errorWidget: ColoredBox(
+        color: AppColors.card,
+        child: Icon(
+          Icons.person_outline_rounded,
+          color: color,
+          size: size * 0.45,
+        ),
+      ),
     );
   }
 }

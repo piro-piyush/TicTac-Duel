@@ -71,8 +71,14 @@ class CreateRoomContentWidget extends StatelessWidget {
           onThemeChanged: onThemeChanged,
         ),
 
-        RoomPrivacyWidget(
-          isPrivate: isRoomPrivate,
+        SectionTileWidget.withSwitch(
+          icon: Icons.lock_rounded,
+          title: 'Private Room',
+          subtitle: isRoomPrivate
+              ? 'Only players with the room code can join.'
+              : 'Anyone can discover and join this room.',
+          color: AppColors.neonPink,
+          value: isRoomPrivate,
           onChanged: onPrivateRoomChanged,
         ),
 

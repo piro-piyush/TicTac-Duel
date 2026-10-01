@@ -103,10 +103,9 @@ class _PlayerAvatarWidgetState extends State<PlayerAvatarWidget>
           ),
         );
       },
-      child: CachedSvgNetworkImageWidget(
+      child: CacheSvgNetworkImageWidget(
         url: widget.player.imageUrl,
-        width: imageSize,
-        height: imageSize,
+        size: imageSize,
         color: color,
       ),
     );
