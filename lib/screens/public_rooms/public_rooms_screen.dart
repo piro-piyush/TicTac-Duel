@@ -38,7 +38,7 @@ class PublicRoomsScreen extends GetView<PublicRoomsController> {
                       .map(
                         (room) => PublicRoomCardWidget(
                           room: room,
-                          onJoin: () => controller.joinPublicRoom(room),
+                          onJoin: () => controller.showJoinDialog(room),
                         ),
                       )
                       .toList(),

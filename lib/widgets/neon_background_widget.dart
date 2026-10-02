@@ -482,13 +482,17 @@ class _NeonBottomNavigation extends StatelessWidget {
   Widget build(BuildContext context) {
     final contentPadding = padding ?? Dimens.defaultPadding;
 
-    return Padding(
-      padding: EdgeInsets.only(
-        left: contentPadding.left,
-        right: contentPadding.right,
-        bottom: contentPadding.bottom / 2,
+    return SizedBox(
+      width: double.infinity,
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: contentPadding.left,
+          right: contentPadding.right,
+          bottom: contentPadding.bottom / 2,
+        ),
+        child: navigationBar,
       ),
-      child: navigationBar,
     );
+
   }
 }

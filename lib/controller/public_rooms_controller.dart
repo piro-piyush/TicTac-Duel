@@ -105,7 +105,7 @@ class PublicRoomsController extends GetxController {
 
       _isJoining.value = false;
 
-      AppNavigation.replaceWaitingRoom(joinedRoom);
+      AppNavigation.pushGame(room.roomCode);
     } catch (error) {
       _isJoining.value = false;
       _errorMessage.value = error.toString();
@@ -137,6 +137,21 @@ class PublicRoomsController extends GetxController {
 
   Future<void> refreshRooms() {
     return fetchPublicRooms();
+  }
+
+  void showJoinDialog(RoomModel room) {
+    Get.dialog(
+      JoinPublicRoomDialogWidget(
+        playerNameController: playerNameController,
+        playerNameFocusNode: playerNameFocusNode,
+        onGenerateRandomName: generateRandomName,
+        onJoin: () {
+          Get.back();
+          joinPublicRoom(room);
+        },
+      ),
+      barrierDismissible: false,
+    );
   }
 
   // ===========================================================================

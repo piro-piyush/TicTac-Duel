@@ -168,7 +168,7 @@ class RoomController extends GetxController {
 
       _isCreating.value = false;
 
-      AppNavigation.replaceGame(room.roomCode);
+      AppNavigation.pushGame(room.roomCode);
     } catch (error) {
       _isCreating.value = false;
       _errorMessage.value = error.toString();
@@ -200,7 +200,7 @@ class RoomController extends GetxController {
 
       _isJoining.value = false;
 
-      AppNavigation.replaceGame(room.roomCode);
+      AppNavigation.pushGame(room.roomCode);
     } catch (error) {
       _isJoining.value = false;
       _errorMessage.value = error.toString();
