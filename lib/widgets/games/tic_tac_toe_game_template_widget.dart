@@ -3,7 +3,7 @@ import 'package:tictac_duel/lib.dart';
 class TicTacToeGameTemplateWidget extends StatelessWidget {
   const TicTacToeGameTemplateWidget({
     super.key,
-    required this.title,
+     this.title,
     required this.currentRound,
     required this.maxRounds,
     required this.player,
@@ -14,7 +14,7 @@ class TicTacToeGameTemplateWidget extends StatelessWidget {
     required this.showGameStatus,
   });
 
-  final String title;
+  final String? title;
   final int currentRound;
   final int maxRounds;
   final PlayerModel player;
