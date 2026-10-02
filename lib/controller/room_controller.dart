@@ -27,7 +27,7 @@ class RoomController extends GetxController {
   final roomCodeFocusNode = FocusNode();
 
   // ===========================================================================
-  // CREATE ROOM STATE
+  // CREATE ROOM
   // ===========================================================================
 
   final Rx<PlayerSymbol> _selectedSymbol = PlayerSymbol.x.obs;
@@ -35,14 +35,16 @@ class RoomController extends GetxController {
   final RxInt _selectedMaxRounds = 3.obs;
   final RxBool _isRoomPrivate = true.obs;
 
-  final RxList<RoomModel> _rooms = <RoomModel>[].obs;
-
   // ===========================================================================
   // REQUEST STATE
   // ===========================================================================
 
   final RxBool _isCreating = false.obs;
   final RxBool _isJoining = false.obs;
+
+  // ===========================================================================
+  // ERROR
+  // ===========================================================================
 
   final RxnString _errorMessage = RxnString();
 
@@ -62,11 +64,7 @@ class RoomController extends GetxController {
 
   bool get isJoining => _isJoining.value;
 
-  bool get isLoading => isCreating || isJoining;
-
   String? get errorMessage => _errorMessage.value;
-
-  List<RoomModel> get rooms => _rooms;
 
   // ===========================================================================
   // LIFECYCLE
@@ -76,63 +74,31 @@ class RoomController extends GetxController {
   void onInit() {
     super.onInit();
 
+    _listenForErrors();
+    _initialize();
+  }
+
+  void _initialize() {
     playerNameFocusNode.requestFocus();
-
-    ever<String?>(_errorMessage, (message) {
-      if (message == null) {
-        return;
-      }
-
-      PopupUtils.showError('Room error: $message');
-
-      clearError();
-    });
-
-    fetchPublicRooms();
   }
 
   // ===========================================================================
-  // PLAYER NAME
+  // PLAYER
   // ===========================================================================
 
   void generateRandomName() {
-    playerNameController.text = GameNameUtils.random();
+    final name = GameNameUtils.random();
 
-    playerNameController.selection = TextSelection.collapsed(
-      offset: playerNameController.text.length,
-    );
+    playerNameController
+      ..text = name
+      ..selection = TextSelection.collapsed(offset: name.length);
 
     playerNameFocusNode.requestFocus();
-
     formKey.currentState?.validate();
   }
 
   // ===========================================================================
-  // ROOM CODE
-  // ===========================================================================
-
-  Future<void> pasteCode() async {
-    final data = await Clipboard.getData(Clipboard.kTextPlain);
-
-    final code = data?.text?.trim().toUpperCase();
-
-    if (code == null || code.isEmpty) {
-      return;
-    }
-
-    roomCodeController.text = code.length > 8 ? code.substring(0, 8) : code;
-
-    roomCodeController.selection = TextSelection.collapsed(
-      offset: roomCodeController.text.length,
-    );
-
-    roomCodeFocusNode.requestFocus();
-
-    formKey.currentState?.validate();
-  }
-
-  // ===========================================================================
-  // CREATE ROOM OPTIONS
+  // ROOM OPTIONS
   // ===========================================================================
 
   void setSelectedSymbol(PlayerSymbol symbol) {
@@ -152,11 +118,33 @@ class RoomController extends GetxController {
   }
 
   // ===========================================================================
+  // ROOM CODE
+  // ===========================================================================
+
+  Future<void> pasteCode() async {
+    final clipboard = await Clipboard.getData(Clipboard.kTextPlain);
+    final code = clipboard?.text?.trim().toUpperCase();
+
+    if (code == null || code.isEmpty) {
+      return;
+    }
+
+    final normalizedCode = code.length > 8 ? code.substring(0, 8) : code;
+
+    roomCodeController
+      ..text = normalizedCode
+      ..selection = TextSelection.collapsed(offset: normalizedCode.length);
+
+    roomCodeFocusNode.requestFocus();
+    formKey.currentState?.validate();
+  }
+
+  // ===========================================================================
   // CREATE ROOM
   // ===========================================================================
 
   Future<void> createRoom() async {
-    if (isLoading) {
+    if (_isCreating.value || _isJoining.value) {
       return;
     }
 
@@ -165,10 +153,10 @@ class RoomController extends GetxController {
       return;
     }
 
-    try {
-      _isCreating.value = true;
-      _errorMessage.value = null;
+    _isCreating.value = true;
+    clearError();
 
+    try {
       final room = await _roomApiService.createRoom(
         playerId: _playerController.playerId,
         playerName: playerNameController.text.trim(),
@@ -178,11 +166,12 @@ class RoomController extends GetxController {
         isPrivate: isRoomPrivate,
       );
 
+      _isCreating.value = false;
+
       AppNavigation.replaceGame(room.roomCode);
     } catch (error) {
-      _errorMessage.value = error.toString();
-    } finally {
       _isCreating.value = false;
+      _errorMessage.value = error.toString();
     }
   }
 
@@ -191,7 +180,7 @@ class RoomController extends GetxController {
   // ===========================================================================
 
   Future<void> joinRoom() async {
-    if (isLoading) {
+    if (_isJoining.value || _isCreating.value) {
       return;
     }
 
@@ -199,75 +188,40 @@ class RoomController extends GetxController {
       return;
     }
 
-    try {
-      _isJoining.value = true;
-      _errorMessage.value = null;
+    _isJoining.value = true;
+    clearError();
 
+    try {
       final room = await _roomApiService.joinRoom(
         playerId: _playerController.playerId,
         playerName: playerNameController.text.trim(),
         roomCode: roomCodeController.text.trim().toUpperCase(),
       );
 
+      _isJoining.value = false;
+
       AppNavigation.replaceGame(room.roomCode);
     } catch (error) {
-      _errorMessage.value = error.toString();
-    } finally {
       _isJoining.value = false;
-    }
-  }
-
-  // ===========================================================================
-  // JOIN PUBLIC ROOM
-  // ===========================================================================
-
-  Future<void> joinPublicRoom(RoomModel room) async {
-    if (isLoading) {
-      return;
-    }
-
-    if (playerNameController.text.trim().isEmpty) {
-      playerNameFocusNode.requestFocus();
-      return;
-    }
-
-    try {
-      _isJoining.value = true;
-      _errorMessage.value = null;
-
-      final joinedRoom = await _roomApiService.joinRoom(
-        playerId: _playerController.playerId,
-        playerName: playerNameController.text.trim(),
-        roomCode: room.roomCode,
-      );
-
-      AppNavigation.replaceWaitingRoom(joinedRoom);
-    } catch (error) {
-      _errorMessage.value = error.toString();
-    } finally {
-      _isJoining.value = false;
-    }
-  }
-
-  void fetchPublicRooms() async {
-    try {
-      _rooms.assignAll(await _roomApiService.getRooms());
-    } catch (error) {
       _errorMessage.value = error.toString();
     }
-  }
-
-  // ===========================================================================
-  // PUBLIC ROOMS
-  // ===========================================================================
-
-  void refreshRooms() {
-    update();
   }
 
   // ===========================================================================
   // ERROR
   // ===========================================================================
+
+  void _listenForErrors() {
+    ever<String?>(_errorMessage, (message) {
+      if (message == null || message.isEmpty) {
+        return;
+      }
+
+      PopupUtils.showError('Room error: $message');
+      LoggerUtils.error('Room error: $message');
+      clearError();
+    });
+  }
 
   void clearError() {
     _errorMessage.value = null;

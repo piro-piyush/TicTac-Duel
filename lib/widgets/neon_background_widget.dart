@@ -346,7 +346,7 @@ class _ForegroundLayer extends StatelessWidget {
     required this.title,
     required this.actions,
     required this.padding,
-     this.bottom,
+    required this.bottom,
     required this.bottomNavigationBar,
     required this.needScroll,
     required this.maxWidth,
@@ -356,36 +356,38 @@ class _ForegroundLayer extends StatelessWidget {
   final String? title;
   final List<Widget>? actions;
   final EdgeInsets? padding;
+  final PreferredSizeWidget? bottom;
   final Widget? bottomNavigationBar;
   final bool needScroll;
   final double maxWidth;
-  final PreferredSizeWidget? bottom;
+
   @override
   Widget build(BuildContext context) {
     return Positioned.fill(
       child: SafeArea(
         left: false,
         right: false,
-        child: Align(
-          alignment: Alignment.topCenter,
+        child: Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(maxWidth: maxWidth),
-            child: Column(
-              children: [
-                _NeonAppBar(title: title, bottom: bottom, actions: actions),
-                Expanded(
-                  child: _NeonContent(
-                    padding: padding,
-                    needScroll: needScroll,
-                    child: child,
+            child: SizedBox.expand(
+              child: Column(
+                children: [
+                  _NeonAppBar(title: title, bottom: bottom, actions: actions),
+                  Expanded(
+                    child: _NeonContent(
+                      padding: padding,
+                      needScroll: needScroll,
+                      child: child,
+                    ),
                   ),
-                ),
-                if (bottomNavigationBar != null)
-                  _NeonBottomNavigation(
-                    navigationBar: bottomNavigationBar!,
-                    padding: padding,
-                  ),
-              ],
+                  if (bottomNavigationBar != null)
+                    _NeonBottomNavigation(
+                      navigationBar: bottomNavigationBar!,
+                      padding: padding,
+                    ),
+                ],
+              ),
             ),
           ),
         ),
@@ -393,17 +395,12 @@ class _ForegroundLayer extends StatelessWidget {
     );
   }
 }
-
 // =============================================================================
 // APP BAR
 // =============================================================================
 
 class _NeonAppBar extends StatelessWidget {
-  const _NeonAppBar({
-    required this.title,
-    required this.actions,
-    this.bottom,
-  });
+  const _NeonAppBar({required this.title, required this.actions, this.bottom});
 
   final String? title;
   final List<Widget>? actions;
@@ -415,11 +412,7 @@ class _NeonAppBar extends StatelessWidget {
       height: kToolbarHeight + (bottom?.preferredSize.height ?? 0),
       child: AppBar(
         title: title != null
-            ? Text(
-          title!,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        )
+            ? Text(title!, maxLines: 1, overflow: TextOverflow.ellipsis)
             : null,
         actions: actions,
         bottom: bottom,
@@ -493,7 +486,7 @@ class _NeonBottomNavigation extends StatelessWidget {
       padding: EdgeInsets.only(
         left: contentPadding.left,
         right: contentPadding.right,
-        bottom: Dimens.twentyFour,
+        bottom: contentPadding.bottom / 2,
       ),
       child: navigationBar,
     );

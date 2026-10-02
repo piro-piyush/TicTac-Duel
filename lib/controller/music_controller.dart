@@ -48,7 +48,7 @@ class MusicController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    unawaited(_init());
+    // unawaited(_init());
   }
 
   Future<void> _init() async {
