@@ -6,3 +6,4 @@ export 'quick_match_controller.dart';
 export 'local_game_controller.dart';
 export 'game_controller.dart';
 export 'local_game_board_controller.dart';
+export 'public_rooms_controller.dart';
