@@ -12,11 +12,11 @@ class RoomSocketService {
   Future<void> connect({
     required String roomCode,
     required String playerId,
-    required void Function(RoomModel room) onConnected,
+    required void Function(RoomConnectedResponse response) onConnected,
   }) async {
     _socket.on(
       RoomSocketEvents.roomConnected,
-      (response) => _onRoomResponse(response, onConnected),
+      (response) => _onRoomConnectedResponse(response, onConnected),
     );
 
     await _socket.connect();
@@ -65,11 +65,15 @@ class RoomSocketService {
   // ROOM EVENTS
   // ===========================================================================
 
-  void onPlayerJoined(void Function(RoomModel room) callback) =>
-      _onRoomEvent(RoomSocketEvents.playerJoined, callback);
+  void onPlayerJoined(void Function(PlayerJoinedResponse response) callback) =>
+      _onPlayerEvent(RoomSocketEvents.playerJoined, callback);
 
-  void onPlayerLeft(void Function(RoomModel room) callback) =>
-      _onRoomEvent(RoomSocketEvents.playerLeft, callback);
+  void onPlayerLeft(void Function(String playerId) callback) {
+    _socket.on(
+      RoomSocketEvents.playerLeft,
+      (response) => _onPlayerLeftResponse(response, callback),
+    );
+  }
 
   void onRoomClosed(void Function(String reason) callback) =>
       _onMessageEvent(RoomSocketEvents.roomClosed, callback, field: 'reason');
@@ -109,6 +113,25 @@ class RoomSocketService {
         RoundResultResponse.fromJson,
         callback,
       );
+
+  void _onPlayerLeftResponse(
+    dynamic response,
+    void Function(String playerId) callback,
+  ) {
+    final data = _data(response);
+
+    if (data is! Map<String, dynamic>) {
+      throw const FormatException('Invalid player left response');
+    }
+
+    final playerId = data['playerId'];
+
+    if (playerId is! String || playerId.isEmpty) {
+      throw const FormatException('Invalid player ID');
+    }
+
+    callback(playerId);
+  }
 
   // ===========================================================================
   // ERROR EVENTS
@@ -160,6 +183,38 @@ class RoomSocketService {
 
     try {
       callback(RoomModel.fromJson(data));
+    } catch (_) {
+      return;
+    }
+  }
+
+  void _onPlayerEvent(
+    String event,
+    void Function(PlayerJoinedResponse response) callback,
+  ) {
+    _socket.on(event, (response) {
+      final data = _data(response);
+
+      if (data == null) return;
+
+      try {
+        callback(PlayerJoinedResponse.fromJson(data));
+      } catch (_) {
+        return;
+      }
+    });
+  }
+
+  void _onRoomConnectedResponse(
+    dynamic response,
+    void Function(RoomConnectedResponse response) callback,
+  ) {
+    final data = _data(response);
+
+    if (data == null) return;
+
+    try {
+      callback(RoomConnectedResponse.fromJson(data));
     } catch (_) {
       return;
     }

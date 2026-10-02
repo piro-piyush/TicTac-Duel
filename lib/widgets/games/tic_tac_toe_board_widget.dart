@@ -6,6 +6,7 @@ class TicTacToeBoardWidget extends StatelessWidget {
     required this.roomTheme,
     required this.isMyTurn,
     required this.values,
+    required this.boardSize,
     this.winningIndexes = const {},
     this.onCellTap,
   });
@@ -13,6 +14,7 @@ class TicTacToeBoardWidget extends StatelessWidget {
   final List<PlayerSymbol?> values;
   final RoomTheme roomTheme;
   final bool isMyTurn;
+  final int boardSize;
   final Set<int> winningIndexes;
   final ValueChanged<int>? onCellTap;
 
@@ -27,7 +29,10 @@ class TicTacToeBoardWidget extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(borderRadius),
-          border: Border.all(color: AppColors.border, width: 1.5),
+          border: Border.all(
+            color: AppColors.border,
+            width: 1.5,
+          ),
           boxShadow: [
             BoxShadow(
               color: roomTheme.primary.withValues(alpha: 0.10),
@@ -55,11 +60,11 @@ class TicTacToeBoardWidget extends StatelessWidget {
                     padding: EdgeInsets.zero,
                     itemCount: values.length,
                     gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: GameConstants.boardSize,
-                          crossAxisSpacing: gridSpacing,
-                          mainAxisSpacing: gridSpacing,
-                        ),
+                    SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: boardSize,
+                      crossAxisSpacing: gridSpacing,
+                      mainAxisSpacing: gridSpacing,
+                    ),
                     itemBuilder: (context, index) {
                       return GameBoardCellWidget(
                         index: index,
@@ -70,12 +75,11 @@ class TicTacToeBoardWidget extends StatelessWidget {
                       );
                     },
                   ),
-
                   if (winningIndexes.isNotEmpty)
                     TicTacToeWinningLineWidget(
                       winningIndexes: winningIndexes,
                       color: _winningLineColor,
-                      boardSize: GameConstants.boardSize,
+                      boardSize: boardSize,
                       gridSpacing: gridSpacing,
                       boardWidth: boardWidth,
                       borderRadius: borderRadius,

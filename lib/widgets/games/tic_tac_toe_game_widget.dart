@@ -4,25 +4,40 @@ class TicTacToeGameWidget extends StatelessWidget {
   const TicTacToeGameWidget({
     super.key,
     required this.theme,
+    required this.playerId,
     required this.board,
     required this.winningIndexes,
     required this.turnIndex,
     required this.isMyTurn,
     required this.onCellTap,
-    // required this.playerOne,
-    // required this.playerTwo,
-    required this.playerOneBuilder, required this.playerTwoBuilder,
+    required this.boardSize,
+    required this.playerOne,
+    required this.playerTwo,
+    required this.playerOnePoints,
+    required this.playerTwoPoints,
+     this.playerOneReady,
+     this.playerTwoReady,
   });
 
   final RoomTheme theme;
 
+  // Current player
+  final String playerId;
+
   // Players
-  // final Widget playerOne;
-  // final Widget playerTwo;
+  final PlayerModel playerOne;
+  final PlayerModel playerTwo;
+
+  // Player state
+  final int playerOnePoints;
+  final int playerTwoPoints;
+  final bool? playerOneReady;
+  final bool? playerTwoReady;
 
   // Board
   final List<PlayerSymbol?> board;
   final Set<int> winningIndexes;
+  final int boardSize;
 
   // Turn
   final int turnIndex;
@@ -30,9 +45,6 @@ class TicTacToeGameWidget extends StatelessWidget {
 
   // Interaction
   final ValueChanged<int> onCellTap;
-
-  final Widget Function(bool compact) playerOneBuilder;
-  final Widget Function(bool compact) playerTwoBuilder;
 
   @override
   Widget build(BuildContext context) {
@@ -77,16 +89,36 @@ class TicTacToeGameWidget extends StatelessWidget {
       spacing: compact ? 6 : 10,
       children: [
         Expanded(
-          child: playerOneBuilder(compact),
+          child: GamePlayerCardWidget(
+            player: playerOne,
+            points: playerOnePoints,
+            isMe: _isMe,
+            isTurn: turnIndex == 0,
+            theme: theme,
+            compact: compact,
+            isOnline: true,
+          ),
         ),
         VersusWidget(
           compact: compact,
         ),
         Expanded(
-          child: playerTwoBuilder(compact),
+          child: GamePlayerCardWidget(
+            player: playerTwo,
+            points: playerTwoPoints,
+            isMe: _isMe,
+            isTurn: turnIndex == 1,
+            theme: theme,
+            compact: compact,
+            isOnline: true,
+          ),
         ),
       ],
     );
+  }
+
+  bool _isMe(String id) {
+    return playerId == id;
   }
 
   Widget _buildBoard({
@@ -102,6 +134,7 @@ class TicTacToeGameWidget extends StatelessWidget {
         isMyTurn: isMyTurn,
         winningIndexes: winningIndexes,
         onCellTap: onCellTap,
+        boardSize: boardSize,
       ),
     );
   }

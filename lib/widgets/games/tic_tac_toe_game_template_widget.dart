@@ -1,26 +1,28 @@
 import 'package:tictac_duel/lib.dart';
 
-class TicTacToeGameScreen extends StatelessWidget {
-  const TicTacToeGameScreen({
+class TicTacToeGameTemplateWidget extends StatelessWidget {
+  const TicTacToeGameTemplateWidget({
     super.key,
     required this.title,
     required this.currentRound,
     required this.maxRounds,
     required this.player,
-    required this.status,
     required this.theme,
     required this.child,
-    this.bottomNavigationBar,
+    required this.isOnline,
+    required this.isMe,
+    required this.showGameStatus,
   });
 
   final String title;
   final int currentRound;
   final int maxRounds;
   final PlayerModel player;
-  final String status;
   final RoomTheme theme;
   final Widget child;
-  final Widget? bottomNavigationBar;
+  final bool isOnline;
+  final bool Function(String) isMe;
+  final bool showGameStatus;
 
   @override
   Widget build(BuildContext context) {
@@ -32,23 +34,24 @@ class TicTacToeGameScreen extends StatelessWidget {
           title: title,
           needScroll: false,
 
-          // AppBar
-          bottom: TicTacToeRoundWidget(
+          bottom: showGameStatus
+              ? TicTacToeRoundWidget(
             compact: isCompact,
             currentRound: currentRound,
             maxRounds: maxRounds,
-          ),
+          )
+              : null,
 
-          // Bottom game status
-          bottomNavigationBar: bottomNavigationBar ??
-              TicTacToeStatusWidget(
-                compact: isCompact,
-                player: player,
-                status: status,
-                theme: theme,
-              ),
+          bottomNavigationBar: showGameStatus
+              ? TicTacToeStatusWidget(
+            compact: isCompact,
+            player: player,
+            isOnline: isOnline,
+            theme: theme,
+            isMe: isMe,
+          )
+              : null,
 
-          // Game content
           child: child,
         );
       },

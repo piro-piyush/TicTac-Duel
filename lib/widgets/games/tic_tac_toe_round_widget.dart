@@ -10,6 +10,7 @@ class TicTacToeRoundWidget extends StatelessWidget
     this.compact = false,
   });
 
+
   final int currentRound;
   final int maxRounds;
   final Color color;

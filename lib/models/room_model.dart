@@ -155,4 +155,37 @@ class RoomModel {
 
     return value.toInt();
   }
+
+
+  RoomModel copyWith({
+    String? id,
+    String? roomCode,
+    bool? isPrivate,
+    String? hostPlayerId,
+    int? maxPlayers,
+    int? maxRounds,
+    int? currentRound,
+    RoundStatus? roundStatus,
+    RoomTheme? theme,
+    List<OnlinePlayerModel>? players,
+    String? turnPlayerId,
+    int? turnIndex,
+    int? boardSize,
+  }) {
+    return RoomModel(
+      id: id ?? this.id,
+      roomCode: roomCode ?? this.roomCode,
+      isPrivate: isPrivate ?? this.isPrivate,
+      hostPlayerId: hostPlayerId ?? this.hostPlayerId,
+      maxPlayers: maxPlayers ?? this.maxPlayers,
+      maxRounds: maxRounds ?? this.maxRounds,
+      currentRound: currentRound ?? this.currentRound,
+      roundStatus: roundStatus ?? this.roundStatus,
+      theme: theme ?? this.theme,
+      players: players ?? this.players,
+      turnPlayerId: turnPlayerId ?? this.turnPlayerId,
+      turnIndex: turnIndex ?? this.turnIndex,
+      boardSize: boardSize ?? this.boardSize,
+    );
+  }
 }
