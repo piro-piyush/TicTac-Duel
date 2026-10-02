@@ -27,7 +27,6 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         spacing: Dimens.fortyEight,
         children: [

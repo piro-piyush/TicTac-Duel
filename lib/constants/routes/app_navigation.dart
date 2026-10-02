@@ -58,6 +58,14 @@ abstract final class AppNavigation {
     );
   }
 
+  static void pushGame(String roomCode) {
+    Get.toNamed(
+      AppRoutes.game.replaceFirst(':roomCode', roomCode),
+      arguments: roomCode,
+    );
+  }
+
+
   // ===========================================================================
   // QUICK MATCH
   // ===========================================================================
