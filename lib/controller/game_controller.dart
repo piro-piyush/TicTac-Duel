@@ -24,8 +24,10 @@ class GameController extends GetxController {
 
   final Rxn<RoomModel> _room = Rxn<RoomModel>();
 
-  final RxList<PlayerSymbol?> _board = <PlayerSymbol?>[].obs;
-
+  final RxList<PlayerSymbol?> _board = List<PlayerSymbol?>.filled(
+    GameConstants.totalCells,
+    null,
+  ).obs;
   final RxSet<int> _winningIndexes = <int>{}.obs;
 
   final RxnString _errorMessage = RxnString();
@@ -160,6 +162,8 @@ class GameController extends GetxController {
     _playerOneReady.value = response.playerOneReady;
     _playerTwoReady.value = response.playerTwoReady;
 
+
+
     _isLoading.value = false;
 
     clearError();
@@ -222,8 +226,8 @@ class GameController extends GetxController {
 
     _room.value = value;
 
-    if (_board.length != value.boardSize) {
-      _resetBoard(value.boardSize);
+    if (_board.length != GameConstants.totalCells) {
+      _resetBoard();
     }
 
     final roundChanged =
@@ -381,7 +385,7 @@ class GameController extends GetxController {
       return;
     }
 
-    _roomSocketService.makeMove(roomCode: currentRoom.roomCode, index: index);
+    _roomSocketService.makeMove(roomCode: currentRoom.roomCode, index: index,playerId: playerId);
   }
 
   // ===========================================================================
@@ -509,14 +513,17 @@ class GameController extends GetxController {
       ..addAll(indexes);
   }
 
-  void clearBoard() {
-    final boardSize = room?.boardSize ?? GameConstants.boardSize;
+  void clearBoard() =>
+    _resetBoard();
 
-    _resetBoard(boardSize);
-  }
 
-  void _resetBoard(int boardSize) {
-    _board.assignAll(List<PlayerSymbol?>.filled(boardSize, null));
+  void _resetBoard() {
+    _board.assignAll(
+      List<PlayerSymbol?>.filled(
+        GameConstants.totalCells,
+        null,
+      ),
+    );
 
     _winningIndexes.clear();
   }

@@ -56,7 +56,7 @@ class GameScreen extends GetView<GameController> {
                 turnIndex: room.turnIndex,
                 isMyTurn: controller.isMyTurn,
                 onCellTap: controller.makeMove,
-                boardSize: room.boardSize,
+
                 playerId: controller.playerId,
                 playerOne: room.playerOne,
                 playerTwo: room.playerTwo,

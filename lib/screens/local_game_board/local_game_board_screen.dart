@@ -28,7 +28,6 @@ class LocalGameBoardScreen extends GetView<LocalGameBoardController> {
               turnIndex: controller.turnIndex,
               isMyTurn: controller.canMakeMove,
               onCellTap: controller.onCellTap,
-              boardSize: game.boardSize,
               playerOnePoints: controller.playerOnePoints,
               playerTwoPoints: controller.playerTwoPoints,
               playerId: currentPlayer.id,
