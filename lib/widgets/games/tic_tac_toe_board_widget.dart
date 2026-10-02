@@ -6,7 +6,6 @@ class TicTacToeBoardWidget extends StatelessWidget {
     required this.roomTheme,
     required this.isMyTurn,
     required this.values,
-    required this.boardSize,
     this.winningIndexes = const {},
     this.onCellTap,
   });
@@ -14,7 +13,6 @@ class TicTacToeBoardWidget extends StatelessWidget {
   final List<PlayerSymbol?> values;
   final RoomTheme roomTheme;
   final bool isMyTurn;
-  final int boardSize;
   final Set<int> winningIndexes;
   final ValueChanged<int>? onCellTap;
 
@@ -60,8 +58,8 @@ class TicTacToeBoardWidget extends StatelessWidget {
                     padding: EdgeInsets.zero,
                     itemCount: values.length,
                     gridDelegate:
-                    SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: boardSize,
+                    const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: GameConstants.boardSize,
                       crossAxisSpacing: gridSpacing,
                       mainAxisSpacing: gridSpacing,
                     ),
@@ -79,7 +77,7 @@ class TicTacToeBoardWidget extends StatelessWidget {
                     TicTacToeWinningLineWidget(
                       winningIndexes: winningIndexes,
                       color: _winningLineColor,
-                      boardSize: boardSize,
+                      boardSize: GameConstants.boardSize,
                       gridSpacing: gridSpacing,
                       boardWidth: boardWidth,
                       borderRadius: borderRadius,

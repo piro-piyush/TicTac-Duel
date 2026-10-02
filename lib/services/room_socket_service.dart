@@ -46,10 +46,15 @@ class RoomSocketService {
   // GAME REQUESTS
   // ===========================================================================
 
-  void makeMove({required String roomCode, required int index}) => _socket.emit(
-    RoomSocketEvents.makeMove,
-    {'roomCode': roomCode, 'index': index},
-  );
+  void makeMove({
+    required String roomCode,
+    required int index,
+    required String playerId,
+  }) => _socket.emit(RoomSocketEvents.makeMove, {
+    'roomCode': roomCode,
+    'index': index,
+    'playerId': playerId,
+  });
 
   void submitGameResult({
     required String roomCode,
@@ -138,7 +143,7 @@ class RoomSocketService {
   // ===========================================================================
 
   void onRoomError(void Function(String message) callback) =>
-      _onMessageEvent(RoomSocketEvents.roomError, callback);
+      _onError(RoomSocketEvents.roomError, callback);
 
   // ===========================================================================
   // LISTENER MANAGEMENT
@@ -250,6 +255,31 @@ class RoomSocketService {
           : SocketConstants.genericErrorMessage,
     );
   });
+
+  void _onError(
+      String event,
+      void Function(String message) callback,
+      ) {
+    _socket.on(event, (response) {
+      final data = _data(response);
+
+      if (data is! Map<String, dynamic>) {
+        throw const FormatException(
+          'Invalid socket error response',
+        );
+      }
+
+      final message = data['message'];
+
+      if (message is! String || message.trim().isEmpty) {
+        throw const FormatException(
+          'Invalid socket error message',
+        );
+      }
+
+      callback(message);
+    });
+  }
 
   Map<String, dynamic>? _data(dynamic response) {
     if (response is! Map || response['success'] != true) {

@@ -14,7 +14,6 @@ class RoomModel {
     required this.players,
     required this.turnPlayerId,
     required this.turnIndex,
-    required this.boardSize,
   });
 
   final String id;
@@ -32,7 +31,6 @@ class RoomModel {
 
   final String? turnPlayerId;
   final int turnIndex;
-  final int boardSize;
 
   int get occupancy => players.length;
 
@@ -103,7 +101,6 @@ class RoomModel {
             .toList(),
         turnPlayerId: _optionalString(data, 'turnPlayerId'),
         turnIndex: _requiredInt(data, 'turnIndex'),
-        boardSize: _requiredInt(data, 'boardSize'),
       );
     } on FormatException {
       rethrow;
@@ -185,7 +182,6 @@ class RoomModel {
       players: players ?? this.players,
       turnPlayerId: turnPlayerId ?? this.turnPlayerId,
       turnIndex: turnIndex ?? this.turnIndex,
-      boardSize: boardSize ?? this.boardSize,
     );
   }
 }

@@ -10,13 +10,12 @@ class TicTacToeGameWidget extends StatelessWidget {
     required this.turnIndex,
     required this.isMyTurn,
     required this.onCellTap,
-    required this.boardSize,
     required this.playerOne,
     required this.playerTwo,
     required this.playerOnePoints,
     required this.playerTwoPoints,
-     this.playerOneReady,
-     this.playerTwoReady,
+    this.playerOneReady,
+    this.playerTwoReady,
   });
 
   final RoomTheme theme;
@@ -37,7 +36,7 @@ class TicTacToeGameWidget extends StatelessWidget {
   // Board
   final List<PlayerSymbol?> board;
   final Set<int> winningIndexes;
-  final int boardSize;
+
 
   // Turn
   final int turnIndex;
@@ -61,30 +60,21 @@ class TicTacToeGameWidget extends StatelessWidget {
         return Padding(
           padding: EdgeInsets.fromLTRB(
             horizontalPadding,
-            8,
+            Dimens.eight,
             horizontalPadding,
-            16,
+            Dimens.sixteen,
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildPlayers(
-                compact: isCompact,
-              ),
-              SizedBox(height: sectionSpacing),
-              _buildBoard(
-                isWide: isWide,
-              ),
-            ],
+            spacing: sectionSpacing,
+            children: [_buildPlayers(isCompact), _buildBoard(isWide)],
           ),
         );
       },
     );
   }
 
-  Widget _buildPlayers({
-    required bool compact,
-  }) {
+  Widget _buildPlayers(bool compact) {
     return Row(
       spacing: compact ? 6 : 10,
       children: [
@@ -99,9 +89,7 @@ class TicTacToeGameWidget extends StatelessWidget {
             isOnline: true,
           ),
         ),
-        VersusWidget(
-          compact: compact,
-        ),
+        VersusWidget(compact: compact),
         Expanded(
           child: GamePlayerCardWidget(
             player: playerTwo,
@@ -121,20 +109,15 @@ class TicTacToeGameWidget extends StatelessWidget {
     return playerId == id;
   }
 
-  Widget _buildBoard({
-    required bool isWide,
-  }) {
+  Widget _buildBoard(bool isWide) {
     return ConstrainedBox(
-      constraints: BoxConstraints(
-        maxWidth: isWide ? 460 : 420,
-      ),
+      constraints: BoxConstraints(maxWidth: isWide ? 460 : 420),
       child: TicTacToeBoardWidget(
         roomTheme: theme,
         values: board,
         isMyTurn: isMyTurn,
         winningIndexes: winningIndexes,
         onCellTap: onCellTap,
-        boardSize: boardSize,
       ),
     );
   }
