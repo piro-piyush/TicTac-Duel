@@ -2,6 +2,7 @@ export 'app_logo_widget.dart';
 export 'divider_widget.dart';
 export 'footer_card_widget.dart';
 export 'header_section_widget.dart';
+export 'room_header_widget.dart';
 export 'neon_background_widget.dart';
 export 'neon_elevated_button_widget.dart';
 export 'neon_outlined_button_widget.dart';

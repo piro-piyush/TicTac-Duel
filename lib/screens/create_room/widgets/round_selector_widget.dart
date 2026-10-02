@@ -94,7 +94,6 @@ class _RoundOption extends StatelessWidget {
               BoxShadow(
                 color: AppColors.neonPurple.withValues(alpha: 0.10),
                 blurRadius: 12,
-                spreadRadius: 0,
               ),
             ]
                 : null,
