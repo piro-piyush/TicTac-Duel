@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:tictac_duel/lib.dart';
 
 class GameTextFormFieldWidget extends StatelessWidget {
@@ -15,6 +16,9 @@ class GameTextFormFieldWidget extends StatelessWidget {
     this.onChanged,
     this.onFieldSubmitted,
     this.autofocus = false,
+    this.inputFormatters,
+    this.style,
+    this.focusedBorderColor = AppColors.neonPurple,
   });
 
   final TextEditingController controller;
@@ -30,6 +34,9 @@ class GameTextFormFieldWidget extends StatelessWidget {
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onFieldSubmitted;
   final bool autofocus;
+  final List<TextInputFormatter>? inputFormatters;
+  final TextStyle? style;
+  final Color focusedBorderColor;
 
   @override
   Widget build(BuildContext context) {
@@ -44,12 +51,14 @@ class GameTextFormFieldWidget extends StatelessWidget {
       keyboardType: keyboardType,
       maxLength: maxLength,
       validator: validator,
+      inputFormatters: inputFormatters,
       onChanged: onChanged,
       onFieldSubmitted: onFieldSubmitted,
-      style: textTheme.bodyLarge?.copyWith(
-        color: AppColors.textPrimary,
-        fontWeight: FontWeight.w600,
-      ),
+      style: style ??
+          textTheme.bodyLarge?.copyWith(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w600,
+          ),
       decoration: InputDecoration(
         counterText: '',
         hintText: hintText,
@@ -63,8 +72,13 @@ class GameTextFormFieldWidget extends StatelessWidget {
         fillColor: AppColors.card,
         border: _buildInputBorder(),
         enabledBorder: _buildInputBorder(),
-        focusedBorder: _buildInputBorder(color: AppColors.neonPurple, width: 1.5),
-        errorBorder: _buildInputBorder(color: AppColors.neonPink),
+        focusedBorder: _buildInputBorder(
+          color: focusedBorderColor,
+          width: 1.5,
+        ),
+        errorBorder: _buildInputBorder(
+          color: AppColors.neonPink,
+        ),
         focusedErrorBorder: _buildInputBorder(
           color: AppColors.neonPink,
           width: 1.5,
@@ -83,7 +97,10 @@ class GameTextFormFieldWidget extends StatelessWidget {
   }) {
     return OutlineInputBorder(
       borderRadius: BorderRadius.circular(Dimens.radiusMd),
-      borderSide: BorderSide(color: color, width: width),
+      borderSide: BorderSide(
+        color: color,
+        width: width,
+      ),
     );
   }
 }

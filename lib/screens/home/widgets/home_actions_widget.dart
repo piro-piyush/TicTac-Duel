@@ -6,7 +6,7 @@ class HomeActionsWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      spacing: Dimens.thirty,
+      spacing: Dimens.sixteen,
       children: [
         Column(
           spacing: Dimens.fourteen,
@@ -26,6 +26,15 @@ class HomeActionsWidget extends StatelessWidget {
               icon: Icons.smartphone_rounded,
               color: AppColors.neonPurple,
               onTap: AppNavigation.pushLocalGame,
+            ),
+            MenuButtonWidget(
+              title: 'Public Rooms',
+              subtitle: 'Browse and join open rooms',
+              icon: Icons.public_rounded,
+              color: AppColors.neonGreen,
+              onTap: () => _checkInternetConnection(
+                AppNavigation.pushPublicRooms
+              ),
             ),
           ],
         ),
