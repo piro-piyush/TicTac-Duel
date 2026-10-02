@@ -22,6 +22,12 @@ abstract final class AppPages {
       page: QuickMatchScreen.new,
       binding: QuickMatchBinding(),
     ),
+
+    GetPage(
+      name: AppRoutes.publicRooms,
+      page: PublicRoomsScreen.new,
+      binding: PublicRoomsBinding(),
+    ),
     GetPage(
       name: AppRoutes.localGame,
       page: LocalGameScreen.new,

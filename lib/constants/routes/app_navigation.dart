@@ -74,6 +74,13 @@ abstract final class AppNavigation {
     Get.toNamed(AppRoutes.localGame);
   }
 
+  static void pushPublicRooms() {
+    Get.toNamed(AppRoutes.publicRooms);
+  }
+  static void replacePublicRooms() {
+    Get.offNamed(AppRoutes.publicRooms);
+  }
+
   static void pushLocalGameBoard(LocalGameModel localGame) {
     Get.toNamed(AppRoutes.localGameBoard, arguments: localGame);
   }
