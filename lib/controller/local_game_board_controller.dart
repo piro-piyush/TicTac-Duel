@@ -4,15 +4,17 @@ class LocalGameBoardController extends GetxController {
   LocalGameBoardController({
     required this.game,
     required this._musicController,
+    required this._playerController,
   });
 
   final LocalGameModel game;
 
   final MusicController _musicController;
+  final PlayerController _playerController;
   Timer? _cpuMoveTimer;
   Timer? _roundAnimationTimer;
   Timer? _resultTimer;
-
+  String get playerId => _playerController.playerId;
   // ===========================================================================
   // BOARD
   // ===========================================================================
@@ -68,11 +70,13 @@ class LocalGameBoardController extends GetxController {
 
   bool get showRoundAnimation => _showRoundAnimation.value;
 
-  LocalPlayerModel get currentPlayer =>
+  PlayerModel get currentPlayer =>
       turnIndex == 0 ? game.playerOne : game.playerTwo;
 
-  LocalPlayerModel get opponentPlayer =>
+  PlayerModel get opponentPlayer =>
       turnIndex == 0 ? game.playerTwo : game.playerOne;
+
+
 
   PlayerSymbol get currentSymbol => currentPlayer.symbol;
 

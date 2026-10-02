@@ -9,13 +9,15 @@ class LocalGameBoardScreen extends GetView<LocalGameBoardController> {
       final game = controller.game;
       final currentPlayer = controller.currentPlayer;
 
-      return TicTacToeGameScreen(
+      return TicTacToeGameTemplateWidget(
         title: 'LOCAL GAME',
         currentRound: controller.currentRound,
         maxRounds: game.maxRounds,
         player: currentPlayer,
-        status: '${currentPlayer.name}\'s turn',
+        isMe: (id) => currentPlayer.id == id,
         theme: game.theme,
+        isOnline: false,
+        showGameStatus: true,
         child: Stack(
           alignment: Alignment.center,
           children: [
@@ -26,25 +28,12 @@ class LocalGameBoardScreen extends GetView<LocalGameBoardController> {
               turnIndex: controller.turnIndex,
               isMyTurn: controller.canMakeMove,
               onCellTap: controller.onCellTap,
-              playerOneBuilder: (compact) {
-                return GamePlayerCardWidget.local(
-                  player: game.playerOne,
-                  points: controller.playerOnePoints,
-                  isTurn: controller.turnIndex == 0,
-                  theme: game.theme,
-                  compact: compact,
-                );
-              },
-              playerTwoBuilder: (compact) {
-                return GamePlayerCardWidget.local(
-                  player: game.playerTwo,
-                  points: controller.playerTwoPoints,
-                  isTurn: controller.turnIndex == 1,
-                  theme: game.theme,
-                  compact: compact,
-                );
-              },
-
+              boardSize: game.boardSize,
+              playerOnePoints: controller.playerOnePoints,
+              playerTwoPoints: controller.playerTwoPoints,
+              playerId: currentPlayer.id,
+              playerOne: controller.currentPlayer,
+              playerTwo: controller.opponentPlayer,
             ),
             GameRoundAnimationWidget(
               showRoundAnimation: controller.showRoundAnimation,
