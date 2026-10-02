@@ -1,30 +1,20 @@
 import 'package:tictac_duel/lib.dart';
 
 class GamePlayerCardWidget extends StatelessWidget {
-   GamePlayerCardWidget.online({
+  const GamePlayerCardWidget({
     super.key,
-    required OnlinePlayerModel player,
+    required this.player,
+    required this.points,
     required this.isMe,
     required this.isTurn,
     required this.theme,
     required this.compact,
-  })  : player = player,
-        points = player.points,
-        isOnline = true;
-
-  const GamePlayerCardWidget.local({
-    super.key,
-    required this.player,
-    required this.points,
-    required this.isTurn,
-    required this.theme,
-    required this.compact,
-  })  : isMe = false,
-        isOnline = false;
+    this.isOnline = false,
+  });
 
   final PlayerModel player;
   final int points;
-  final bool isMe;
+  final bool Function(String id) isMe;
   final bool isTurn;
   final RoomTheme theme;
   final bool compact;
@@ -37,6 +27,7 @@ class GamePlayerCardWidget extends StatelessWidget {
         : theme.secondary;
 
     final avatarSize = compact ? 40.0 : 48.0;
+    final isCurrentPlayer = isMe(player.id);
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 220),
@@ -70,7 +61,7 @@ class GamePlayerCardWidget extends StatelessWidget {
         children: [
           PlayerAvatarWidget(
             player: player,
-            isMe: isMe,
+            isMe: isCurrentPlayer,
             isTurn: isTurn,
             size: avatarSize,
           ),
@@ -79,7 +70,10 @@ class GamePlayerCardWidget extends StatelessWidget {
               spacing: 3,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildPlayerHeader(color),
+                _buildPlayerHeader(
+                  color,
+                  isCurrentPlayer,
+                ),
                 _buildPlayerStatus(color),
               ],
             ),
@@ -89,7 +83,10 @@ class GamePlayerCardWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildPlayerHeader(Color color) {
+  Widget _buildPlayerHeader(
+      Color color,
+      bool isCurrentPlayer,
+      ) {
     return Row(
       spacing: 5,
       children: [
@@ -105,32 +102,41 @@ class GamePlayerCardWidget extends StatelessWidget {
             ),
           ),
         ),
-        if (isOnline) _buildPlayerBadge(color),
+        if (isOnline)
+          _buildPlayerBadge(
+            color,
+            isCurrentPlayer,
+          ),
       ],
     );
   }
 
-  Widget _buildPlayerBadge(Color color) {
+  Widget _buildPlayerBadge(
+      Color color,
+      bool isCurrentPlayer,
+      ) {
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: compact ? 4 : 5,
         vertical: 2,
       ),
       decoration: BoxDecoration(
-        color: isMe
+        color: isCurrentPlayer
             ? color.withValues(alpha: 0.12)
             : AppColors.card,
         borderRadius: BorderRadius.circular(5),
         border: Border.all(
-          color: isMe
+          color: isCurrentPlayer
               ? color.withValues(alpha: 0.25)
               : AppColors.border,
         ),
       ),
       child: Text(
-        isMe ? 'YOU' : 'OPPONENT',
+        isCurrentPlayer ? 'YOU' : 'OPPONENT',
         style: TextStyle(
-          color: isMe ? color : AppColors.textSecondary,
+          color: isCurrentPlayer
+              ? color
+              : AppColors.textSecondary,
           fontSize: compact ? 6 : 7,
           fontWeight: FontWeight.w800,
           letterSpacing: 0.7,

@@ -33,7 +33,11 @@ class GameController extends GetxController {
   final RxnString _infoMessage = RxnString();
 
   final Rxn<RoundResultResponse> _roundResult = Rxn<RoundResultResponse>();
+  final RxInt _playerOnePoints = 0.obs;
+  final RxInt _playerTwoPoints = 0.obs;
 
+  final RxBool _playerOneReady = false.obs;
+  final RxBool _playerTwoReady = false.obs;
   final RxBool _isLoading = false.obs;
 
   final RxBool _showRoundAnimation = false.obs;
@@ -66,6 +70,32 @@ class GameController extends GetxController {
 
   String get playerId => _playerController.playerId;
 
+  int get playerOnePoints => _playerOnePoints.value;
+
+  int get playerTwoPoints => _playerTwoPoints.value;
+
+  bool get playerOneReady => _playerOneReady.value;
+
+  bool get playerTwoReady => _playerTwoReady.value;
+
+  PlayerModel? get playerOne => room?.playerOne;
+
+  PlayerModel? get playerTwo => room?.playerTwo;
+
+  bool get amIReady {
+    final player = myPlayer;
+
+    if (player == null) {
+      return false;
+    }
+
+    if (player.id == playerOne?.id) {
+      return playerOneReady;
+    }
+
+    return playerTwoReady;
+  }
+
   // ===========================================================================
   // INITIALIZATION
   // ===========================================================================
@@ -73,8 +103,19 @@ class GameController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-
+    _listenForErrors();
     _initialize();
+  }
+
+  void _listenForErrors() {
+    ever<String?>(_errorMessage, (message) {
+      if (message == null || message.isEmpty) {
+        return;
+      }
+      PopupUtils.showError('Room error: $message');
+      LoggerUtils.error('Room error: $message');
+      clearError();
+    });
   }
 
   Future<void> _initialize() async {
@@ -89,12 +130,8 @@ class GameController extends GetxController {
         playerId: playerId,
         onConnected: _handleRoomConnected,
       );
-    } catch (error, stackTrace) {
-      LoggerUtils.error('GameController._initialize', error, stackTrace);
-
+    } catch (error) {
       setError(error.toString());
-    } finally {
-      _isLoading.value = false;
     }
   }
 
@@ -114,8 +151,16 @@ class GameController extends GetxController {
     _roomSocketService.onRoomError(_handleRoomError);
   }
 
-  void _handleRoomConnected(RoomModel connectedRoom) {
-    _setRoom(connectedRoom);
+  void _handleRoomConnected(RoomConnectedResponse response) {
+    _setRoom(response.room);
+
+    _playerOnePoints.value = response.playerOnePoints;
+    _playerTwoPoints.value = response.playerTwoPoints;
+
+    _playerOneReady.value = response.playerOneReady;
+    _playerTwoReady.value = response.playerTwoReady;
+
+    _isLoading.value = false;
 
     clearError();
     clearInfo();
@@ -130,12 +175,29 @@ class GameController extends GetxController {
     _prepareNewRound(updatedRoom);
   }
 
-  void _handlePlayerJoined(RoomModel updatedRoom) {
-    _setRoom(updatedRoom);
+  void _handlePlayerJoined(PlayerJoinedResponse response) {
+    _setPlayer(response.player);
+
+    _playerTwoPoints.value = response.points;
+    _playerTwoReady.value = response.isReady;
   }
 
-  void _handlePlayerLeft(RoomModel updatedRoom) {
-    _setRoom(updatedRoom);
+  void _handlePlayerLeft(String playerId) {
+    final currentRoom = _room.value;
+
+    if (currentRoom == null) return;
+
+    final isPlayerOne = currentRoom.playerOne.id == playerId;
+
+    _removePlayer(playerId);
+
+    if (isPlayerOne) {
+      _playerOnePoints.value = 0;
+      _playerOneReady.value = false;
+    } else {
+      _playerTwoPoints.value = 0;
+      _playerTwoReady.value = false;
+    }
   }
 
   void _handleRoomError(String message) {
@@ -174,6 +236,35 @@ class GameController extends GetxController {
     }
   }
 
+  void _setPlayer(OnlinePlayerModel player) {
+    final currentRoom = _room.value;
+
+    if (currentRoom == null) return;
+
+    final players = [...currentRoom.players];
+    final index = players.indexWhere((item) => item.id == player.id);
+
+    if (index == -1) {
+      players.add(player);
+    } else {
+      players[index] = player;
+    }
+
+    _room.value = currentRoom.copyWith(players: players);
+  }
+
+  void _removePlayer(String playerId) {
+    final currentRoom = _room.value;
+
+    if (currentRoom == null) return;
+
+    _room.value = currentRoom.copyWith(
+      players: currentRoom.players
+          .where((player) => player.id != playerId)
+          .toList(),
+    );
+  }
+
   void _prepareNewRound(RoomModel currentRoom) {
     _roundResult.value = null;
 
@@ -200,7 +291,7 @@ class GameController extends GetxController {
         .firstOrNull;
   }
 
-  bool get amIReady => myPlayer?.isReady ?? false;
+  // bool get amIReady => myPlayer?.isReady ?? false;
 
   // ===========================================================================
   // GAME VISIBILITY
@@ -361,11 +452,7 @@ class GameController extends GetxController {
 
       AppNavigation.replaceResult(result);
     } catch (error, stackTrace) {
-      LoggerUtils.error(
-        'GameController._showFinalResult',
-        error,
-        stackTrace,
-      );
+      LoggerUtils.error('GameController._showFinalResult', error, stackTrace);
 
       setInfo('Unable to load game result.');
     }

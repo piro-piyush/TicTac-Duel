@@ -9,71 +9,67 @@ class GameScreen extends GetView<GameController> {
       final room = controller.room;
       final myPlayer = controller.myPlayer;
 
-      if (controller.isLoading && room == null) {
-        return const RoomStateWidget.connecting();
+      final child = () {
+        if (controller.isLoading && room == null) {
+          return const RoomStateWidget.connecting();
+        }
+
+        if (room == null) {
+          return const RoomStateWidget.notFound();
+        }
+
+        if (myPlayer == null) {
+          return const RoomStateWidget.playerNotFound();
+        }
+
+        if (!controller.showGame) {
+          return WaitingForPlayersWidget(
+            room: room,
+            playerId: controller.playerId,
+            waitingForNextRound: controller.waitingForNextRound,
+            onStartGame: controller.startGame,
+          );
+        }
+
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            TicTacToeGameWidget(
+              theme: room.theme,
+              board: controller.board,
+              winningIndexes: controller.winningIndexes,
+              turnIndex: room.turnIndex,
+              isMyTurn: controller.isMyTurn,
+              onCellTap: controller.makeMove,
+              boardSize: room.boardSize,
+              playerId: controller.playerId,
+              playerOne: room.playerOne,
+              playerTwo: room.playerTwo,
+              playerOnePoints: controller.playerOnePoints,
+              playerOneReady: controller.playerOneReady,
+              playerTwoPoints: controller.playerTwoPoints,
+              playerTwoReady: controller.playerTwoReady,
+            ),
+            GameRoundAnimationWidget(
+              showRoundAnimation: controller.showRoundAnimation,
+              animatedRound: controller.animatedRound,
+            ),
+          ],
+        );
+      }();
+
+      if (room == null || myPlayer == null) {
+        return child;
       }
 
-      if (room == null) {
-        return const RoomStateWidget.notFound();
-      }
-
-      if (myPlayer == null) {
-        return const RoomStateWidget.playerNotFound();
-      }
-
-      final child = controller.showGame
-          ? Stack(
-        alignment: Alignment.center,
-        children: [
-          TicTacToeGameWidget(
-            theme: room.theme,
-            board: controller.board,
-            winningIndexes: controller.winningIndexes,
-            turnIndex: room.turnIndex,
-            isMyTurn: controller.isMyTurn,
-            onCellTap: controller.makeMove,
-
-            playerOneBuilder: (compact) {
-              return GamePlayerCardWidget.online(
-                player: room.playerOne,
-                isTurn: room.turnIndex == 0,
-                theme: room.theme,
-                compact: compact,
-                isMe: controller.playerId == room.playerOne.id,
-              );
-            },
-
-            playerTwoBuilder: (compact) {
-              return GamePlayerCardWidget.online(
-                player: room.playerTwo,
-                isTurn: room.turnIndex == 1,
-                theme: room.theme,
-                compact: compact,
-                isMe: controller.playerId == room.playerTwo.id,
-              );
-            },
-          ),
-          GameRoundAnimationWidget(
-            showRoundAnimation: controller.showRoundAnimation,
-            animatedRound: controller.animatedRound,
-          ),
-        ],
-      )
-          : WaitingForPlayersWidget(
-        room: room,
-        playerId: controller.playerId,
-        waitingForNextRound: controller.waitingForNextRound,
-        onStartGame: controller.startGame,
-      );
-
-      return TicTacToeGameScreen(
+      return TicTacToeGameTemplateWidget(
         title: 'ONLINE GAME',
         currentRound: room.currentRound,
         maxRounds: room.maxRounds,
         player: myPlayer,
-        status: controller.isMyTurn
-            ? 'Your turn'
-            : 'Opponent\'s turn',
+        isOnline: true,
+        showGameStatus: controller.showGame,
+        isMe: (id) => id == controller.playerId,
         theme: room.theme,
         child: child,
       );

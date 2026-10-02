@@ -11,15 +11,15 @@ class HomeActionsWidget extends StatelessWidget {
         Column(
           spacing: Dimens.fourteen,
           children: [
-            MenuButtonWidget(
-              title: 'Quick Match',
-              subtitle: 'Find an opponent and play',
-              icon: Icons.bolt_rounded,
-              color: AppColors.neonCyan,
-              onTap: () => _checkInternetConnection(
-                () => PopupUtils.showWarning('Coming Soon...'),
-              ),
-            ),
+            // MenuButtonWidget(
+            //   title: 'Quick Match',
+            //   subtitle: 'Find an opponent and play',
+            //   icon: Icons.bolt_rounded,
+            //   color: AppColors.neonCyan,
+            //   onTap: () => _checkInternetConnection(
+            //     () => PopupUtils.showWarning('Coming Soon...'),
+            //   ),
+            // ),
             const MenuButtonWidget(
               title: 'Local Game',
               subtitle: 'Play with a friend or challenge the CPU',
@@ -32,9 +32,8 @@ class HomeActionsWidget extends StatelessWidget {
               subtitle: 'Browse and join open rooms',
               icon: Icons.public_rounded,
               color: AppColors.neonGreen,
-              onTap: () => _checkInternetConnection(
-                AppNavigation.pushPublicRooms
-              ),
+              onTap: () =>
+                  _checkInternetConnection(AppNavigation.pushPublicRooms),
             ),
           ],
         ),
