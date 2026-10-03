@@ -246,7 +246,7 @@ class LocalGameBoardController extends GetxController {
 
     final hasWon = winner?.id == game.playerOne.id;
 
-    final result = ResultModel.local(
+    final result = ResultModel(
       playerOne: game.playerOne,
       playerTwo: game.playerTwo,
       playerOnePoints: playerOnePoints,

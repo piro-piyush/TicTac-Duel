@@ -64,6 +64,7 @@ class GameScreen extends GetView<GameController> {
                 playerOneReady: controller.playerOneReady,
                 playerTwoPoints: controller.playerTwoPoints,
                 playerTwoReady: controller.playerTwoReady,
+                isOnline: true,
               ),
               GameRoundAnimationWidget(
                 showRoundAnimation: controller.showRoundAnimation,
@@ -79,10 +80,11 @@ class GameScreen extends GetView<GameController> {
         maxRounds: room.maxRounds,
         player: myPlayer,
         isOnline: true,
+        // isMyTurn: controller.isMyTurn,
         showGameStatus: controller.showGame,
-        isMe: (id) => id == controller.playerId,
         theme: room.theme,
         child: child,
+        isMe: (id) => id == controller.playerId,
       );
     });
   }

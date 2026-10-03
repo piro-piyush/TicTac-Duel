@@ -162,8 +162,6 @@ class GameController extends GetxController {
     _playerOneReady.value = response.playerOneReady;
     _playerTwoReady.value = response.playerTwoReady;
 
-
-
     _isLoading.value = false;
 
     clearError();
@@ -385,7 +383,27 @@ class GameController extends GetxController {
       return;
     }
 
-    _roomSocketService.makeMove(roomCode: currentRoom.roomCode, index: index,playerId: playerId);
+    final symbol = currentRoom.players[currentRoom.turnIndex].symbol;
+
+    _board[index] = symbol;
+
+    final result = GameLogicUtils.checkWinner(_board);
+
+    _roomSocketService.makeMove(
+      roomCode: currentRoom.roomCode,
+      index: index,
+      playerId: playerId,
+    );
+
+    if (result == GameResult.inProgress) {
+      return;
+    }
+
+    final winningIndexes = result == GameResult.draw
+        ? <int>[]
+        : GameLogicUtils.getWinningIndexes(_board).toList();
+
+    _submitRoundResult(winningIndexes: winningIndexes);
   }
 
   // ===========================================================================
@@ -417,8 +435,6 @@ class GameController extends GetxController {
   void _handleRoundResult(RoundResultResponse response) {
     _roundResult.value = response;
 
-    _setRoom(response.room);
-
     if (response.winningIndexes.isNotEmpty) {
       setWinningIndexes(response.winningIndexes.toSet());
     }
@@ -427,31 +443,57 @@ class GameController extends GetxController {
       return;
     }
 
-    _showFinalResult(response.room);
+    _showFinalResult();
   }
 
-  void _showFinalResult(RoomModel room) {
-    try {
-      final playerOne = room.playerOne;
-      final playerTwo = room.playerTwo;
+  void _submitRoundResult({required List<int> winningIndexes}) {
+    final currentRoom = room;
 
-      final isDraw = playerOne.points == playerTwo.points;
+    if (currentRoom == null) {
+      return;
+    }
+
+    _roomSocketService.submitGameResult(
+      roomCode: currentRoom.roomCode,
+      playerId: playerId,
+      winningIndexes: winningIndexes,
+    );
+  }
+
+  void _showFinalResult() {
+    try {
+      final currentRoom = room;
+
+      if (currentRoom == null) {
+        return;
+      }
+
+      final currentPlayerOne = currentRoom.playerOne;
+      final currentPlayerTwo = currentRoom.playerTwo;
+
+      final playerOnePoints = _playerOnePoints.value;
+      final playerTwoPoints = _playerTwoPoints.value;
+
+      final isDraw = playerOnePoints == playerTwoPoints;
 
       final winner = isDraw
           ? null
-          : playerOne.points > playerTwo.points
-          ? playerOne
-          : playerTwo;
+          : playerOnePoints > playerTwoPoints
+          ? currentPlayerOne
+          : currentPlayerTwo;
 
-      final result = ResultModel.online(
-        playerOne: playerOne,
-        playerTwo: playerTwo,
-        currentRound: room.currentRound,
-        maxRounds: room.maxRounds,
+      final result = ResultModel(
+        playerOne: currentPlayerOne,
+        playerTwo: currentPlayerTwo,
+        playerOnePoints: playerOnePoints,
+        playerTwoPoints: playerTwoPoints,
+        currentRound: currentRoom.currentRound,
+        maxRounds: currentRoom.maxRounds,
         gameWinner: winner,
         hasWon: winner?.id == playerId,
         isDraw: isDraw,
         showConfetti: winner?.id == playerId,
+        isOnline: true,
       );
 
       AppNavigation.replaceResult(result);
@@ -513,16 +555,11 @@ class GameController extends GetxController {
       ..addAll(indexes);
   }
 
-  void clearBoard() =>
-    _resetBoard();
-
+  void clearBoard() => _resetBoard();
 
   void _resetBoard() {
     _board.assignAll(
-      List<PlayerSymbol?>.filled(
-        GameConstants.totalCells,
-        null,
-      ),
+      List<PlayerSymbol?>.filled(GameConstants.totalCells, null),
     );
 
     _winningIndexes.clear();
