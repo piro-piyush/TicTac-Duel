@@ -8,6 +8,7 @@ class GameScreen extends GetView<GameController> {
     return Obx(() {
       final room = controller.room;
       final myPlayer = controller.myPlayer;
+      final currentPlayer = controller.currentPlayer;
 
       if (controller.isLoading && room == null) {
         return const NeonBackgroundWidget(
@@ -78,7 +79,7 @@ class GameScreen extends GetView<GameController> {
       return TicTacToeGameTemplateWidget(
         currentRound: room.currentRound,
         maxRounds: room.maxRounds,
-        player: myPlayer,
+        player: currentPlayer,
         isOnline: true,
         // isMyTurn: controller.isMyTurn,
         showGameStatus: controller.showGame,

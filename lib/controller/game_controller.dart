@@ -293,6 +293,12 @@ class GameController extends GetxController {
         .firstOrNull;
   }
 
+
+  OnlinePlayerModel get currentPlayer {
+    final currentRoom = room!;
+
+    return currentRoom.players[currentRoom.turnIndex];
+  }
   // bool get amIReady => myPlayer?.isReady ?? false;
 
   // ===========================================================================
