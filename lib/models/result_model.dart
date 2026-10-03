@@ -1,7 +1,7 @@
 import 'package:tictac_duel/lib.dart';
 
 class ResultModel {
-  const ResultModel.local({
+  const ResultModel({
     required this.playerOne,
     required this.playerTwo,
     required this.playerOnePoints,
@@ -12,22 +12,8 @@ class ResultModel {
     this.hasWon = false,
     this.isDraw = false,
     this.showConfetti = false,
-  }) : isOnline = false;
-
-  ResultModel.online({
-    required OnlinePlayerModel playerOne,
-    required OnlinePlayerModel playerTwo,
-    required this.currentRound,
-    required this.maxRounds,
-    this.gameWinner,
-    this.hasWon = false,
-    this.isDraw = false,
-    this.showConfetti = false,
-  }) : playerOne = playerOne,
-       playerTwo = playerTwo,
-       playerOnePoints = playerOne.points,
-       playerTwoPoints = playerTwo.points,
-       isOnline = true;
+    this.isOnline = false,
+  });
 
   final PlayerModel playerOne;
   final PlayerModel playerTwo;
@@ -59,25 +45,9 @@ class ResultModel {
     bool? hasWon,
     bool? isDraw,
     bool? showConfetti,
+    bool? isOnline,
   }) {
-    if (isOnline) {
-      return ResultModel.online(
-        playerOne: playerOne is OnlinePlayerModel
-            ? playerOne
-            : this.playerOne as OnlinePlayerModel,
-        playerTwo: playerTwo is OnlinePlayerModel
-            ? playerTwo
-            : this.playerTwo as OnlinePlayerModel,
-        currentRound: currentRound ?? this.currentRound,
-        maxRounds: maxRounds ?? this.maxRounds,
-        gameWinner: gameWinner ?? this.gameWinner,
-        hasWon: hasWon ?? this.hasWon,
-        isDraw: isDraw ?? this.isDraw,
-        showConfetti: showConfetti ?? this.showConfetti,
-      );
-    }
-
-    return ResultModel.local(
+    return ResultModel(
       playerOne: playerOne ?? this.playerOne,
       playerTwo: playerTwo ?? this.playerTwo,
       playerOnePoints: playerOnePoints ?? this.playerOnePoints,
@@ -88,6 +58,7 @@ class ResultModel {
       hasWon: hasWon ?? this.hasWon,
       isDraw: isDraw ?? this.isDraw,
       showConfetti: showConfetti ?? this.showConfetti,
+      isOnline: isOnline ?? this.isOnline,
     );
   }
 }

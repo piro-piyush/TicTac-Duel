@@ -58,13 +58,15 @@ class RoomSocketService {
 
   void submitGameResult({
     required String roomCode,
-    String? winnerPlayerId,
+    required String playerId,
     List<int> winningIndexes = const [],
-  }) => _socket.emit(RoomSocketEvents.submitGameResult, {
-    'roomCode': roomCode,
-    'winnerPlayerId': winnerPlayerId,
-    'winningIndexes': winningIndexes,
-  });
+  }) {
+    _socket.emit(RoomSocketEvents.submitGameResult, {
+      'roomCode': roomCode,
+      'playerId': playerId,
+      'winningIndexes': winningIndexes,
+    });
+  }
 
   // ===========================================================================
   // ROOM EVENTS
@@ -256,25 +258,18 @@ class RoomSocketService {
     );
   });
 
-  void _onError(
-      String event,
-      void Function(String message) callback,
-      ) {
+  void _onError(String event, void Function(String message) callback) {
     _socket.on(event, (response) {
       final data = _data(response);
 
       if (data is! Map<String, dynamic>) {
-        throw const FormatException(
-          'Invalid socket error response',
-        );
+        throw const FormatException('Invalid socket error response');
       }
 
       final message = data['message'];
 
       if (message is! String || message.trim().isEmpty) {
-        throw const FormatException(
-          'Invalid socket error message',
-        );
+        throw const FormatException('Invalid socket error message');
       }
 
       callback(message);
