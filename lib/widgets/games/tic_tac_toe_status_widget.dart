@@ -17,7 +17,7 @@ class TicTacToeStatusWidget extends StatelessWidget {
   final bool compact;
 
   String get _status {
-    if (isMe(player.id)) {
+    if (isMe(player.id) || player.name == 'You') {
       return 'Your turn';
     }
 
@@ -26,9 +26,7 @@ class TicTacToeStatusWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = player.symbol == PlayerSymbol.x
-        ? theme.primary
-        : theme.secondary;
+    final color = PlayerSymbolX.color(player.symbol, theme);
 
     return Container(
       constraints: const BoxConstraints(maxWidth: 420),
@@ -72,8 +70,8 @@ class _StatusIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 6,
-      height: 6,
+      width: Dimens.six,
+      height: Dimens.six,
       decoration: BoxDecoration(
         color: isOnline ? color : AppColors.textSecondary,
         shape: BoxShape.circle,

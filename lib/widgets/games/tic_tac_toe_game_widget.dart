@@ -16,6 +16,7 @@ class TicTacToeGameWidget extends StatelessWidget {
     required this.playerTwoPoints,
     this.playerOneReady,
     this.playerTwoReady,
+    required this.isOnline,
   });
 
   final RoomTheme theme;
@@ -41,6 +42,7 @@ class TicTacToeGameWidget extends StatelessWidget {
   // Turn
   final int turnIndex;
   final bool isMyTurn;
+  final bool isOnline;
 
   // Interaction
   final ValueChanged<int> onCellTap;
@@ -86,7 +88,7 @@ class TicTacToeGameWidget extends StatelessWidget {
             isTurn: turnIndex == 0,
             theme: theme,
             compact: compact,
-            isOnline: true,
+            isOnline: isOnline,
           ),
         ),
         VersusWidget(compact: compact),
@@ -98,7 +100,7 @@ class TicTacToeGameWidget extends StatelessWidget {
             isTurn: turnIndex == 1,
             theme: theme,
             compact: compact,
-            isOnline: true,
+            isOnline: isOnline,
           ),
         ),
       ],
