@@ -11,7 +11,7 @@ class LocalGameModel {
        difficulty = null;
 
   factory LocalGameModel.computer({
-    required LocalPlayerModel playerOne,
+    required PlayerModel playerOne,
     required RoomTheme theme,
     required int maxRounds,
     required CpuDifficulty difficulty,
@@ -23,7 +23,7 @@ class LocalGameModel {
 
     return LocalGameModel._(
       playerOne: playerOne,
-      playerTwo: LocalPlayerModel(
+      playerTwo: PlayerModel(
         id: GameConstants.localCpuId,
         name: GameConstants.localCpuName,
         symbol: cpuSymbol,
@@ -46,8 +46,8 @@ class LocalGameModel {
     required this.difficulty,
   });
 
-  final LocalPlayerModel playerOne;
-  final LocalPlayerModel playerTwo;
+  final PlayerModel playerOne;
+  final PlayerModel playerTwo;
 
   final RoomTheme theme;
   final int maxRounds;
