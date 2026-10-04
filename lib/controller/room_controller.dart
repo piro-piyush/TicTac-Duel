@@ -31,8 +31,11 @@ class RoomController extends GetxController {
   // ===========================================================================
 
   final Rx<PlayerSymbol> _selectedSymbol = PlayerSymbol.x.obs;
+
   final Rx<RoomTheme> _selectedTheme = RoomTheme.classic.obs;
+
   final RxInt _selectedMaxRounds = 3.obs;
+
   final RxBool _isRoomPrivate = true.obs;
 
   // ===========================================================================
@@ -123,6 +126,7 @@ class RoomController extends GetxController {
 
   Future<void> pasteCode() async {
     final clipboard = await Clipboard.getData(Clipboard.kTextPlain);
+
     final code = clipboard?.text?.trim().toUpperCase();
 
     if (code == null || code.isEmpty) {
@@ -166,12 +170,11 @@ class RoomController extends GetxController {
         isPrivate: isRoomPrivate,
       );
 
-      _isCreating.value = false;
-
       AppNavigation.pushGame(room.roomCode);
     } catch (error) {
+      _handleError(error, 'Failed to create room.');
+    } finally {
       _isCreating.value = false;
-      _errorMessage.value = error.toString();
     }
   }
 
@@ -198,12 +201,11 @@ class RoomController extends GetxController {
         roomCode: roomCodeController.text.trim().toUpperCase(),
       );
 
-      _isJoining.value = false;
-
       AppNavigation.pushGame(room.roomCode);
     } catch (error) {
+      _handleError(error, 'Failed to join room.');
+    } finally {
       _isJoining.value = false;
-      _errorMessage.value = error.toString();
     }
   }
 
@@ -211,14 +213,26 @@ class RoomController extends GetxController {
   // ERROR
   // ===========================================================================
 
+  void _handleError(Object error, String fallbackMessage) {
+    if (error is ApiException) {
+      _errorMessage.value = error.message;
+      return;
+    }
+
+    LoggerUtils.error('$fallbackMessage ${error.toString()}');
+
+    _errorMessage.value = fallbackMessage;
+  }
+
   void _listenForErrors() {
     ever<String?>(_errorMessage, (message) {
       if (message == null || message.isEmpty) {
         return;
       }
 
-      PopupUtils.showError('Room error: $message');
+      PopupUtils.showError(message);
       LoggerUtils.error('Room error: $message');
+
       clearError();
     });
   }

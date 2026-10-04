@@ -7,7 +7,6 @@ class PublicRoomsScreen extends GetView<PublicRoomsController> {
   Widget build(BuildContext context) {
     return NeonBackgroundWidget(
       title: 'Public Rooms',
-      needScroll: false,
       padding: Dimens.edgeInsets10_4,
       child: RefreshIndicator(
         onRefresh: controller.refreshRooms,

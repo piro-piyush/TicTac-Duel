@@ -6,12 +6,16 @@ class RoundResultResponse {
     required this.roundStatus,
     required this.winningIndexes,
     required this.gameFinished,
+    required this.turnPlayerId,
+    required this.turnIndex,
   });
 
   final String? winnerId;
   final RoundStatus? roundStatus;
   final List<int> winningIndexes;
   final bool gameFinished;
+  final String turnPlayerId;
+  final int turnIndex;
 
   factory RoundResultResponse.fromJson(dynamic json) {
     if (json is! Map) {
@@ -22,6 +26,8 @@ class RoundResultResponse {
     final roundStatus = json['roundStatus'];
     final winningIndexesData = json['winningIndexes'];
     final gameFinished = json['gameFinished'];
+    final turnPlayerId = json['turnPlayerId'];
+    final turnIndex = json['turnIndex'];
 
     if (winnerId != null && winnerId is! String) {
       throw const FormatException('Invalid winner ID');
@@ -43,6 +49,14 @@ class RoundResultResponse {
       throw const FormatException('Invalid game finished value');
     }
 
+    if (turnPlayerId is! String) {
+      throw const FormatException('Invalid turn player ID');
+    }
+
+    if (turnIndex is! int || turnIndex < 0) {
+      throw const FormatException('Invalid turn index');
+    }
+
     return RoundResultResponse(
       winnerId: winnerId as String?,
       roundStatus: roundStatus != null
@@ -50,6 +64,8 @@ class RoundResultResponse {
           : null,
       winningIndexes: List<int>.from(winningIndexesData),
       gameFinished: gameFinished,
+      turnPlayerId: turnPlayerId,
+      turnIndex: turnIndex,
     );
   }
 }

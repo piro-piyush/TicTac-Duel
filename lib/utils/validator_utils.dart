@@ -1,18 +1,20 @@
+import 'package:tictac_duel/lib.dart';
+
 class ValidatorUtils {
   ValidatorUtils._();
 
-  // ---------------------------------------------------------------------------
+  // ===========================================================================
   // Game
-  // ---------------------------------------------------------------------------
+  // ===========================================================================
 
   static String? roomCode(String? value) {
-    final code = value?.trim() ?? '';
+    final code = value?.trim().toUpperCase() ?? '';
 
     if (code.isEmpty) {
       return 'Enter a room code';
     }
 
-    if (!RegExp(r'^[A-Z0-9]{6,8}$').hasMatch(code.toUpperCase())) {
+    if (!GameConstants.roomCodePattern.hasMatch(code)) {
       return 'Enter a valid room code';
     }
 
@@ -26,20 +28,22 @@ class ValidatorUtils {
       return 'Enter a game name';
     }
 
-    if (name.length < 3) {
-      return 'Game name must be at least 3 characters';
+    if (name.length < GameConstants.minPlayerNameLength) {
+      return 'Game name must be at least '
+          '${GameConstants.minPlayerNameLength} characters';
     }
 
-    if (name.length > 30) {
-      return 'Game name must be 30 characters or less';
+    if (name.length > GameConstants.maxPlayerNameLength) {
+      return 'Game name must be '
+          '${GameConstants.maxPlayerNameLength} characters or less';
     }
 
     return null;
   }
 
-  // ---------------------------------------------------------------------------
+  // ===========================================================================
   // UUID
-  // ---------------------------------------------------------------------------
+  // ===========================================================================
 
   static String? uuid(String? value) {
     final id = value?.trim() ?? '';
@@ -63,11 +67,14 @@ class ValidatorUtils {
     return null;
   }
 
-  // ---------------------------------------------------------------------------
+  // ===========================================================================
   // Common
-  // ---------------------------------------------------------------------------
+  // ===========================================================================
 
-  static String? required(String? value, {String fieldName = 'This field'}) {
+  static String? required(
+      String? value, {
+        String fieldName = 'This field',
+      }) {
     if (value?.trim().isEmpty ?? true) {
       return '$fieldName is required';
     }
