@@ -28,79 +28,59 @@ class PlayerNameAndRoomCodeFieldWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
     return Form(
       key: formKey,
       child: Column(
         spacing: Dimens.twenty,
-        children: [
-          GameTextFormFieldWidget(
-            controller: playerNameController,
-            focusNode: playerNameFocusNode,
-            hintText: 'ENTER YOUR NAME',
-            validator: ValidatorUtils.gameName,
-            textCapitalization: TextCapitalization.words,
-            textInputAction: TextInputAction.next,
-            maxLength: 20,
-            onFieldSubmitted: (_) {
-              roomCodeFocusNode.requestFocus();
-            },
-            suffixIcon: IconButton(
-              onPressed: onGenerateRandomName,
-              tooltip: 'Random name',
-              icon: const Icon(
-                Icons.casino_outlined,
-                color: AppColors.neonPurple,
-                size: 20,
-              ),
-            ),
-          ),
-          GameTextFormFieldWidget(
-            controller: roomCodeController,
-            focusNode: roomCodeFocusNode,
-            hintText: 'ENTER CODE',
-            validator: ValidatorUtils.roomCode,
-            autofocus: true,
-            textCapitalization: TextCapitalization.characters,
-            keyboardType: TextInputType.text,
-            maxLength: 8,
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(
-                RegExp(r'[a-zA-Z0-9]'),
-              ),
-            ],
-            onChanged: (value) {
-              final formatted = value.toUpperCase();
+        children: [_buildPlayerNameField(), _buildRoomCodeField()],
+      ),
+    );
+  }
 
-              if (formatted != value) {
-                roomCodeController.value =
-                    roomCodeController.value.copyWith(
-                      text: formatted,
-                      selection: TextSelection.collapsed(
-                        offset: formatted.length,
-                      ),
-                    );
-              }
-            },
-            onFieldSubmitted: (_) => onJoinRoom(),
-            style: textTheme.titleLarge?.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 5,
-            ),
-            focusedBorderColor: AppColors.neonCyan,
-            suffixIcon: IconButton(
-              onPressed: onPasteCode,
-              tooltip: 'Paste code',
-              icon: const Icon(
-                Icons.content_paste_rounded,
-                color: AppColors.neonCyan,
-                size: 20,
-              ),
-            ),
-          ),
-        ],
+  Widget _buildPlayerNameField() {
+    return GameTextFormFieldWidget(
+      controller: playerNameController,
+      focusNode: playerNameFocusNode,
+      hintText: 'ENTER YOUR NAME',
+      validator: ValidatorUtils.gameName,
+      textCapitalization: TextCapitalization.words,
+      textInputAction: TextInputAction.next,
+      maxLength: GameConstants.maxPlayerNameLength,
+      onFieldSubmitted: (_) {
+        roomCodeFocusNode.requestFocus();
+      },
+      suffixIcon: IconButton(
+        onPressed: onGenerateRandomName,
+        tooltip: 'Random name',
+        icon: const Icon(Icons.casino_outlined, color: AppColors.neonCyan),
+      ),
+    );
+  }
+
+  Widget _buildRoomCodeField() {
+    return GameTextFormFieldWidget(
+      controller: roomCodeController,
+      focusNode: roomCodeFocusNode,
+      hintText: 'ENTER CODE',
+      validator: ValidatorUtils.roomCode,
+      autofocus: true,
+      textCapitalization: TextCapitalization.characters,
+      keyboardType: TextInputType.text,
+      maxLength: GameConstants.roomCodeLength,
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(
+          GameConstants.roomCodeCharacterPattern,
+        ),
+        LengthLimitingTextInputFormatter(GameConstants.roomCodeLength),
+      ],
+      onFieldSubmitted: (_) => onJoinRoom(),
+      suffixIcon: IconButton(
+        onPressed: onPasteCode,
+        tooltip: 'Paste code',
+        icon: const Icon(
+          Icons.content_paste_rounded,
+          color: AppColors.neonCyan,
+        ),
       ),
     );
   }

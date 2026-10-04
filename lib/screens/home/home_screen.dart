@@ -6,9 +6,11 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+
     return NeonBackgroundWidget(
-      needScroll: false,
       padding: Dimens.edgeInsets10_4,
+      needScroll: false,
+      keyboardAware: true,
       bottomNavigationBar: const Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         spacing: Dimens.twelve,
