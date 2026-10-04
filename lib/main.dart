@@ -7,7 +7,6 @@ Future<void> main() async {
 
   await _initCore();
 
-
   FlutterNativeSplash.remove();
 
   runApp(const MyApp());

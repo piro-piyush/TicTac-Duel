@@ -7,7 +7,7 @@ class PlayerJoinedResponse {
     required this.isReady,
   });
 
-  final OnlinePlayerModel player;
+  final PlayerModel player;
   final int points;
   final bool isReady;
 
@@ -31,7 +31,7 @@ class PlayerJoinedResponse {
       }
 
       return PlayerJoinedResponse(
-        player: OnlinePlayerModel.fromJson(data),
+        player:PlayerModel.fromJson(data),
         points: points,
         isReady: isReady,
       );

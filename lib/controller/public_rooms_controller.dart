@@ -105,7 +105,7 @@ class PublicRoomsController extends GetxController {
 
       _isJoining.value = false;
 
-      AppNavigation.pushGame(room.roomCode);
+      AppNavigation.pushGame(joinedRoom.roomCode);
     } catch (error) {
       _isJoining.value = false;
       _errorMessage.value = error.toString();
