@@ -17,8 +17,6 @@ class GameTextFormFieldWidget extends StatelessWidget {
     this.onFieldSubmitted,
     this.autofocus = false,
     this.inputFormatters,
-    this.style,
-    this.focusedBorderColor = AppColors.neonPurple,
   });
 
   final TextEditingController controller;
@@ -35,13 +33,9 @@ class GameTextFormFieldWidget extends StatelessWidget {
   final ValueChanged<String>? onFieldSubmitted;
   final bool autofocus;
   final List<TextInputFormatter>? inputFormatters;
-  final TextStyle? style;
-  final Color focusedBorderColor;
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
     return TextFormField(
       controller: controller,
       focusNode: focusNode,
@@ -54,53 +48,7 @@ class GameTextFormFieldWidget extends StatelessWidget {
       inputFormatters: inputFormatters,
       onChanged: onChanged,
       onFieldSubmitted: onFieldSubmitted,
-      style: style ??
-          textTheme.bodyLarge?.copyWith(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.w600,
-          ),
-      decoration: InputDecoration(
-        counterText: '',
-        hintText: hintText,
-        hintStyle: textTheme.bodyMedium?.copyWith(
-          color: AppColors.textSecondary.withValues(alpha: 0.4),
-          fontWeight: FontWeight.w600,
-          letterSpacing: 1,
-        ),
-        suffixIcon: suffixIcon,
-        filled: true,
-        fillColor: AppColors.card,
-        border: _buildInputBorder(),
-        enabledBorder: _buildInputBorder(),
-        focusedBorder: _buildInputBorder(
-          color: focusedBorderColor,
-          width: 1.5,
-        ),
-        errorBorder: _buildInputBorder(
-          color: AppColors.neonPink,
-        ),
-        focusedErrorBorder: _buildInputBorder(
-          color: AppColors.neonPink,
-          width: 1.5,
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: Dimens.eighteen,
-          vertical: Dimens.sixteen,
-        ),
-      ),
-    );
-  }
-
-  OutlineInputBorder _buildInputBorder({
-    Color color = AppColors.border,
-    double width = 1,
-  }) {
-    return OutlineInputBorder(
-      borderRadius: BorderRadius.circular(Dimens.radiusMd),
-      borderSide: BorderSide(
-        color: color,
-        width: width,
-      ),
+      decoration: InputDecoration(hintText: hintText, suffixIcon: suffixIcon),
     );
   }
 }

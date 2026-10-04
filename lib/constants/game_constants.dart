@@ -3,9 +3,9 @@ import 'package:tictac_duel/lib.dart';
 class GameConstants {
   GameConstants._();
 
-  // ─────────────────────────────────────────────────────────────
+  // ===========================================================================
   // App
-  // ─────────────────────────────────────────────────────────────
+  // ===========================================================================
 
   static const String appName = 'Tic Tac Duel';
   static const String appVersion = '2.0.0';
@@ -13,9 +13,9 @@ class GameConstants {
   static const String appDescription =
       'A real-time multiplayer Tic-Tac-Toe experience.';
 
-  // ─────────────────────────────────────────────────────────────
+  // ===========================================================================
   // Game
-  // ─────────────────────────────────────────────────────────────
+  // ===========================================================================
 
   static const int boardSize = 3;
   static const int totalCells = boardSize * boardSize;
@@ -34,9 +34,9 @@ class GameConstants {
     PlayerSymbol.x,
   ];
 
-  // ─────────────────────────────────────────────────────────────
+  // ===========================================================================
   // Local Game
-  // ─────────────────────────────────────────────────────────────
+  // ===========================================================================
 
   static const String localPlayerOneId = 'local_player_1';
   static const String localPlayerTwoId = 'local_player_2';
@@ -47,24 +47,36 @@ class GameConstants {
   static const String localPlayerTwoName = 'Player Two';
   static const String localCpuName = 'CPU';
 
-  static const Duration socketConnectionTimeout = Duration(seconds: 10);
-
   static const Duration cpuMoveDelay = Duration(milliseconds: 450);
 
   static const Duration resultDelay = Duration(seconds: 1);
 
   static const Duration roundAnimationDuration = Duration(milliseconds: 1200);
 
-  // ─────────────────────────────────────────────────────────────
+  // ===========================================================================
   // Room
-  // ─────────────────────────────────────────────────────────────
+  // ===========================================================================
 
   static const int roomCodeLength = 6;
   static const int maxPlayers = 2;
+  static const int minPlayerNameLength = 2;
+  static const int maxPlayerNameLength = 20;
+
+  static const String roomCodeCharacters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
   static const Duration roomExpiryDuration = Duration(hours: 24);
 
-  // ─────────────────────────────────────────────────────────────
+  static final RegExp roomCodeCharacterPattern = RegExp(
+    '[$roomCodeCharacters]',
+  );
+
+  static final RegExp roomCodePattern = RegExp(
+    '^[$roomCodeCharacters]{$roomCodeLength}\$',
+  );
+
+  // ===========================================================================
   // Network
-  // ─────────────────────────────────────────────────────────────
+  // ===========================================================================
+
+  static const Duration socketConnectionTimeout = Duration(seconds: 10);
 }

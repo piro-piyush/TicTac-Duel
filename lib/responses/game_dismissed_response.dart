@@ -3,12 +3,12 @@ import 'package:tictac_duel/lib.dart';
 class GameDismissedResponse {
   const GameDismissedResponse({
     required this.winnerPlayerId,
-    required this.disconnectedPlayerId,
+    required this.exitedPlayerId,
     required this.reason,
   });
 
   final String winnerPlayerId;
-  final String disconnectedPlayerId;
+  final String exitedPlayerId;
   final GameDismissReason reason;
 
   factory GameDismissedResponse.fromJson(dynamic json) {
@@ -18,15 +18,15 @@ class GameDismissedResponse {
       }
 
       final winnerPlayerId = json['winnerPlayerId'];
-      final disconnectedPlayerId = json['disconnectedPlayerId'];
+      final exitedPlayerId = json['exitedPlayerId'];
       final reason = json['reason'];
 
       if (winnerPlayerId is! String || winnerPlayerId.isEmpty) {
         throw const FormatException('Invalid winner player ID');
       }
 
-      if (disconnectedPlayerId is! String || disconnectedPlayerId.isEmpty) {
-        throw const FormatException('Invalid disconnected player ID');
+      if (exitedPlayerId is! String || exitedPlayerId.isEmpty) {
+        throw const FormatException('Invalid exited player ID');
       }
 
       if (reason is! String || reason.isEmpty) {
@@ -35,7 +35,7 @@ class GameDismissedResponse {
 
       return GameDismissedResponse(
         winnerPlayerId: winnerPlayerId,
-        disconnectedPlayerId: disconnectedPlayerId,
+        exitedPlayerId: exitedPlayerId,
         reason: GameDismissReason.values.byName(reason),
       );
     } catch (e) {

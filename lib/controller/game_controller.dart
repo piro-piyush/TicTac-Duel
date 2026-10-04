@@ -425,40 +425,6 @@ class GameController extends GetxController {
     _turnIndex.value = turnIndex;
   }
 
-  void _setNextTurn(String winnerId) {
-    final currentRoom = room;
-
-    if (currentRoom == null) {
-      return;
-    }
-
-    final winnerIndex = currentRoom.players.indexWhere(
-      (player) => player.id == winnerId,
-    );
-
-    if (winnerIndex == -1) {
-      return;
-    }
-
-    _setTurn(playerId: winnerId, turnIndex: winnerIndex);
-  }
-
-  // ===========================================================================
-  // GAME VISIBILITY
-  // ===========================================================================
-
-  // bool get showGame {
-  //   final currentRoom = room;
-  //
-  //   if (currentRoom == null) {
-  //     return false;
-  //   }
-  //
-  //
-  //   return currentRoom.roundStatus == RoundStatus.playing ||
-  //       (currentRoom.roundStatus == RoundStatus.result && !amIReady);
-  // }
-
   bool get isMyTurn {
     return _turnPlayerId.value == playerId;
   }
@@ -573,9 +539,14 @@ class GameController extends GetxController {
   // ===========================================================================
 
   void _handleRoundResult(RoundResultResponse response) {
-    _roundResultSubmitted.value = true;
+    LoggerUtils.debug('ROUND RESULT HANDLER: ${identityHashCode(this)}');
+
+    if (_roundResult.value != null) {
+      return;
+    }
 
     _roundResult.value = response;
+    _roundResultSubmitted.value = true;
 
     setWinningIndexes(response.winningIndexes.toSet());
 
@@ -591,26 +562,22 @@ class GameController extends GetxController {
       _room.value = currentRoom.copyWith(roundStatus: response.roundStatus);
     }
 
+    _setTurn(playerId: response.turnPlayerId, turnIndex: response.turnIndex);
+
     final winnerId = response.winnerId;
 
     if (winnerId != null) {
       _incrementWinnerPoints(winnerId);
-      _setNextTurn(winnerId);
-    } else {
-      _setTurn(playerId: null, turnIndex: 0);
     }
 
-    // Final game result is handled separately.
     if (response.gameFinished) {
       _showFinalResult();
       return;
     }
 
-    // Draw
     if (winnerId == null) {
       GameDialogUtils.showGameResult(
         result: GameResult.draw,
-
         mySymbol: myPlayer.symbol,
         onConfirm: () {
           setReady();
@@ -621,7 +588,6 @@ class GameController extends GetxController {
       return;
     }
 
-    // Winner / loser
     final winner = currentRoom.players.firstWhere(
       (player) => player.id == winnerId,
     );
@@ -761,18 +727,10 @@ class GameController extends GetxController {
     _turnPlayerId.value = response.turnPlayerId;
     _turnIndex.value = response.turnIndex;
 
-    final isMyMove = response.playerId == playerId;
-
-    // Opponent's move.
-    // Just update the board and wait for the next turn.
-    if (!isMyMove) {
-      return;
-    }
-
-    _handleMyMoveResult();
+    _handleMoveResult(response);
   }
 
-  void _handleMyMoveResult() {
+  void _handleMoveResult(MoveResultResponse response) {
     if (_roundResultSubmitted.value) {
       return;
     }
@@ -783,25 +741,21 @@ class GameController extends GetxController {
       return;
     }
 
-    // Draw.
     if (result == GameResult.draw) {
-      GameDialogUtils.showGameResult(
-        result: GameResult.draw,
-        mySymbol: myPlayer.symbol,
-        onConfirm: () {
-          setReady();
-          clearBoard();
-        },
-      );
+      if (response.playerId == playerId) {
+        _submitRoundResult(winningIndexes: const []);
+      }
+
       return;
     }
 
-    // I won.
     final winningIndexes = GameLogicUtils.getWinningIndexes(_board).toList();
 
     setWinningIndexes(winningIndexes.toSet());
 
-    _submitRoundResult(winningIndexes: winningIndexes);
+    if (response.playerId == playerId) {
+      _submitRoundResult(winningIndexes: winningIndexes);
+    }
   }
 
   // ===========================================================================
@@ -837,15 +791,19 @@ class GameController extends GetxController {
   // ===========================================================================
 
   void quitGame() {
-    final currentRoom = room;
+    try {
+      final currentRoom = room;
 
-    if (currentRoom == null) {
+      if (currentRoom == null) {
+        return;
+      }
+
+      _roomSocketService.quitGame(
+        roomCode: currentRoom.roomCode,
+        playerId: playerId,
+      );
+    } catch (e) {
       return;
     }
-
-    _roomSocketService.quitGame(
-      roomCode: currentRoom.roomCode,
-      playerId: playerId,
-    );
   }
 }
