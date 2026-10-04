@@ -1,19 +1,69 @@
 import 'package:tictac_duel/lib.dart';
 
 class ResultModel {
-  const ResultModel({
+  const ResultModel._({
     required this.playerOne,
     required this.playerTwo,
     required this.playerOnePoints,
     required this.playerTwoPoints,
     required this.currentRound,
     required this.maxRounds,
+    required this.isOnline,
     this.gameWinner,
     this.hasWon = false,
     this.isDraw = false,
     this.showConfetti = false,
-    this.isOnline = false,
+    this.dismissReason,
   });
+
+  const ResultModel.completed({
+    required PlayerModel playerOne,
+    required PlayerModel playerTwo,
+    required int playerOnePoints,
+    required int playerTwoPoints,
+    required int currentRound,
+    required int maxRounds,
+    required bool isOnline,
+    PlayerModel? gameWinner,
+    bool hasWon = false,
+    bool isDraw = false,
+    bool showConfetti = false,
+  }) : this._(
+         playerOne: playerOne,
+         playerTwo: playerTwo,
+         playerOnePoints: playerOnePoints,
+         playerTwoPoints: playerTwoPoints,
+         currentRound: currentRound,
+         maxRounds: maxRounds,
+         isOnline: isOnline,
+         gameWinner: gameWinner,
+         hasWon: hasWon,
+         isDraw: isDraw,
+         showConfetti: showConfetti,
+       );
+
+  const ResultModel.dismissed({
+    required PlayerModel playerOne,
+    required PlayerModel playerTwo,
+    required int playerOnePoints,
+    required int playerTwoPoints,
+    required int currentRound,
+    required int maxRounds,
+    required bool isOnline,
+    required PlayerModel gameWinner,
+    required GameDismissReason dismissReason,
+  }) : this._(
+         playerOne: playerOne,
+         playerTwo: playerTwo,
+         playerOnePoints: playerOnePoints,
+         playerTwoPoints: playerTwoPoints,
+         currentRound: currentRound,
+         maxRounds: maxRounds,
+         isOnline: isOnline,
+         gameWinner: gameWinner,
+         hasWon: true,
+         dismissReason: dismissReason,
+       );
 
   final PlayerModel playerOne;
   final PlayerModel playerTwo;
@@ -32,7 +82,13 @@ class ResultModel {
 
   final bool isOnline;
 
+  final GameDismissReason? dismissReason;
+
   bool get isLocal => !isOnline;
+
+  bool get isDismissed => dismissReason != null;
+
+  bool get isCompleted => dismissReason == null;
 
   ResultModel copyWith({
     PlayerModel? playerOne,
@@ -46,19 +102,21 @@ class ResultModel {
     bool? isDraw,
     bool? showConfetti,
     bool? isOnline,
+    GameDismissReason? dismissReason,
   }) {
-    return ResultModel(
+    return ResultModel._(
       playerOne: playerOne ?? this.playerOne,
       playerTwo: playerTwo ?? this.playerTwo,
       playerOnePoints: playerOnePoints ?? this.playerOnePoints,
       playerTwoPoints: playerTwoPoints ?? this.playerTwoPoints,
       currentRound: currentRound ?? this.currentRound,
       maxRounds: maxRounds ?? this.maxRounds,
+      isOnline: isOnline ?? this.isOnline,
       gameWinner: gameWinner ?? this.gameWinner,
       hasWon: hasWon ?? this.hasWon,
       isDraw: isDraw ?? this.isDraw,
       showConfetti: showConfetti ?? this.showConfetti,
-      isOnline: isOnline ?? this.isOnline,
+      dismissReason: dismissReason ?? this.dismissReason,
     );
   }
 }

@@ -6,14 +6,13 @@ class RoomModel {
     required this.roomCode,
     required this.isPrivate,
     required this.hostPlayerId,
-    required this.maxPlayers,
     required this.maxRounds,
     required this.currentRound,
     required this.roundStatus,
     required this.theme,
     required this.players,
-    required this.turnPlayerId,
-    required this.turnIndex,
+    // required this.turnPlayerId,
+    // required this.turnIndex,
   });
 
   final String id;
@@ -21,40 +20,39 @@ class RoomModel {
   final bool isPrivate;
   final String hostPlayerId;
 
-  final int maxPlayers;
   final int maxRounds;
   final int currentRound;
   final RoundStatus roundStatus;
 
   final RoomTheme theme;
-  final List<OnlinePlayerModel> players;
+  final List<PlayerModel> players;
 
-  final String? turnPlayerId;
-  final int turnIndex;
+  // final String? turnPlayerId;
+  // final int turnIndex;
 
   int get occupancy => players.length;
 
-  OnlinePlayerModel? get turn {
-    final playerId = turnPlayerId;
-
-    if (playerId == null) {
-      return null;
-    }
-
-    for (final player in players) {
-      if (player.id == playerId) {
-        return player;
-      }
-    }
-
-    return null;
-  }
+  // OnlinePlayerModel? get turn {
+  //   final playerId = turnPlayerId;
+  //
+  //   if (playerId == null) {
+  //     return null;
+  //   }
+  //
+  //   for (final player in players) {
+  //     if (player.id == playerId) {
+  //       return player;
+  //     }
+  //   }
+  //
+  //   return null;
+  // }
 
   // ===========================================================================
   // PLAYERS
   // ===========================================================================
 
-  OnlinePlayerModel get playerOne {
+  PlayerModel get playerOne {
     if (players.isEmpty) {
       throw StateError('Room does not have player one');
     }
@@ -62,7 +60,7 @@ class RoomModel {
     return players[0];
   }
 
-  OnlinePlayerModel get playerTwo {
+  PlayerModel? get playerTwo {
     if (players.length < 2) {
       throw StateError('Room does not have player two');
     }
@@ -89,7 +87,6 @@ class RoomModel {
         roomCode: _requiredString(data, 'roomCode'),
         isPrivate: _requiredBool(data, 'isPrivate'),
         hostPlayerId: _requiredString(data, 'hostPlayerId'),
-        maxPlayers: _requiredInt(data, 'maxPlayers'),
         maxRounds: _requiredInt(data, 'maxRounds'),
         currentRound: _requiredInt(data, 'currentRound'),
         roundStatus: RoundStatus.values.byName(
@@ -97,10 +94,10 @@ class RoomModel {
         ),
         theme: RoomTheme.values.byName(_requiredString(data, 'theme')),
         players: players
-            .map((player) => OnlinePlayerModel.fromJson(player))
+            .map((player) => PlayerModel.fromJson(player))
             .toList(),
-        turnPlayerId: _optionalString(data, 'turnPlayerId'),
-        turnIndex: _requiredInt(data, 'turnIndex'),
+        // turnPlayerId: _optionalString(data, 'turnPlayerId'),
+        // turnIndex: _requiredInt(data, 'turnIndex'),
       );
     } on FormatException {
       rethrow;
@@ -119,19 +116,7 @@ class RoomModel {
     return value;
   }
 
-  static String? _optionalString(Map<String, dynamic> json, String key) {
-    final value = json[key];
 
-    if (value == null) {
-      return null;
-    }
-
-    if (value is! String || value.isEmpty) {
-      throw FormatException('Invalid $key');
-    }
-
-    return value;
-  }
 
   static bool _requiredBool(Map<String, dynamic> json, String key) {
     final value = json[key];
@@ -164,24 +149,23 @@ class RoomModel {
     int? currentRound,
     RoundStatus? roundStatus,
     RoomTheme? theme,
-    List<OnlinePlayerModel>? players,
+    List<PlayerModel>? players,
     String? turnPlayerId,
-    int? turnIndex,
-    int? boardSize,
+    // int? turnIndex,
+    // int? boardSize,
   }) {
     return RoomModel(
       id: id ?? this.id,
       roomCode: roomCode ?? this.roomCode,
       isPrivate: isPrivate ?? this.isPrivate,
       hostPlayerId: hostPlayerId ?? this.hostPlayerId,
-      maxPlayers: maxPlayers ?? this.maxPlayers,
       maxRounds: maxRounds ?? this.maxRounds,
       currentRound: currentRound ?? this.currentRound,
       roundStatus: roundStatus ?? this.roundStatus,
       theme: theme ?? this.theme,
       players: players ?? this.players,
-      turnPlayerId: turnPlayerId ?? this.turnPlayerId,
-      turnIndex: turnIndex ?? this.turnIndex,
+      // turnPlayerId: turnPlayerId ?? this.turnPlayerId,
+      // turnIndex: turnIndex ?? this.turnIndex,
     );
   }
 }

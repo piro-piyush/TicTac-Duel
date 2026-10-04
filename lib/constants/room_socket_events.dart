@@ -3,6 +3,7 @@ class RoomSocketEvents {
 
   // Room connection
   static const startGame = 'start_game';
+  static const quitGame = 'quit_game';
   static const connectRoom = 'connect_room';
   static const roomConnected = 'room_connected';
 
