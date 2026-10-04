@@ -37,3 +37,8 @@ enum RoundStatus {
   playing,
   result,
 }
+
+enum GameDismissReason {
+  opponentDisconnected,
+  opponentQuit,
+}

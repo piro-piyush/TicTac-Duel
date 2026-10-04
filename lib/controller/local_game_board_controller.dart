@@ -14,7 +14,9 @@ class LocalGameBoardController extends GetxController {
   Timer? _cpuMoveTimer;
   Timer? _roundAnimationTimer;
   Timer? _resultTimer;
+
   String get playerId => _playerController.playerId;
+
   // ===========================================================================
   // BOARD
   // ===========================================================================
@@ -76,8 +78,6 @@ class LocalGameBoardController extends GetxController {
   PlayerModel get opponentPlayer =>
       turnIndex == 0 ? game.playerTwo : game.playerOne;
 
-
-
   PlayerSymbol get currentSymbol => currentPlayer.symbol;
 
   bool get isBoardFull => !_board.contains(null);
@@ -99,8 +99,21 @@ class LocalGameBoardController extends GetxController {
 
   @override
   void onClose() {
-    _cancelTimers();
+    closeGame();
     super.onClose();
+  }
+
+  // ===========================================================================
+  // GAME LIFECYCLE
+  // ===========================================================================
+
+  void quitGame() {
+    closeGame();
+    Get.back();
+  }
+
+  void closeGame() {
+    _cancelTimers();
   }
 
   // ===========================================================================
@@ -246,7 +259,7 @@ class LocalGameBoardController extends GetxController {
 
     final hasWon = winner?.id == game.playerOne.id;
 
-    final result = ResultModel(
+    final result = ResultModel.completed(
       playerOne: game.playerOne,
       playerTwo: game.playerTwo,
       playerOnePoints: playerOnePoints,
@@ -257,6 +270,7 @@ class LocalGameBoardController extends GetxController {
       isDraw: isDraw,
       hasWon: hasWon,
       showConfetti: hasWon,
+      isOnline: false
     );
 
     AppNavigation.replaceResult(result);
@@ -332,7 +346,7 @@ class LocalGameBoardController extends GetxController {
 
   bool get _isFinalRound => currentRound >= game.maxRounds;
 
-  LocalPlayerModel? get gameWinner {
+  PlayerModel? get gameWinner {
     if (!_isFinalRound) {
       return null;
     }

@@ -119,20 +119,12 @@ class GameDialogUtils {
                     ? 'The game ended in a draw.'
                     : '$winnerName wins the game!',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Get.theme.colorScheme.onSurface,
-                ),
+                style: TextStyle(color: Get.theme.colorScheme.onSurface),
               ),
               const SizedBox(height: 20),
-              _buildScoreRow(
-                playerOneName,
-                playerOneScore,
-              ),
+              _buildScoreRow(playerOneName, playerOneScore),
               const SizedBox(height: 8),
-              _buildScoreRow(
-                playerTwoName,
-                playerTwoScore,
-              ),
+              _buildScoreRow(playerTwoName, playerTwoScore),
             ],
           ),
           actionsAlignment: MainAxisAlignment.center,
@@ -209,23 +201,25 @@ class GameDialogUtils {
   // GAME DISMISSED
   // ===========================================================================
 
-  static Future<void> showGameDismissed({required String reason}) {
+  static Future<void> showGameDismissed({
+    required GameDismissedResponse response,
+  }) {
+    final reason = response.reason;
+
     return Get.dialog<void>(
       PopScope(
         canPop: false,
         child: AlertDialog(
           backgroundColor: AppColors.surface,
           shape: _dialogShape,
+          icon: Icon(reason.icon, color: reason.color, size: 48),
           title: Text(
             'Game Dismissed',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Get.theme.colorScheme.primary,
-              fontWeight: FontWeight.w800,
-            ),
+            style: TextStyle(color: reason.color, fontWeight: FontWeight.w800),
           ),
           content: Text(
-            reason,
+            reason.message,
             textAlign: TextAlign.center,
             style: TextStyle(color: Get.theme.colorScheme.onSurface),
           ),
@@ -236,14 +230,14 @@ class GameDialogUtils {
                 Get.back();
                 AppNavigation.goToHome();
               },
-              child: const Text('Back Home'),
+              child: const Text('BACK HOME'),
             ),
             ElevatedButton(
               onPressed: () {
                 Get.back();
                 AppNavigation.replaceCreateRoom();
               },
-              child: const Text('New Game'),
+              child: const Text('NEW GAME'),
             ),
           ],
         ),
@@ -263,10 +257,7 @@ class GameDialogUtils {
     ),
   );
 
-  static Widget _buildScoreRow(
-      String playerName,
-      int score,
-      ) {
+  static Widget _buildScoreRow(String playerName, int score) {
     return Row(
       children: [
         Expanded(
@@ -289,5 +280,31 @@ class GameDialogUtils {
         ),
       ],
     );
+  }
+
+  // ===========================================================================
+  // QUIT CONFIRMATION
+  // ===========================================================================
+
+  static Future<bool> confirmQuit() async {
+    final result = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('Quit Game?'),
+        content: const Text('Are you sure you want to quit the current game?'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: const Text('CANCEL'),
+          ),
+          TextButton(
+            onPressed: () => Get.back(result: true),
+            child: const Text('QUIT'),
+          ),
+        ],
+      ),
+      barrierDismissible: false,
+    );
+
+    return result == true;
   }
 }

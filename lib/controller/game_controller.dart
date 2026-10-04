@@ -28,22 +28,29 @@ class GameController extends GetxController {
     GameConstants.totalCells,
     null,
   ).obs;
+
   final RxSet<int> _winningIndexes = <int>{}.obs;
 
   final RxnString _errorMessage = RxnString();
-
   final RxnString _infoMessage = RxnString();
 
   final Rxn<RoundResultResponse> _roundResult = Rxn<RoundResultResponse>();
+
   final RxInt _playerOnePoints = 0.obs;
   final RxInt _playerTwoPoints = 0.obs;
 
   final RxBool _playerOneReady = false.obs;
   final RxBool _playerTwoReady = false.obs;
+
+  final RxBool _roundResultSubmitted = false.obs;
+  final RxBool _movePending = false.obs;
+
+  final RxInt _turnIndex = 0.obs;
+  final RxnString _turnPlayerId = RxnString();
+
   final RxBool _isLoading = false.obs;
 
   final RxBool _showRoundAnimation = false.obs;
-
   final RxInt _animatedRound = 0.obs;
 
   Timer? _roundAnimationTimer;
@@ -80,22 +87,62 @@ class GameController extends GetxController {
 
   bool get playerTwoReady => _playerTwoReady.value;
 
-  PlayerModel? get playerOne => room?.playerOne;
+  String? get turnPlayerId => _turnPlayerId.value;
 
-  PlayerModel? get playerTwo => room?.playerTwo;
+  int get turnIndex => _turnIndex.value;
+
+  PlayerModel get playerOne {
+    final currentRoom = room;
+
+    if (currentRoom == null || currentRoom.players.isEmpty) {
+      throw StateError('Room is not initialized');
+    }
+
+    return currentRoom.players.first;
+  }
+
+  PlayerModel? get playerTwo {
+    final currentRoom = room;
+
+    if (currentRoom == null || currentRoom.players.length < 2) {
+      return null;
+    }
+
+    return currentRoom.players[1];
+  }
+
+  PlayerModel get myPlayer {
+    final currentRoom = room;
+
+    if (currentRoom == null) {
+      throw StateError('Room is not initialized');
+    }
+
+    return currentRoom.players.firstWhere(
+      (player) => player.id == playerId,
+      orElse: () => throw StateError('Current player not found in room'),
+    );
+  }
+
+  PlayerModel get currentPlayer {
+    final currentRoom = room;
+
+    if (currentRoom == null) {
+      throw StateError('Room is not initialized');
+    }
+
+    if (_turnIndex.value < 0 ||
+        _turnIndex.value >= currentRoom.players.length) {
+      throw StateError('Invalid current player index');
+    }
+
+    return currentRoom.players[_turnIndex.value];
+  }
 
   bool get amIReady {
-    final player = myPlayer;
+    final currentPlayer = myPlayer;
 
-    if (player == null) {
-      return false;
-    }
-
-    if (player.id == playerOne?.id) {
-      return playerOneReady;
-    }
-
-    return playerTwoReady;
+    return currentPlayer.id == playerOne.id ? playerOneReady : playerTwoReady;
   }
 
   // ===========================================================================
@@ -105,6 +152,7 @@ class GameController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+
     _listenForErrors();
     _initialize();
   }
@@ -114,8 +162,10 @@ class GameController extends GetxController {
       if (message == null || message.isEmpty) {
         return;
       }
+
       PopupUtils.showError('Room error: $message');
       LoggerUtils.error('Room error: $message');
+
       clearError();
     });
   }
@@ -134,11 +184,12 @@ class GameController extends GetxController {
       );
     } catch (error) {
       setError(error.toString());
+      _isLoading.value = false;
     }
   }
 
   // ===========================================================================
-  // SOCKET
+  // SOCKET EVENTS
   // ===========================================================================
 
   void _listenToSocketEvents() {
@@ -162,32 +213,55 @@ class GameController extends GetxController {
     _playerOneReady.value = response.playerOneReady;
     _playerTwoReady.value = response.playerTwoReady;
 
+    _turnPlayerId.value = response.turnPlayerId;
+    _turnIndex.value = response.turnIndex;
+
     _isLoading.value = false;
 
     clearError();
     clearInfo();
   }
 
-  void _handleReadyUpdated(RoomModel updatedRoom) {
-    _setRoom(updatedRoom);
+  void _handleReadyUpdated(ReadyUpdatedResponse response) {
+    if (response.playerId == playerOne.id) {
+      _playerOneReady.value = response.isReady;
+      return;
+    }
+
+    if (response.playerId == playerTwo?.id) {
+      _playerTwoReady.value = response.isReady;
+    }
   }
 
-  void _handleRoundStarted(RoomModel updatedRoom) {
-    _setRoom(updatedRoom);
-    _prepareNewRound(updatedRoom);
+  void _handleRoundStarted(RoundStartedResponse response) {
+    _setRoom(response.room);
+
+    _playerOneReady.value = response.playerOneReady;
+    _playerTwoReady.value = response.playerTwoReady;
+
+    _turnPlayerId.value = response.turnPlayerId;
+    _turnIndex.value = response.turnIndex;
+
+    _movePending.value = false;
+    _roundResultSubmitted.value = false;
+    _roundResult.value = null;
+    clearBoard();
   }
 
   void _handlePlayerJoined(PlayerJoinedResponse response) {
     _setPlayer(response.player);
 
-    _playerTwoPoints.value = response.points;
-    _playerTwoReady.value = response.isReady;
+    _setPlayerPoints(response.player.id, response.points);
+
+    _setPlayerReady(response.player.id, response.isReady);
   }
 
   void _handlePlayerLeft(String playerId) {
-    final currentRoom = _room.value;
+    final currentRoom = room;
 
-    if (currentRoom == null) return;
+    if (currentRoom == null) {
+      return;
+    }
 
     final isPlayerOne = currentRoom.playerOne.id == playerId;
 
@@ -203,6 +277,9 @@ class GameController extends GetxController {
   }
 
   void _handleRoomError(String message) {
+    _roundResultSubmitted.value = false;
+    _movePending.value = false;
+
     setError(message);
   }
 
@@ -211,7 +288,36 @@ class GameController extends GetxController {
   }
 
   void _handleGameDismissed(GameDismissedResponse response) {
-    GameDialogUtils.showGameDismissed(reason: response.reason);
+    final currentRoom = room;
+    final currentPlayerTwo = playerTwo;
+
+    if (currentRoom == null || currentPlayerTwo == null) {
+      setInfo('Unable to load game result.');
+      return;
+    }
+
+    final winner = currentRoom.players.firstWhereOrNull(
+      (player) => player.id == response.winnerPlayerId,
+    );
+
+    if (winner == null) {
+      setInfo('Unable to determine game winner.');
+      return;
+    }
+
+    final result = ResultModel.dismissed(
+      playerOne: playerOne,
+      playerTwo: currentPlayerTwo,
+      playerOnePoints: playerOnePoints,
+      playerTwoPoints: playerTwoPoints,
+      currentRound: currentRoom.currentRound,
+      maxRounds: currentRoom.maxRounds,
+      isOnline: true,
+      gameWinner: winner,
+      dismissReason: response.reason,
+    );
+
+    AppNavigation.replaceResult(result);
   }
 
   // ===========================================================================
@@ -219,14 +325,10 @@ class GameController extends GetxController {
   // ===========================================================================
 
   void _setRoom(RoomModel value) {
-    final previousRoom = _room.value;
+    final previousRoom = room;
     final previousRound = previousRoom?.currentRound;
 
     _room.value = value;
-
-    if (_board.length != GameConstants.totalCells) {
-      _resetBoard();
-    }
 
     final roundChanged =
         previousRound != null && previousRound != value.currentRound;
@@ -238,12 +340,15 @@ class GameController extends GetxController {
     }
   }
 
-  void _setPlayer(OnlinePlayerModel player) {
-    final currentRoom = _room.value;
+  void _setPlayer(PlayerModel player) {
+    final currentRoom = room;
 
-    if (currentRoom == null) return;
+    if (currentRoom == null) {
+      return;
+    }
 
     final players = [...currentRoom.players];
+
     final index = players.indexWhere((item) => item.id == player.id);
 
     if (index == -1) {
@@ -256,9 +361,11 @@ class GameController extends GetxController {
   }
 
   void _removePlayer(String playerId) {
-    final currentRoom = _room.value;
+    final currentRoom = room;
 
-    if (currentRoom == null) return;
+    if (currentRoom == null) {
+      return;
+    }
 
     _room.value = currentRoom.copyWith(
       players: currentRoom.players
@@ -267,43 +374,98 @@ class GameController extends GetxController {
     );
   }
 
-  void _prepareNewRound(RoomModel currentRoom) {
-    _roundResult.value = null;
+  // ===========================================================================
+  // PLAYER STATE
+  // ===========================================================================
 
-    clearBoard();
+  void _setPlayerPoints(String id, int points) {
+    if (id == playerOne.id) {
+      _playerOnePoints.value = points;
+      return;
+    }
 
-    if (currentRoom.roundStatus == RoundStatus.playing) {
-      _showRoundAnimationFor(currentRoom);
+    if (id == playerTwo?.id) {
+      _playerTwoPoints.value = points;
     }
   }
 
+  void _setPlayerReady(String id, bool isReady) {
+    if (id == playerOne.id) {
+      _playerOneReady.value = isReady;
+      return;
+    }
+
+    if (id == playerTwo?.id) {
+      _playerTwoReady.value = isReady;
+    }
+  }
+
+  void _incrementWinnerPoints(String winnerId) {
+    if (winnerId == playerOne.id) {
+      _playerOnePoints.value++;
+      return;
+    }
+
+    if (winnerId == playerTwo?.id) {
+      _playerTwoPoints.value++;
+    }
+  }
+
+  void _resetPlayersReady() {
+    _playerOneReady.value = false;
+    _playerTwoReady.value = false;
+  }
+
   // ===========================================================================
-  // PLAYER
+  // TURN
   // ===========================================================================
 
-  OnlinePlayerModel? get myPlayer {
+  void _setTurn({required String? playerId, required int turnIndex}) {
+    _turnPlayerId.value = playerId;
+    _turnIndex.value = turnIndex;
+  }
+
+  void _setNextTurn(String winnerId) {
     final currentRoom = room;
 
     if (currentRoom == null) {
-      return null;
+      return;
     }
 
-    return currentRoom.players
-        .where((player) => player.id == playerId)
-        .firstOrNull;
+    final winnerIndex = currentRoom.players.indexWhere(
+      (player) => player.id == winnerId,
+    );
+
+    if (winnerIndex == -1) {
+      return;
+    }
+
+    _setTurn(playerId: winnerId, turnIndex: winnerIndex);
   }
-
-
-  OnlinePlayerModel get currentPlayer {
-    final currentRoom = room!;
-
-    return currentRoom.players[currentRoom.turnIndex];
-  }
-  // bool get amIReady => myPlayer?.isReady ?? false;
 
   // ===========================================================================
   // GAME VISIBILITY
   // ===========================================================================
+
+  // bool get showGame {
+  //   final currentRoom = room;
+  //
+  //   if (currentRoom == null) {
+  //     return false;
+  //   }
+  //
+  //
+  //   return currentRoom.roundStatus == RoundStatus.playing ||
+  //       (currentRoom.roundStatus == RoundStatus.result && !amIReady);
+  // }
+
+  bool get isMyTurn {
+    return _turnPlayerId.value == playerId;
+  }
+
+  bool get isGamePlaying {
+    return room?.roundStatus == RoundStatus.playing;
+  }
 
   bool get showGame {
     final currentRoom = room;
@@ -312,31 +474,16 @@ class GameController extends GetxController {
       return false;
     }
 
-    return currentRoom.roundStatus == RoundStatus.playing ||
-        (currentRoom.roundStatus == RoundStatus.result && !amIReady);
-  }
-
-  bool get isMyTurn {
-    final currentRoom = room;
-
-    if (currentRoom == null) {
-      return false;
+    if (currentRoom.roundStatus == RoundStatus.playing) {
+      return true;
     }
 
-    return currentRoom.turnPlayerId == playerId;
-  }
+    if (currentRoom.roundStatus == RoundStatus.result) {
+      return !amIReady;
+    }
 
-  bool get isGamePlaying {
-    return room?.roundStatus == RoundStatus.playing;
+    return false;
   }
-
-  bool get isRoundResult {
-    return room?.roundStatus == RoundStatus.result;
-  }
-
-  // bool get isGameFinished {
-  //   return room?.roundStatus == RoundStatus.completed;
-  // }
 
   // ===========================================================================
   // GAME
@@ -373,48 +520,35 @@ class GameController extends GetxController {
   void makeMove(int index) {
     final currentRoom = room;
 
-    if (currentRoom == null) {
+    if (currentRoom == null ||
+        !isGamePlaying ||
+        _roundResultSubmitted.value ||
+        _movePending.value ||
+        !isMyTurn ||
+        index < 0 ||
+        index >= _board.length ||
+        _board[index] != null) {
       return;
     }
 
-    if (!isGamePlaying || !isMyTurn) {
-      return;
-    }
+    _movePending.value = true;
 
-    if (index < 0 || index >= _board.length) {
-      return;
-    }
-
-    if (_board[index] != null) {
-      return;
-    }
-
-    final symbol = currentRoom.players[currentRoom.turnIndex].symbol;
-
-    _board[index] = symbol;
-
-    final result = GameLogicUtils.checkWinner(_board);
+    _musicController.playTouch();
 
     _roomSocketService.makeMove(
       roomCode: currentRoom.roomCode,
       index: index,
       playerId: playerId,
     );
-
-    if (result == GameResult.inProgress) {
-      return;
-    }
-
-    final winningIndexes = result == GameResult.draw
-        ? <int>[]
-        : GameLogicUtils.getWinningIndexes(_board).toList();
-
-    _submitRoundResult(winningIndexes: winningIndexes);
   }
 
   // ===========================================================================
-  // ROUND ANIMATION
+  // ROUND
   // ===========================================================================
+
+  // void _prepareNewRound() {
+  //
+  // }
 
   void _showRoundAnimationFor(RoomModel currentRoom) {
     _roundAnimationTimer?.cancel();
@@ -439,25 +573,81 @@ class GameController extends GetxController {
   // ===========================================================================
 
   void _handleRoundResult(RoundResultResponse response) {
+    _roundResultSubmitted.value = true;
+
     _roundResult.value = response;
 
-    if (response.winningIndexes.isNotEmpty) {
-      setWinningIndexes(response.winningIndexes.toSet());
-    }
+    setWinningIndexes(response.winningIndexes.toSet());
 
-    if (!response.gameFinished) {
-      return;
-    }
+    _resetPlayersReady();
 
-    _showFinalResult();
-  }
-
-  void _submitRoundResult({required List<int> winningIndexes}) {
     final currentRoom = room;
 
     if (currentRoom == null) {
       return;
     }
+
+    if (response.roundStatus != null) {
+      _room.value = currentRoom.copyWith(roundStatus: response.roundStatus);
+    }
+
+    final winnerId = response.winnerId;
+
+    if (winnerId != null) {
+      _incrementWinnerPoints(winnerId);
+      _setNextTurn(winnerId);
+    } else {
+      _setTurn(playerId: null, turnIndex: 0);
+    }
+
+    // Final game result is handled separately.
+    if (response.gameFinished) {
+      _showFinalResult();
+      return;
+    }
+
+    // Draw
+    if (winnerId == null) {
+      GameDialogUtils.showGameResult(
+        result: GameResult.draw,
+
+        mySymbol: myPlayer.symbol,
+        onConfirm: () {
+          setReady();
+          clearBoard();
+        },
+      );
+
+      return;
+    }
+
+    // Winner / loser
+    final winner = currentRoom.players.firstWhere(
+      (player) => player.id == winnerId,
+    );
+
+    final result = winner.symbol == PlayerSymbol.x
+        ? GameResult.xWins
+        : GameResult.oWins;
+
+    GameDialogUtils.showGameResult(
+      result: result,
+      mySymbol: myPlayer.symbol,
+      onConfirm: () {
+        setReady();
+        clearBoard();
+      },
+    );
+  }
+
+  void _submitRoundResult({required List<int> winningIndexes}) {
+    final currentRoom = room;
+
+    if (currentRoom == null || _roundResultSubmitted.value) {
+      return;
+    }
+
+    _roundResultSubmitted.value = true;
 
     _roomSocketService.submitGameResult(
       roomCode: currentRoom.roomCode,
@@ -466,30 +656,30 @@ class GameController extends GetxController {
     );
   }
 
+  // ===========================================================================
+  // FINAL RESULT
+  // ===========================================================================
+
   void _showFinalResult() {
     try {
       final currentRoom = room;
+      final currentPlayerTwo = playerTwo;
 
-      if (currentRoom == null) {
+      if (currentRoom == null || currentPlayerTwo == null) {
+        setInfo('Unable to load game result.');
         return;
       }
-
-      final currentPlayerOne = currentRoom.playerOne;
-      final currentPlayerTwo = currentRoom.playerTwo;
-
-      final playerOnePoints = _playerOnePoints.value;
-      final playerTwoPoints = _playerTwoPoints.value;
 
       final isDraw = playerOnePoints == playerTwoPoints;
 
       final winner = isDraw
           ? null
           : playerOnePoints > playerTwoPoints
-          ? currentPlayerOne
+          ? playerOne
           : currentPlayerTwo;
 
-      final result = ResultModel(
-        playerOne: currentPlayerOne,
+      final result = ResultModel.completed(
+        playerOne: playerOne,
         playerTwo: currentPlayerTwo,
         playerOnePoints: playerOnePoints,
         playerTwoPoints: playerTwoPoints,
@@ -505,14 +695,8 @@ class GameController extends GetxController {
       AppNavigation.replaceResult(result);
     } catch (error, stackTrace) {
       LoggerUtils.error('GameController._showFinalResult', error, stackTrace);
-
       setInfo('Unable to load game result.');
     }
-  }
-
-  void prepareNextRound() {
-    _roundResult.value = null;
-    clearBoard();
   }
 
   // ===========================================================================
@@ -536,15 +720,11 @@ class GameController extends GetxController {
   }
 
   // ===========================================================================
-  // BOARD STATE
+  // BOARD
   // ===========================================================================
 
   void updateBoardValue(int index, PlayerSymbol symbol) {
-    if (index < 0 || index >= _board.length) {
-      return;
-    }
-
-    if (_board[index] != null) {
+    if (index < 0 || index >= _board.length || _board[index] != null) {
       return;
     }
 
@@ -561,9 +741,7 @@ class GameController extends GetxController {
       ..addAll(indexes);
   }
 
-  void clearBoard() => _resetBoard();
-
-  void _resetBoard() {
+  void clearBoard() {
     _board.assignAll(
       List<PlayerSymbol?>.filled(GameConstants.totalCells, null),
     );
@@ -576,13 +754,54 @@ class GameController extends GetxController {
   // ===========================================================================
 
   void _handleMoveMade(MoveResultResponse response) {
-    _setRoom(response.room);
+    _movePending.value = false;
 
     updateBoardValue(response.index, response.symbol);
+
+    _turnPlayerId.value = response.turnPlayerId;
+    _turnIndex.value = response.turnIndex;
+
+    final isMyMove = response.playerId == playerId;
+
+    // Opponent's move.
+    // Just update the board and wait for the next turn.
+    if (!isMyMove) {
+      return;
+    }
+
+    _handleMyMoveResult();
   }
 
-  bool get waitingForNextRound {
-    return (room?.currentRound ?? 0) > 0;
+  void _handleMyMoveResult() {
+    if (_roundResultSubmitted.value) {
+      return;
+    }
+
+    final result = GameLogicUtils.checkWinner(_board);
+
+    if (result == GameResult.inProgress) {
+      return;
+    }
+
+    // Draw.
+    if (result == GameResult.draw) {
+      GameDialogUtils.showGameResult(
+        result: GameResult.draw,
+        mySymbol: myPlayer.symbol,
+        onConfirm: () {
+          setReady();
+          clearBoard();
+        },
+      );
+      return;
+    }
+
+    // I won.
+    final winningIndexes = GameLogicUtils.getWinningIndexes(_board).toList();
+
+    setWinningIndexes(winningIndexes.toSet());
+
+    _submitRoundResult(winningIndexes: winningIndexes);
   }
 
   // ===========================================================================
@@ -594,7 +813,12 @@ class GameController extends GetxController {
     _roundAnimationTimer?.cancel();
     _roundAnimationTimer = null;
 
+    _roomSocketService.offPlayerJoined();
+    _roomSocketService.offPlayerLeft();
     _roomSocketService.offReadyUpdated();
+    _roomSocketService.offRoundStarted();
+    _roomSocketService.offRoomClosed();
+    _roomSocketService.offGameDismissed();
     _roomSocketService.offMoveMade();
     _roomSocketService.offRoundResult();
     _roomSocketService.offRoomError();
@@ -602,5 +826,26 @@ class GameController extends GetxController {
     _roomSocketService.disconnect();
 
     super.onClose();
+  }
+
+  bool get waitingForNextRound {
+    return (room?.currentRound ?? 0) > 0;
+  }
+
+  // ===========================================================================
+  // QUIT GAME
+  // ===========================================================================
+
+  void quitGame() {
+    final currentRoom = room;
+
+    if (currentRoom == null) {
+      return;
+    }
+
+    _roomSocketService.quitGame(
+      roomCode: currentRoom.roomCode,
+      playerId: playerId,
+    );
   }
 }
