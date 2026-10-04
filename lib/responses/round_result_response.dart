@@ -1,14 +1,16 @@
+import 'package:tictac_duel/lib.dart';
+
 class RoundResultResponse {
   const RoundResultResponse({
-    required this.winnerPlayerId,
+    required this.winnerId,
+    required this.roundStatus,
     required this.winningIndexes,
-    required this.completedRound,
     required this.gameFinished,
   });
 
-  final String? winnerPlayerId;
+  final String? winnerId;
+  final RoundStatus? roundStatus;
   final List<int> winningIndexes;
-  final int completedRound;
   final bool gameFinished;
 
   factory RoundResultResponse.fromJson(dynamic json) {
@@ -16,13 +18,17 @@ class RoundResultResponse {
       throw const FormatException('Invalid round result response');
     }
 
-    final winnerPlayerId = json['winnerPlayerId'];
+    final winnerId = json['winnerId'];
+    final roundStatus = json['roundStatus'];
     final winningIndexesData = json['winningIndexes'];
-    final completedRound = json['completedRound'];
     final gameFinished = json['gameFinished'];
 
-    if (winnerPlayerId != null && winnerPlayerId is! String) {
-      throw const FormatException('Invalid winner player ID');
+    if (winnerId != null && winnerId is! String) {
+      throw const FormatException('Invalid winner ID');
+    }
+
+    if (roundStatus != null && roundStatus is! String) {
+      throw const FormatException('Invalid round status');
     }
 
     if (winningIndexesData is! List) {
@@ -33,18 +39,16 @@ class RoundResultResponse {
       throw const FormatException('Winning indexes must contain only integers');
     }
 
-    if (completedRound is! int) {
-      throw const FormatException('Invalid completed round');
-    }
-
     if (gameFinished is! bool) {
       throw const FormatException('Invalid game finished value');
     }
 
     return RoundResultResponse(
-      winnerPlayerId: winnerPlayerId as String?,
+      winnerId: winnerId as String?,
+      roundStatus: roundStatus != null
+          ? RoundStatus.values.byName(roundStatus as String)
+          : null,
       winningIndexes: List<int>.from(winningIndexesData),
-      completedRound: completedRound,
       gameFinished: gameFinished,
     );
   }

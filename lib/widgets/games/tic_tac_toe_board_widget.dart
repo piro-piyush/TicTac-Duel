@@ -66,7 +66,7 @@ class TicTacToeBoardWidget extends StatelessWidget {
                     itemBuilder: (context, index) {
                       return GameBoardCellWidget(
                         index: index,
-                        values: values,
+                        symbol: values[index],
                         theme: roomTheme,
                         isMyTurn: isMyTurn,
                         onCellTap: onCellTap,
