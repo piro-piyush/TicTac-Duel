@@ -40,30 +40,27 @@ class ResultScreen extends GetView<ResultController> {
         Column(
           spacing: Dimens.spaceBtwSections,
           children: [
-            _buildResultIcon(hasWon: state.hasWon, isDraw: state.isDraw),
+            _buildResultAnimation(state),
             _buildResultHeader(context, state),
           ],
         ),
         ResultScoreCardWidget(
           state: state,
-          isPlayerOneMe: state.playerOne.id == GameConstants.localPlayerOneId,
-          isPlayerTwoMe: state.playerTwo.id == GameConstants.localPlayerOneId,
+          isPlayerOneMe: controller.isMe(state.playerOne),
+          isPlayerTwoMe: controller.isMe(state.playerTwo),
           isOnline: state.isOnline,
         ),
-        Text(
-          'ROUND ${state.currentRound} / ${state.maxRounds}',
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
+        _buildRoundLabel(context, state),
       ],
     );
   }
 
   // ===========================================================================
-  // RESULT ICON
+  // RESULT ANIMATION
   // ===========================================================================
 
-  Widget _buildResultIcon({required bool hasWon, required bool isDraw}) {
-    if (isDraw) {
+  Widget _buildResultAnimation(ResultModel state) {
+    if (state.isDraw) {
       return const Icon(
         Icons.handshake_rounded,
         color: AppColors.neonCyan,
@@ -72,12 +69,12 @@ class ResultScreen extends GetView<ResultController> {
     }
 
     return Lottie.asset(
-      hasWon
+      state.hasWon
           ? AnimationConstants.trophyAnimation
           : AnimationConstants.loseAnimation,
       width: Dimens.oneHundred,
       height: Dimens.oneHundred,
-      repeat: !hasWon,
+      repeat: !state.hasWon,
     );
   }
 
@@ -86,51 +83,41 @@ class ResultScreen extends GetView<ResultController> {
   // ===========================================================================
 
   Widget _buildResultHeader(BuildContext context, ResultModel state) {
+    final winner = state.gameWinner;
+
+    if (!state.isDraw && winner == null) {
+      return const SizedBox.shrink();
+    }
+
     final String title;
     final String message;
 
     if (state.isDraw) {
-      title = 'DRAW';
-      message = 'The game ended in a draw.';
+      title = 'IT\'S A DRAW!';
+      message = 'No winner this time. Great game!';
     } else if (state.isDismissed) {
-      final winner = state.gameWinner;
-
-      if (winner == null || state.dismissReason == null) {
-        return const SizedBox.shrink();
-      }
-
       title = state.hasWon ? 'YOU WON!' : 'YOU LOSE';
-      message = state.dismissReason!.message;
+      message = state.dismissReason?.message ?? 'The game has ended.';
     } else if (state.isLocal) {
-      final winner = state.gameWinner;
-
-      if (winner == null) {
-        return const SizedBox.shrink();
-      }
-
-      final isPlayerOneWinner = winner.id == state.playerOne.id;
-
-      title = isPlayerOneWinner ? 'YOU WON!' : 'YOU LOSE';
-      message = '${winner.name} wins the game.';
+      title = '${winner!.name.toUpperCase()} WINS!';
+      message = 'Congratulations, ${winner.name}! Great game.';
+    } else if (state.hasWon) {
+      title = 'YOU WON!';
+      message = 'Congratulations! You played a great game.';
     } else {
-      final winner = state.gameWinner;
-
-      if (winner == null) {
-        return const SizedBox.shrink();
-      }
-
-      title = state.hasWon ? 'YOU WON!' : 'YOU LOSE';
-      message = state.hasWon
-          ? 'Congratulations! You won the game.'
-          : '${winner.name} won the game.';
+      title = 'YOU LOSE';
+      message = '${winner!.name} takes the win. Better luck next time!';
     }
 
     return Column(
+      spacing: Dimens.eight,
       children: [
         Text(
           title,
           textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.headlineLarge,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.headlineMedium,
         ),
         Text(
           message,
@@ -138,6 +125,17 @@ class ResultScreen extends GetView<ResultController> {
           style: Theme.of(context).textTheme.bodyMedium,
         ),
       ],
+    );
+  }
+
+  // ===========================================================================
+  // ROUND
+  // ===========================================================================
+
+  Widget _buildRoundLabel(BuildContext context, ResultModel state) {
+    return Text(
+      'ROUND ${state.currentRound} / ${state.maxRounds}',
+      style: Theme.of(context).textTheme.bodyMedium,
     );
   }
 

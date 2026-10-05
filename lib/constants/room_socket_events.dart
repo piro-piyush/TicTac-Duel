@@ -10,6 +10,8 @@ class RoomSocketEvents {
   // Move
   static const makeMove = 'make_move';
   static const moveMade = 'move_made';
+  static const sendReaction = 'send_reaction';
+  static const reactionReceived = 'reaction_received';
 
   // Game result
   static const submitGameResult = 'submit_game_result';

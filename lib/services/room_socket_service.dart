@@ -180,6 +180,8 @@ class RoomSocketService {
   void offMoveMade() => off(RoomSocketEvents.moveMade);
 
   void offRoundResult() => off(RoomSocketEvents.roundResult);
+  void offSendReaction() => off(RoomSocketEvents.sendReaction);
+  void offReactionReceived() => off(RoomSocketEvents.reactionReceived);
 
   void offRoomError() => off(RoomSocketEvents.roomError);
 
@@ -517,5 +519,33 @@ class RoomSocketService {
     }
 
     return Map<String, dynamic>.from(data);
+  }
+
+  // ===========================================================================
+// REACTIONS
+// ===========================================================================
+
+  void sendReaction({
+    required String roomCode,
+    required String senderId,
+    required String targetPlayerId,
+    required GameReaction reaction,
+  }) {
+    _socket.emit(RoomSocketEvents.sendReaction, {
+      'roomCode': roomCode,
+      'senderId': senderId,
+      'targetPlayerId': targetPlayerId,
+      'reaction': reaction.name,
+    });
+  }
+
+  void onReactionReceived(
+      void Function(GameReactionEvent event) callback,
+      ) {
+    _onResponseEvent(
+      RoomSocketEvents.reactionReceived,
+      GameReactionEvent.fromJson,
+      callback,
+    );
   }
 }
