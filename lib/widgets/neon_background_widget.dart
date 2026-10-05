@@ -18,6 +18,7 @@ class NeonBackgroundWidget extends StatefulWidget {
     this.showTapEffects = true,
     this.showVignette = true,
     this.maxWidth,
+    this.floatingActionButton,
   });
 
   final Widget child;
@@ -26,6 +27,7 @@ class NeonBackgroundWidget extends StatefulWidget {
   final List<Widget>? actions;
   final EdgeInsets? padding;
   final Widget? bottomNavigationBar;
+  final Widget? floatingActionButton;
 
   final bool showGrid;
   final bool showParticles;
@@ -145,6 +147,7 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
     return Scaffold(
       backgroundColor: AppColors.background,
       resizeToAvoidBottomInset: true,
+      floatingActionButton:widget.floatingActionButton,
       body: Listener(
         behavior: HitTestBehavior.translucent,
         onPointerDown: _handlePointerDown,

@@ -12,7 +12,6 @@ class LocalGameBoardRouter extends RouteControllerConfig {
             () => LocalGameBoardController(
               game: game,
               musicController: Get.find<MusicController>(),
-              playerController: Get.find<PlayerController>(),
             ),
           ),
         ],

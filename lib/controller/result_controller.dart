@@ -8,10 +8,14 @@ class ResultController extends GetxController {
     required this._musicController,
   }) : _state = initialState.obs;
 
-  final Rx<ResultModel> _state;
-
   final PlayerController _playerController;
   final MusicController _musicController;
+
+  final Rx<ResultModel> _state;
+
+  // ===========================================================================
+  // STATE
+  // ===========================================================================
 
   ResultModel get state => _state.value;
 
@@ -25,17 +29,37 @@ class ResultController extends GetxController {
 
   bool get hasWinner => state.gameWinner != null;
 
-  String get animationPath => state.isDraw
-      ? AnimationConstants.trophyAnimation
-      : state.hasWon
-      ? AnimationConstants.trophyAnimation
-      : AnimationConstants.loseAnimation;
+  bool get isDismissed => state.isDismissed;
+
+  bool get isCompleted => state.isCompleted;
+
+  // ===========================================================================
+  // ANIMATION
+  // ===========================================================================
+
+  String get animationPath {
+    if (state.isDraw) {
+      return AnimationConstants.trophyAnimation;
+    }
+
+    return state.hasWon
+        ? AnimationConstants.trophyAnimation
+        : AnimationConstants.loseAnimation;
+  }
+
+  // ===========================================================================
+  // LIFECYCLE
+  // ===========================================================================
 
   @override
   void onInit() {
     super.onInit();
     _playResultFeedback();
   }
+
+  // ===========================================================================
+  // RESULT FEEDBACK
+  // ===========================================================================
 
   void _playResultFeedback() {
     if (state.isDraw) {
@@ -53,6 +77,10 @@ class ResultController extends GetxController {
   }
 
   void _showConfetti() {
+    if (state.showConfetti) {
+      return;
+    }
+
     _state.value = state.copyWith(showConfetti: true);
     _musicController.playConfetti();
   }
@@ -64,6 +92,10 @@ class ResultController extends GetxController {
 
     _state.value = state.copyWith(showConfetti: false);
   }
+
+  // ===========================================================================
+  // PLAYER
+  // ===========================================================================
 
   bool isMe(PlayerModel player) {
     if (!_playerController.isInitialized) {
@@ -77,12 +109,16 @@ class ResultController extends GetxController {
     return state.gameWinner?.id == player.id;
   }
 
+  // ===========================================================================
+  // NAVIGATION
+  // ===========================================================================
+
   void goHome() {
     AppNavigation.goToHome();
   }
 
   void newGame() {
-    if (isLocal) {
+    if (state.isLocal) {
       AppNavigation.pushLocalGame();
       return;
     }

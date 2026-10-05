@@ -1,16 +1,19 @@
 import 'dart:developer' as dev;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:tictac_duel/lib.dart';
 
 class MusicController extends GetxController {
   MusicController({
-    required this._player,
+    required this._backgroundPlayer,
+    required this._touchPlayer,
     required this._effectPlayer,
     required this._storage,
   });
 
-  final AudioPlayer _player;
+  final AudioPlayer _backgroundPlayer;
+  final AudioPlayer _touchPlayer;
   final AudioPlayer _effectPlayer;
   final LocalStorageService _storage;
 
@@ -25,7 +28,8 @@ class MusicController extends GetxController {
   final RxBool _vibrationEnabled = true.obs;
   final RxBool _isInitialized = false.obs;
 
-  Future<void> _effectQueue = Future<void>.value();
+  // Web browsers require a user interaction before audio can start.
+  bool get isWeb => kIsWeb;
 
   // ===========================================================================
   // GETTERS
@@ -39,7 +43,7 @@ class MusicController extends GetxController {
 
   bool get isInitialized => _isInitialized.value;
 
-  bool get isPlaying => isInitialized && _player.playing;
+  bool get isPlaying => isInitialized && _backgroundPlayer.playing;
 
   // ===========================================================================
   // INITIALIZATION
@@ -59,29 +63,39 @@ class MusicController extends GetxController {
     try {
       _isEnabled.value = await _storage.getBool(_musicEnabledKey) ?? true;
 
-      _effectsEnabled.value = await _storage.getBool(_effectsEnabledKey) ?? true;
+      _effectsEnabled.value =
+          await _storage.getBool(_effectsEnabledKey) ?? true;
 
-      _vibrationEnabled.value = await _storage.getBool(_vibrationEnabledKey) ?? true;
+      _vibrationEnabled.value =
+          await _storage.getBool(_vibrationEnabledKey) ?? true;
 
       // -----------------------------------------------------------------------
       // Background music
       // -----------------------------------------------------------------------
 
-      await _player.setAsset(AudioConstants.backgroundMusic);
+      await _backgroundPlayer.setAsset(AudioConstants.backgroundMusic);
 
-      await _player.setLoopMode(LoopMode.one);
-
-      await _player.setVolume(0.4);
+      await _backgroundPlayer.setLoopMode(LoopMode.one);
+      await _backgroundPlayer.setVolume(0.3);
 
       // -----------------------------------------------------------------------
-      // Sound effects
+      // Touch sound
+      // -----------------------------------------------------------------------
+
+      await _touchPlayer.setAsset(AudioConstants.touchSound);
+
+      await _touchPlayer.setVolume(1.0);
+
+      // -----------------------------------------------------------------------
+      // Game sound effects
       // -----------------------------------------------------------------------
 
       await _effectPlayer.setVolume(1.0);
 
       _isInitialized.value = true;
 
-      if (_isEnabled.value) {
+      // Browsers require user interaction before audio playback.
+      if (_isEnabled.value && !isWeb) {
         unawaited(play());
       }
     } catch (e, st) {
@@ -103,24 +117,24 @@ class MusicController extends GetxController {
   // ===========================================================================
 
   Future<void> play() async {
-    if (!isInitialized || !_isEnabled.value || _player.playing) {
+    if (!isInitialized || !_isEnabled.value || _backgroundPlayer.playing) {
       return;
     }
 
     try {
-      await _player.play();
+      await _backgroundPlayer.play();
     } catch (e, st) {
       dev.log('Failed to play music', name: _logName, error: e, stackTrace: st);
     }
   }
 
   Future<void> pause() async {
-    if (!isInitialized || !_player.playing) {
+    if (!isInitialized || !_backgroundPlayer.playing) {
       return;
     }
 
     try {
-      await _player.pause();
+      await _backgroundPlayer.pause();
     } catch (e, st) {
       dev.log(
         'Failed to pause music',
@@ -137,7 +151,7 @@ class MusicController extends GetxController {
     }
 
     try {
-      await _player.stop();
+      await _backgroundPlayer.stop();
     } catch (e, st) {
       dev.log('Failed to stop music', name: _logName, error: e, stackTrace: st);
     }
@@ -149,7 +163,7 @@ class MusicController extends GetxController {
     }
 
     try {
-      await _player.play();
+      await _backgroundPlayer.play();
     } catch (e, st) {
       dev.log(
         'Failed to resume music',
@@ -161,7 +175,7 @@ class MusicController extends GetxController {
   }
 
   // ===========================================================================
-  // SOUND EFFECTS
+  // TOUCH SOUND
   // ===========================================================================
 
   void playTouch() {
@@ -169,8 +183,13 @@ class MusicController extends GetxController {
       return;
     }
 
+    // On Web, the first touch also unlocks background audio.
+    if (_isEnabled.value && isWeb && !_backgroundPlayer.playing) {
+      unawaited(play());
+    }
+
     if (_effectsEnabled.value) {
-      _queueEffect(AudioConstants.touchSound);
+      unawaited(_playTouchSound());
     }
 
     if (_vibrationEnabled.value) {
@@ -178,28 +197,38 @@ class MusicController extends GetxController {
     }
   }
 
-  void playConfetti() {
-    if (!isInitialized || !_effectsEnabled.value) {
-      return;
+  Future<void> _playTouchSound() async {
+    try {
+      await _touchPlayer.seek(Duration.zero);
+      await _touchPlayer.play();
+    } catch (e, st) {
+      dev.log(
+        'Failed to play touch sound',
+        name: _logName,
+        error: e,
+        stackTrace: st,
+      );
     }
+  }
 
-    _queueEffect(AudioConstants.confettiSound);
+  // ===========================================================================
+  // SOUND EFFECTS
+  // ===========================================================================
+
+  void playConfetti() {
+    _playEffect(AudioConstants.confettiSound);
   }
 
   void playWin() {
-    if (!isInitialized || !_effectsEnabled.value) {
-      return;
-    }
-
-    _queueEffect(AudioConstants.winSound);
+    _playEffect(AudioConstants.winSound);
   }
 
   void playLose() {
-    if (!isInitialized || !_effectsEnabled.value) {
-      return;
-    }
+    _playEffect(AudioConstants.loseSound);
+  }
 
-    _queueEffect(AudioConstants.loseSound);
+  void playSwoosh() {
+    _playEffect(AudioConstants.swooshSound);
   }
 
   void playRoundStart() {
@@ -208,7 +237,7 @@ class MusicController extends GetxController {
     }
 
     if (_effectsEnabled.value) {
-      _queueEffect(AudioConstants.roundSound);
+      unawaited(_playEffect(AudioConstants.roundSound));
     }
 
     if (_vibrationEnabled.value) {
@@ -222,7 +251,7 @@ class MusicController extends GetxController {
     }
 
     if (_effectsEnabled.value) {
-      _queueEffect(AudioConstants.joinSound);
+      unawaited(_playEffect(AudioConstants.joinSound));
     }
 
     if (_vibrationEnabled.value) {
@@ -231,26 +260,8 @@ class MusicController extends GetxController {
   }
 
   // ===========================================================================
-  // SOUND EFFECT QUEUE
+  // EFFECT PLAYBACK
   // ===========================================================================
-
-  void _queueEffect(String asset) {
-    if (!isInitialized || !_effectsEnabled.value) {
-      return;
-    }
-
-    _effectQueue = _effectQueue.then((_) => _playEffect(asset)).catchError((
-      error,
-      stackTrace,
-    ) {
-      dev.log(
-        'Sound effect queue failed: $asset',
-        name: _logName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-    });
-  }
 
   Future<void> _playEffect(String asset) async {
     if (!isInitialized || !_effectsEnabled.value) {
@@ -258,10 +269,9 @@ class MusicController extends GetxController {
     }
 
     try {
+      await _effectPlayer.stop();
       await _effectPlayer.setAsset(asset);
-
       await _effectPlayer.seek(Duration.zero);
-
       await _effectPlayer.play();
     } catch (e, st) {
       dev.log(
@@ -327,7 +337,7 @@ class MusicController extends GetxController {
       await _storage.setBool(_effectsEnabledKey, enabled);
 
       if (!enabled) {
-        await _effectPlayer.stop();
+        await Future.wait([_touchPlayer.stop(), _effectPlayer.stop()]);
       }
     } catch (e, st) {
       dev.log(
@@ -434,7 +444,8 @@ class MusicController extends GetxController {
 
     try {
       await Future.wait([
-        _player.setVolume(clampedVolume * 0.4),
+        _backgroundPlayer.setVolume(clampedVolume * 0.4),
+        _touchPlayer.setVolume(clampedVolume),
         _effectPlayer.setVolume(clampedVolume),
       ]);
     } catch (e, st) {
@@ -456,7 +467,6 @@ class MusicController extends GetxController {
   @override
   void onClose() {
     unawaited(_disposePlayers());
-
     super.onClose();
   }
 
@@ -468,7 +478,11 @@ class MusicController extends GetxController {
     _isInitialized.value = false;
 
     try {
-      await Future.wait([_player.dispose(), _effectPlayer.dispose()]);
+      await Future.wait([
+        _backgroundPlayer.dispose(),
+        _touchPlayer.dispose(),
+        _effectPlayer.dispose(),
+      ]);
     } catch (e, st) {
       dev.log(
         'Failed to dispose audio players',

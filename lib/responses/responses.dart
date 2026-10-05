@@ -5,3 +5,4 @@ export 'room_connected_response.dart';
 export 'player_joined_response.dart';
 export 'round_started_response.dart';
 export 'ready_updated_response.dart';
+export 'game_reaction_event.dart';
