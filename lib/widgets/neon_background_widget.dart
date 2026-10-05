@@ -151,34 +151,34 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
       body: Listener(
         behavior: HitTestBehavior.translucent,
         onPointerDown: _handlePointerDown,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            const _BackgroundBase(),
+        child: SizedBox.expand(
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              const _BackgroundBase(),
+              const _AmbientGlows(),
 
-            const _AmbientGlows(),
+              if (widget.showGrid) const _GridLayer(),
+              if (widget.showParticles) const _ParticleLayer(),
 
-            if (widget.showGrid) const _GridLayer(),
+              if (widget.showTapEffects && _tapEffects.isNotEmpty)
+                _TapEffectsLayer(effects: _tapEffects),
 
-            if (widget.showParticles) const _ParticleLayer(),
+              if (widget.showVignette) const _VignetteLayer(),
 
-            if (widget.showTapEffects && _tapEffects.isNotEmpty)
-              _TapEffectsLayer(effects: _tapEffects),
-
-            if (widget.showVignette) const _VignetteLayer(),
-
-            _ForegroundLayer(
-              title: widget.title,
-              bottom: widget.bottom,
-              actions: widget.actions,
-              padding: widget.padding,
-              bottomNavigationBar: widget.bottomNavigationBar,
-              needScroll: widget.needScroll,
-              keyboardAware: widget.keyboardAware,
-              maxWidth: widget.maxWidth,
-              child: widget.child,
-            ),
-          ],
+              _ForegroundLayer(
+                title: widget.title,
+                bottom: widget.bottom,
+                actions: widget.actions,
+                padding: widget.padding,
+                bottomNavigationBar: widget.bottomNavigationBar,
+                needScroll: widget.needScroll,
+                keyboardAware: widget.keyboardAware,
+                maxWidth: widget.maxWidth,
+                child: widget.child,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -400,7 +400,6 @@ class _ForegroundLayer extends StatelessWidget {
               child: ConstrainedBox(
                 constraints: BoxConstraints(
                   maxWidth: contentMaxWidth,
-                  maxHeight: constraints.maxHeight,
                 ),
                 child: SizedBox(
                   width: double.infinity,

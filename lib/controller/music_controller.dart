@@ -28,6 +28,8 @@ class MusicController extends GetxController {
   final RxBool _vibrationEnabled = true.obs;
   final RxBool _isInitialized = false.obs;
 
+  int _musicOperation = 0;
+
   // Web browsers require a user interaction before audio can start.
   bool get isWeb => kIsWeb;
 
@@ -94,7 +96,9 @@ class MusicController extends GetxController {
 
       _isInitialized.value = true;
 
-      // Browsers require user interaction before audio playback.
+      // Do not autoplay on Web.
+      //
+      // The first user interaction will unlock the audio context.
       if (_isEnabled.value && !isWeb) {
         unawaited(play());
       }
@@ -117,21 +121,36 @@ class MusicController extends GetxController {
   // ===========================================================================
 
   Future<void> play() async {
-    if (!isInitialized || !_isEnabled.value || _backgroundPlayer.playing) {
+    if (!isInitialized || !_isEnabled.value) {
+      return;
+    }
+
+    final operation = ++_musicOperation;
+
+    if (_backgroundPlayer.playing) {
       return;
     }
 
     try {
       await _backgroundPlayer.play();
+
+      // A newer music operation may have disabled music
+      // while this play operation was still pending.
+      if (operation != _musicOperation || !_isEnabled.value) {
+        await _backgroundPlayer.pause();
+      }
     } catch (e, st) {
       dev.log('Failed to play music', name: _logName, error: e, stackTrace: st);
     }
   }
 
   Future<void> pause() async {
-    if (!isInitialized || !_backgroundPlayer.playing) {
+    if (!isInitialized) {
       return;
     }
+
+    // Invalidate any pending play operation.
+    _musicOperation++;
 
     try {
       await _backgroundPlayer.pause();
@@ -150,6 +169,9 @@ class MusicController extends GetxController {
       return;
     }
 
+    // Invalidate any pending play operation.
+    _musicOperation++;
+
     try {
       await _backgroundPlayer.stop();
     } catch (e, st) {
@@ -162,16 +184,7 @@ class MusicController extends GetxController {
       return;
     }
 
-    try {
-      await _backgroundPlayer.play();
-    } catch (e, st) {
-      dev.log(
-        'Failed to resume music',
-        name: _logName,
-        error: e,
-        stackTrace: st,
-      );
-    }
+    await play();
   }
 
   // ===========================================================================
@@ -183,7 +196,7 @@ class MusicController extends GetxController {
       return;
     }
 
-    // On Web, the first touch also unlocks background audio.
+    // On Web, the first user interaction unlocks the audio context.
     if (_isEnabled.value && isWeb && !_backgroundPlayer.playing) {
       unawaited(play());
     }
@@ -198,6 +211,10 @@ class MusicController extends GetxController {
   }
 
   Future<void> _playTouchSound() async {
+    if (!isInitialized || !_effectsEnabled.value) {
+      return;
+    }
+
     try {
       await _touchPlayer.seek(Duration.zero);
       await _touchPlayer.play();
@@ -216,29 +233,23 @@ class MusicController extends GetxController {
   // ===========================================================================
 
   void playConfetti() {
-    _playEffect(AudioConstants.confettiSound);
+    unawaited(_playEffect(AudioConstants.confettiSound));
   }
 
   void playWin() {
-    _playEffect(AudioConstants.winSound);
+    unawaited(_playEffect(AudioConstants.winSound));
   }
 
   void playLose() {
-    _playEffect(AudioConstants.loseSound);
+    unawaited(_playEffect(AudioConstants.loseSound));
   }
 
   void playSwoosh() {
-    _playEffect(AudioConstants.swooshSound);
+    unawaited(_playEffect(AudioConstants.comedySound));
   }
 
   void playRoundStart() {
-    if (!isInitialized) {
-      return;
-    }
-
-    if (_effectsEnabled.value) {
-      unawaited(_playEffect(AudioConstants.roundSound));
-    }
+    unawaited(_playEffect(AudioConstants.roundSound));
 
     if (_vibrationEnabled.value) {
       unawaited(HapticFeedback.lightImpact());
@@ -246,22 +257,12 @@ class MusicController extends GetxController {
   }
 
   void playJoin() {
-    if (!isInitialized) {
-      return;
-    }
-
-    if (_effectsEnabled.value) {
-      unawaited(_playEffect(AudioConstants.joinSound));
-    }
+    unawaited(_playEffect(AudioConstants.joinSound));
 
     if (_vibrationEnabled.value) {
       unawaited(HapticFeedback.lightImpact());
     }
   }
-
-  // ===========================================================================
-  // EFFECT PLAYBACK
-  // ===========================================================================
 
   Future<void> _playEffect(String asset) async {
     if (!isInitialized || !_effectsEnabled.value) {
@@ -299,12 +300,15 @@ class MusicController extends GetxController {
     try {
       _isEnabled.value = enabled;
 
+      // Invalidate any pending play operation immediately.
+      _musicOperation++;
+
       await _storage.setBool(_musicEnabledKey, enabled);
 
       if (enabled) {
         await play();
       } else {
-        await pause();
+        await _backgroundPlayer.pause();
       }
     } catch (e, st) {
       dev.log(
