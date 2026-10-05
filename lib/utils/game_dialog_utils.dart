@@ -8,6 +8,32 @@ class GameDialogUtils {
 
   static BuildContext get _context => _navigator.context;
 
+  static bool _isDialogOpen = false;
+
+  // ===========================================================================
+  // DIALOG STATE
+  // ===========================================================================
+
+  static void _markDialogOpen() {
+    _isDialogOpen = true;
+  }
+
+  static void _markDialogClosed() {
+    _isDialogOpen = false;
+  }
+
+  static void closeOpenDialog() {
+    if (!_isDialogOpen) {
+      return;
+    }
+
+    if (_navigator.canPop()) {
+      _navigator.pop();
+    }
+
+    _isDialogOpen = false;
+  }
+
   // ===========================================================================
   // ROUND RESULT
   // ===========================================================================
@@ -31,6 +57,8 @@ class GameDialogUtils {
         : hasWon
         ? 'You won this round!'
         : 'Your opponent won this round.';
+
+    _markDialogOpen();
 
     return showDialog<void>(
       context: _context,
@@ -75,6 +103,7 @@ class GameDialogUtils {
                   child: ElevatedButton(
                     onPressed: () {
                       _navigator.pop();
+                      _markDialogClosed();
                       onConfirm?.call();
                     },
                     child: const Text('OK'),
@@ -85,7 +114,7 @@ class GameDialogUtils {
           ),
         );
       },
-    );
+    ).whenComplete(_markDialogClosed);
   }
 
   // ===========================================================================
@@ -93,6 +122,8 @@ class GameDialogUtils {
   // ===========================================================================
 
   static Future<void> showRoomClosed({required String reason}) {
+    _markDialogOpen();
+
     return showDialog<void>(
       context: _context,
       barrierDismissible: false,
@@ -128,6 +159,7 @@ class GameDialogUtils {
                       child: OutlinedButton(
                         onPressed: () {
                           _navigator.pop();
+                          _markDialogClosed();
                           AppNavigation.goToHome();
                         },
                         child: const Text('BACK HOME'),
@@ -137,6 +169,7 @@ class GameDialogUtils {
                       child: ElevatedButton(
                         onPressed: () {
                           _navigator.pop();
+                          _markDialogClosed();
                           AppNavigation.replaceCreateRoom();
                         },
                         child: const Text('NEW GAME'),
@@ -150,7 +183,7 @@ class GameDialogUtils {
           ),
         );
       },
-    );
+    ).whenComplete(_markDialogClosed);
   }
 
   // ===========================================================================
@@ -161,6 +194,8 @@ class GameDialogUtils {
     required GameDismissedResponse response,
   }) {
     final reason = response.reason;
+
+    _markDialogOpen();
 
     return showDialog<void>(
       context: _context,
@@ -198,6 +233,7 @@ class GameDialogUtils {
                       child: OutlinedButton(
                         onPressed: () {
                           _navigator.pop();
+                          _markDialogClosed();
                           AppNavigation.goToHome();
                         },
                         child: const Text('BACK HOME'),
@@ -208,6 +244,7 @@ class GameDialogUtils {
                       child: ElevatedButton(
                         onPressed: () {
                           _navigator.pop();
+                          _markDialogClosed();
                           AppNavigation.replaceCreateRoom();
                         },
                         child: const Text('NEW GAME'),
@@ -220,7 +257,7 @@ class GameDialogUtils {
           ),
         );
       },
-    );
+    ).whenComplete(_markDialogClosed);
   }
 
   // ===========================================================================
@@ -228,6 +265,8 @@ class GameDialogUtils {
   // ===========================================================================
 
   static Future<bool> confirmQuit() async {
+    _markDialogOpen();
+
     final result = await showDialog<bool>(
       context: _context,
       barrierDismissible: false,
@@ -250,6 +289,8 @@ class GameDialogUtils {
         );
       },
     );
+
+    _markDialogClosed();
 
     return result == true;
   }

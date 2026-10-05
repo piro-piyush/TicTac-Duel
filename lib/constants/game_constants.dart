@@ -4,7 +4,7 @@ class GameConstants {
   GameConstants._();
 
   // ===========================================================================
-  // App
+  // APP
   // ===========================================================================
 
   static const String appName = 'Tic Tac Duel';
@@ -14,7 +14,7 @@ class GameConstants {
       'A real-time multiplayer Tic-Tac-Toe experience.';
 
   // ===========================================================================
-  // Game
+  // GAME
   // ===========================================================================
 
   static const int boardSize = 3;
@@ -35,7 +35,7 @@ class GameConstants {
   ];
 
   // ===========================================================================
-  // Local Game
+  // LOCAL GAME
   // ===========================================================================
 
   static const String localPlayerOneId = 'local_player_1';
@@ -49,16 +49,45 @@ class GameConstants {
 
   static const Duration cpuMoveDelay = Duration(milliseconds: 450);
 
-  static const Duration resultDelay = Duration(seconds: 1);
+  // ===========================================================================
+  // ANIMATION
+  // ===========================================================================
 
-  static const Duration roundAnimationDuration = Duration(milliseconds: 1200);
+  static const Duration roundAnimationTransitionDuration = Duration(
+    milliseconds: 650,
+  );
+
+  static const Duration roundAnimationDisplayDuration = Duration(
+    milliseconds: 550,
+  );
+
+  static  Duration roundAnimationDuration = Duration(
+    milliseconds:
+    roundAnimationTransitionDuration.inMilliseconds +
+        roundAnimationDisplayDuration.inMilliseconds,
+  );
+
+  static const Duration winningLineAnimationDuration = Duration(
+    milliseconds: 500,
+  );
+
+  static const Duration winningLineDisplayDuration = Duration(
+    milliseconds: 700,
+  );
+
+  static Duration resultDelay = Duration(
+    milliseconds:
+        winningLineAnimationDuration.inMilliseconds +
+        winningLineDisplayDuration.inMilliseconds,
+  );
 
   // ===========================================================================
-  // Room
+  // ROOM
   // ===========================================================================
 
   static const int roomCodeLength = 6;
   static const int maxPlayers = 2;
+
   static const int minPlayerNameLength = 2;
   static const int maxPlayerNameLength = 20;
 
@@ -73,6 +102,7 @@ class GameConstants {
   static final RegExp roomCodePattern = RegExp(
     '^[$roomCodeCharacters]{$roomCodeLength}\$',
   );
+
   static const String roomJoinUrl = 'https://tictacduel.app/join-room';
 
   static String getRoomJoinLink(String roomCode) {
@@ -97,8 +127,25 @@ See you in the arena! ⚡
   }
 
   // ===========================================================================
-  // Network
+  // NETWORK
   // ===========================================================================
 
   static const Duration socketConnectionTimeout = Duration(seconds: 10);
+
+  // ===========================================================================
+  // REACTION
+  // ===========================================================================
+
+  static const Duration reactionTravelDuration = Duration(milliseconds: 900);
+
+  static const Duration reactionDisplayDuration = Duration(seconds: 1);
+
+  static const Duration reactionFadeDuration = Duration(milliseconds: 50);
+
+  static Duration reactionTotalDuration = Duration(
+    milliseconds:
+        reactionTravelDuration.inMilliseconds +
+        reactionDisplayDuration.inMilliseconds +
+        reactionFadeDuration.inMilliseconds,
+  );
 }

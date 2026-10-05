@@ -44,4 +44,13 @@ enum RoundStatus {
 enum GameDismissReason {
   opponentDisconnected,
   opponentQuit,
+}enum GameReaction {
+  laugh,
+  love,
+  angry,
+  wow,
+  fire,
+  clap,
+  party,
+  cool,
 }

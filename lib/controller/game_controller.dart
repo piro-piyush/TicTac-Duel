@@ -53,7 +53,10 @@ class GameController extends GetxController {
   final RxBool _showRoundAnimation = false.obs;
   final RxInt _animatedRound = 0.obs;
 
+  final Rxn<GameReactionEvent> _reactionEvent = Rxn<GameReactionEvent>();
+
   Timer? _roundAnimationTimer;
+  Timer? _reactionTimer;
 
   // ===========================================================================
   // GETTERS
@@ -75,6 +78,8 @@ class GameController extends GetxController {
 
   bool get showRoundAnimation => _showRoundAnimation.value;
 
+  bool get isRoundAnimationPlaying => _showRoundAnimation.value;
+
   int get animatedRound => _animatedRound.value;
 
   String get playerId => _playerController.playerId;
@@ -90,6 +95,8 @@ class GameController extends GetxController {
   String? get turnPlayerId => _turnPlayerId.value;
 
   int get turnIndex => _turnIndex.value;
+
+  GameReactionEvent? get reactionEvent => _reactionEvent.value;
 
   PlayerModel get playerOne {
     final currentRoom = room;
@@ -201,6 +208,8 @@ class GameController extends GetxController {
     _roomSocketService.onGameDismissed(_handleGameDismissed);
     _roomSocketService.onMoveMade(_handleMoveMade);
     _roomSocketService.onRoundResult(_handleRoundResult);
+    _roomSocketService.onReactionReceived(_handleReactionReceived);
+
     _roomSocketService.onRoomError(_handleRoomError);
   }
 
@@ -500,6 +509,7 @@ class GameController extends GetxController {
 
     if (currentRoom == null ||
         !isGamePlaying ||
+        isRoundAnimationPlaying ||
         _roundResultSubmitted.value ||
         _movePending.value ||
         !isMyTurn ||
@@ -561,7 +571,6 @@ class GameController extends GetxController {
     _roundResultSubmitted.value = true;
 
     setWinningIndexes(response.winningIndexes.toSet());
-
     _resetPlayersReady();
 
     final currentRoom = room;
@@ -583,19 +592,21 @@ class GameController extends GetxController {
     }
 
     if (response.gameFinished) {
-      _showFinalResult();
+      _showRoundResultAfterDelay(_showFinalResult);
       return;
     }
 
     if (winnerId == null) {
-      GameDialogUtils.showGameResult(
-        result: GameResult.draw,
-        mySymbol: myPlayer.symbol,
-        onConfirm: () {
-          setReady();
-          clearBoard();
-        },
-      );
+      _showRoundResultAfterDelay(() {
+        GameDialogUtils.showGameResult(
+          result: GameResult.draw,
+          mySymbol: myPlayer.symbol,
+          onConfirm: () {
+            setReady();
+            clearBoard();
+          },
+        );
+      });
 
       return;
     }
@@ -608,14 +619,26 @@ class GameController extends GetxController {
         ? GameResult.xWins
         : GameResult.oWins;
 
-    GameDialogUtils.showGameResult(
-      result: result,
-      mySymbol: myPlayer.symbol,
-      onConfirm: () {
-        setReady();
-        clearBoard();
-      },
-    );
+    _showRoundResultAfterDelay(() {
+      GameDialogUtils.showGameResult(
+        result: result,
+        mySymbol: myPlayer.symbol,
+        onConfirm: () {
+          setReady();
+          clearBoard();
+        },
+      );
+    });
+  }
+
+  void _showRoundResultAfterDelay(VoidCallback callback) {
+    Future.delayed(GameConstants.resultDelay, () {
+      if (isClosed) {
+        return;
+      }
+
+      callback();
+    });
   }
 
   void _submitRoundResult({required List<int> winningIndexes}) {
@@ -778,6 +801,7 @@ class GameController extends GetxController {
   @override
   void onClose() {
     _roundAnimationTimer?.cancel();
+    _reactionTimer?.cancel();
     _roundAnimationTimer = null;
 
     _roomSocketService.offPlayerJoined();
@@ -788,6 +812,8 @@ class GameController extends GetxController {
     _roomSocketService.offGameDismissed();
     _roomSocketService.offMoveMade();
     _roomSocketService.offRoundResult();
+    _roomSocketService.offSendReaction();
+    _roomSocketService.offReactionReceived();
     _roomSocketService.offRoomError();
 
     _roomSocketService.disconnect();
@@ -818,5 +844,38 @@ class GameController extends GetxController {
     } catch (e) {
       return;
     }
+  }
+
+  void sendReaction(GameReaction reaction) {
+    final currentRoom = room;
+    final currentPlayerTwo = playerTwo;
+
+    if (currentRoom == null || currentPlayerTwo == null) {
+      return;
+    }
+
+    final targetPlayerId = playerId == playerOne.id
+        ? currentPlayerTwo.id
+        : playerOne.id;
+
+    _roomSocketService.sendReaction(
+      roomCode: currentRoom.roomCode,
+      senderId: playerId,
+      targetPlayerId: targetPlayerId,
+      reaction: reaction,
+    );
+  }
+
+  void _handleReactionReceived(GameReactionEvent event) {
+    _reactionTimer?.cancel();
+
+    _reactionEvent.value = event;
+
+    _musicController.playSwoosh();
+
+    _reactionTimer = Timer(
+      GameConstants.reactionTotalDuration,
+      () => _reactionEvent.value = null,
+    );
   }
 }
