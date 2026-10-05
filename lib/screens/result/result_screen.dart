@@ -22,13 +22,17 @@ class ResultScreen extends GetView<ResultController> {
 
       return NeonBackgroundWidget(
         needScroll: false,
-        bottomNavigationBar: _buildActions(),
-        child: _buildContent(state),
+        bottomNavigationBar: ResultActionsWidget(isOnline: state.isOnline),
+        child: _buildContent(context, state),
       );
     });
   }
 
-  Widget _buildContent(ResultModel state) {
+  // ===========================================================================
+  // CONTENT
+  // ===========================================================================
+
+  Widget _buildContent(BuildContext context, ResultModel state) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       spacing: Dimens.spaceBtwSections,
@@ -37,7 +41,7 @@ class ResultScreen extends GetView<ResultController> {
           spacing: Dimens.spaceBtwSections,
           children: [
             _buildResultIcon(hasWon: state.hasWon, isDraw: state.isDraw),
-            _buildResultHeader(state),
+            _buildResultHeader(context, state),
           ],
         ),
         ResultScoreCardWidget(
@@ -48,11 +52,15 @@ class ResultScreen extends GetView<ResultController> {
         ),
         Text(
           'ROUND ${state.currentRound} / ${state.maxRounds}',
-          style: Get.theme.textTheme.bodyMedium,
+          style: Theme.of(context).textTheme.bodyMedium,
         ),
       ],
     );
   }
+
+  // ===========================================================================
+  // RESULT ICON
+  // ===========================================================================
 
   Widget _buildResultIcon({required bool hasWon, required bool isDraw}) {
     if (isDraw) {
@@ -73,7 +81,11 @@ class ResultScreen extends GetView<ResultController> {
     );
   }
 
-  Widget _buildResultHeader(ResultModel state) {
+  // ===========================================================================
+  // RESULT HEADER
+  // ===========================================================================
+
+  Widget _buildResultHeader(BuildContext context, ResultModel state) {
     final String title;
     final String message;
 
@@ -118,36 +130,20 @@ class ResultScreen extends GetView<ResultController> {
         Text(
           title,
           textAlign: TextAlign.center,
-          style: Get.theme.textTheme.headlineLarge,
+          style: Theme.of(context).textTheme.headlineLarge,
         ),
         Text(
           message,
           textAlign: TextAlign.center,
-          style: Get.theme.textTheme.bodyMedium,
+          style: Theme.of(context).textTheme.bodyMedium,
         ),
       ],
     );
   }
 
-  Widget _buildActions() {
-    return Row(
-      spacing: Dimens.sixteen,
-      children: [
-        Expanded(
-          child: NeonOutlinedButtonWidget(
-            label: 'HOME',
-            onPressed: controller.goHome,
-          ),
-        ),
-        Expanded(
-          child: NeonElevatedButton(
-            label: 'NEW GAME',
-            onPressed: controller.newGame,
-          ),
-        ),
-      ],
-    );
-  }
+  // ===========================================================================
+  // CONFETTI
+  // ===========================================================================
 
   void _showConfetti(BuildContext context) {
     Confetti.launch(

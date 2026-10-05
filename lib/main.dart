@@ -6,7 +6,6 @@ Future<void> main() async {
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
   await _initCore();
-
   FlutterNativeSplash.remove();
 
   runApp(const MyApp());
@@ -18,6 +17,8 @@ Future<void> main() async {
 
 Future<void> _initCore() async {
   await dotenv.load();
+
+  GlobalBindings().dependencies();
 }
 
 // =============================================================================
@@ -29,16 +30,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
+    return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: GameConstants.appName,
       theme: AppTheme.darkTheme,
-      initialBinding: GlobalBindings(),
-      initialRoute: AppRoutes.home,
-      getPages: AppPages.routes,
+      routerConfig: AppPages.router,
+      scaffoldMessengerKey: AppPages.rootScaffoldMessengerKey,
+
       builder: (context, child) {
         return Listener(
-          onPointerDown: (_) => Get.find<MusicController>().playTouch(),
+          onPointerDown: (_) {
+            Get.find<MusicController>().playTouch();
+          },
           child: child ?? const SizedBox.shrink(),
         );
       },

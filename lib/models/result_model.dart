@@ -9,6 +9,7 @@ class ResultModel {
     required this.currentRound,
     required this.maxRounds,
     required this.isOnline,
+    required this.theme,
     this.gameWinner,
     this.hasWon = false,
     this.isDraw = false,
@@ -24,6 +25,7 @@ class ResultModel {
     required int currentRound,
     required int maxRounds,
     required bool isOnline,
+    required RoomTheme theme,
     PlayerModel? gameWinner,
     bool hasWon = false,
     bool isDraw = false,
@@ -40,6 +42,7 @@ class ResultModel {
          hasWon: hasWon,
          isDraw: isDraw,
          showConfetti: showConfetti,
+         theme: theme,
        );
 
   const ResultModel.dismissed({
@@ -50,6 +53,7 @@ class ResultModel {
     required int currentRound,
     required int maxRounds,
     required bool isOnline,
+    required RoomTheme theme,
     required PlayerModel gameWinner,
     required GameDismissReason dismissReason,
   }) : this._(
@@ -63,6 +67,7 @@ class ResultModel {
          gameWinner: gameWinner,
          hasWon: true,
          dismissReason: dismissReason,
+         theme: theme,
        );
 
   final PlayerModel playerOne;
@@ -75,7 +80,7 @@ class ResultModel {
   final int maxRounds;
 
   final PlayerModel? gameWinner;
-
+  final RoomTheme theme;
   final bool hasWon;
   final bool isDraw;
   final bool showConfetti;
@@ -103,6 +108,7 @@ class ResultModel {
     bool? showConfetti,
     bool? isOnline,
     GameDismissReason? dismissReason,
+    RoomTheme? theme,
   }) {
     return ResultModel._(
       playerOne: playerOne ?? this.playerOne,
@@ -117,6 +123,26 @@ class ResultModel {
       isDraw: isDraw ?? this.isDraw,
       showConfetti: showConfetti ?? this.showConfetti,
       dismissReason: dismissReason ?? this.dismissReason,
+      theme: theme ?? this.theme,
     );
+  }
+
+  @override
+  String toString() {
+    return 'ResultModel('
+        'playerOne: ${playerOne.id} (${playerOne.name}), '
+        'playerTwo: ${playerTwo.id} (${playerTwo.name}), '
+        'playerOnePoints: $playerOnePoints, '
+        'playerTwoPoints: $playerTwoPoints, '
+        'currentRound: $currentRound, '
+        'maxRounds: $maxRounds, '
+        'gameWinner: ${gameWinner?.id} (${gameWinner?.name}), '
+        'hasWon: $hasWon, '
+        'isDraw: $isDraw, '
+        'showConfetti: $showConfetti, '
+        'isOnline: $isOnline, '
+        'dismissReason: $dismissReason, '
+        'theme: $theme'
+        ')';
   }
 }
