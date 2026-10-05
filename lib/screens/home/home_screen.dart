@@ -8,49 +8,48 @@ class HomeScreen extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return NeonBackgroundWidget(
-      needScroll: false,
       padding: Dimens.edgeInsets10_4,
-      child: Column(
+      needScroll: false,
+      keyboardAware: true,
+      bottomNavigationBar: const Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        spacing: Dimens.twelve,
         children: [
-          Expanded(
-            child: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+          QuickActionWidget(
+            icon: Icons.settings_rounded,
+            label: 'Settings',
+            onTap: AppNavigation.pushSettings,
+          ),
+          QuickActionWidget(
+            icon: Icons.help_outline_rounded,
+            label: 'Help',
+            onTap: AppNavigation.pushHelp,
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        spacing: Dimens.fortyEight,
+        children: [
+          Column(
+            spacing: Dimens.twentyTwo,
+            children: [
+              const AppLogoWidget(),
+              Column(
+                spacing: Dimens.eight,
                 children: [
-                  const SizedBox(height: Dimens.twentyTwo),
-                  const AppLogoWidget(),
-                  const SizedBox(height: Dimens.twentyTwo),
                   Text(GameConstants.appName, style: textTheme.headlineLarge),
-                  const SizedBox(height: Dimens.eight),
                   Text(GameConstants.appSlogan, style: textTheme.labelSmall),
-                  const SizedBox(height: Dimens.fortyEight),
-                  const HomeActionsWidget(),
-                  const SizedBox(height: Dimens.twenty),
-                  const ReadyIndicatorWidget(),
                 ],
               ),
-            ),
-          ),
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            spacing: Dimens.twelve,
-            children: [
-              QuickActionWidget(
-                icon: Icons.settings_rounded,
-                label: 'Settings',
-                onTap: AppNavigation.pushSettings,
-              ),
-              QuickActionWidget(
-                icon: Icons.help_outline_rounded,
-                label: 'Help',
-                onTap: AppNavigation.pushHelp,
-              ),
             ],
+          ),
+          const Column(
+            spacing: Dimens.twenty,
+            children: [HomeActionsWidget(), ReadyIndicatorWidget()],
           ),
         ],
       ),
     );
   }
-
-
 }

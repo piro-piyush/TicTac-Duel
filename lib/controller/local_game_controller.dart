@@ -37,7 +37,7 @@ class LocalGameController extends GetxController {
     if (isStarting) return;
     _isStarting.value = true;
     try {
-      final playerOne = LocalPlayerModel(
+      final playerOne = PlayerModel(
         id: GameConstants.localPlayerOneId,
         name: gameType == LocalGameType.computer
             ? GameConstants.localPlayerName
@@ -47,7 +47,7 @@ class LocalGameController extends GetxController {
       final game = switch (gameType) {
         LocalGameType.friend => LocalGameModel.friend(
           playerOne: playerOne,
-          playerTwo: LocalPlayerModel(
+          playerTwo: PlayerModel(
             id: GameConstants.localPlayerTwoId,
             name: GameConstants.localPlayerTwoName,
             symbol: _opponentSymbol,
@@ -62,7 +62,7 @@ class LocalGameController extends GetxController {
           difficulty: selectedDifficulty,
         ),
       };
-      AppNavigation.replaceLocalGameBoard(game);
+      AppNavigation.pushLocalGameBoard(game);
     } catch (error, stackTrace) {
       LoggerUtils.error('LocalGameController.startGame', error, stackTrace);
       PopupUtils.showError(error.toString());

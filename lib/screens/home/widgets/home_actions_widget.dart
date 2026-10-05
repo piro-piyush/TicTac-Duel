@@ -6,26 +6,34 @@ class HomeActionsWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      spacing: Dimens.thirty,
+      spacing: Dimens.sixteen,
       children: [
         Column(
           spacing: Dimens.fourteen,
           children: [
-            MenuButtonWidget(
-              title: 'Quick Match',
-              subtitle: 'Find an opponent and play',
-              icon: Icons.bolt_rounded,
-              color: AppColors.neonCyan,
-              onTap: () => _checkInternetConnection(
-                () => PopupUtils.showWarning('Coming Soon...'),
-              ),
-            ),
+            // MenuButtonWidget(
+            //   title: 'Quick Match',
+            //   subtitle: 'Find an opponent and play',
+            //   icon: Icons.bolt_rounded,
+            //   color: AppColors.neonCyan,
+            //   onTap: () => _checkInternetConnection(
+            //     () => PopupUtils.showWarning('Coming Soon...'),
+            //   ),
+            // ),
             const MenuButtonWidget(
               title: 'Local Game',
               subtitle: 'Play with a friend or challenge the CPU',
               icon: Icons.smartphone_rounded,
               color: AppColors.neonPurple,
               onTap: AppNavigation.pushLocalGame,
+            ),
+            MenuButtonWidget(
+              title: 'Public Rooms',
+              subtitle: 'Browse and join open rooms',
+              icon: Icons.public_rounded,
+              color: AppColors.neonGreen,
+              onTap: () =>
+                  _checkInternetConnection(AppNavigation.pushPublicRooms),
             ),
           ],
         ),

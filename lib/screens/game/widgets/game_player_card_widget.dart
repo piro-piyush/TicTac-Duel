@@ -1,30 +1,20 @@
 import 'package:tictac_duel/lib.dart';
 
 class GamePlayerCardWidget extends StatelessWidget {
-   GamePlayerCardWidget.online({
+  const GamePlayerCardWidget({
     super.key,
-    required OnlinePlayerModel player,
+    required this.player,
+    required this.points,
     required this.isMe,
     required this.isTurn,
     required this.theme,
     required this.compact,
-  })  : player = player,
-        points = player.points,
-        isOnline = true;
-
-  const GamePlayerCardWidget.local({
-    super.key,
-    required this.player,
-    required this.points,
-    required this.isTurn,
-    required this.theme,
-    required this.compact,
-  })  : isMe = false,
-        isOnline = false;
+    this.isOnline = false,
+  });
 
   final PlayerModel player;
   final int points;
-  final bool isMe;
+  final bool Function(String id) isMe;
   final bool isTurn;
   final RoomTheme theme;
   final bool compact;
@@ -37,6 +27,7 @@ class GamePlayerCardWidget extends StatelessWidget {
         : theme.secondary;
 
     final avatarSize = compact ? 40.0 : 48.0;
+    final isCurrentPlayer = isMe(player.id);
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 220),
@@ -45,24 +36,20 @@ class GamePlayerCardWidget extends StatelessWidget {
         vertical: compact ? 7 : 9,
       ),
       decoration: BoxDecoration(
-        color: isTurn
-            ? color.withValues(alpha: 0.07)
-            : AppColors.surface,
+        color: isTurn ? color.withValues(alpha: 0.07) : AppColors.surface,
         borderRadius: BorderRadius.circular(compact ? 13 : 16),
         border: Border.all(
-          color: isTurn
-              ? color.withValues(alpha: 0.55)
-              : AppColors.border,
+          color: isTurn ? color.withValues(alpha: 0.55) : AppColors.border,
           width: isTurn ? 1.5 : 1,
         ),
         boxShadow: isTurn
             ? [
-          BoxShadow(
-            color: color.withValues(alpha: 0.10),
-            blurRadius: 16,
-            spreadRadius: 1,
-          ),
-        ]
+                BoxShadow(
+                  color: color.withValues(alpha: 0.10),
+                  blurRadius: 16,
+                  spreadRadius: 1,
+                ),
+              ]
             : null,
       ),
       child: Row(
@@ -70,7 +57,7 @@ class GamePlayerCardWidget extends StatelessWidget {
         children: [
           PlayerAvatarWidget(
             player: player,
-            isMe: isMe,
+            isMe: isCurrentPlayer,
             isTurn: isTurn,
             size: avatarSize,
           ),
@@ -79,7 +66,7 @@ class GamePlayerCardWidget extends StatelessWidget {
               spacing: 3,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildPlayerHeader(color),
+                _buildPlayerHeader(color, isCurrentPlayer),
                 _buildPlayerStatus(color),
               ],
             ),
@@ -89,9 +76,9 @@ class GamePlayerCardWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildPlayerHeader(Color color) {
+  Widget _buildPlayerHeader(Color color, bool isCurrentPlayer) {
     return Row(
-      spacing: 5,
+      spacing: Dimens.six,
       children: [
         Flexible(
           child: Text(
@@ -100,7 +87,7 @@ class GamePlayerCardWidget extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: AppColors.textPrimary,
-              fontSize: compact ? 10 : 12,
+              fontSize: compact ? Dimens.ten : Dimens.twelve,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -111,26 +98,21 @@ class GamePlayerCardWidget extends StatelessWidget {
   }
 
   Widget _buildPlayerBadge(Color color) {
+    final isMePlayer = isMe(player.id);
+
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: compact ? 4 : 5,
-        vertical: 2,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: compact ? Dimens.four :  Dimens.six, vertical:  Dimens.two),
       decoration: BoxDecoration(
-        color: isMe
-            ? color.withValues(alpha: 0.12)
-            : AppColors.card,
-        borderRadius: BorderRadius.circular(5),
+        color: isMePlayer ? color.withValues(alpha: 0.12) : AppColors.card,
+        borderRadius:Dimens.radius6,
         border: Border.all(
-          color: isMe
-              ? color.withValues(alpha: 0.25)
-              : AppColors.border,
+          color: isMePlayer ? color.withValues(alpha: 0.25) : AppColors.border,
         ),
       ),
       child: Text(
-        isMe ? 'YOU' : 'OPPONENT',
+        isMePlayer ? 'YOU' : 'OPPONENT',
         style: TextStyle(
-          color: isMe ? color : AppColors.textSecondary,
+          color: isMePlayer ? color : AppColors.textSecondary,
           fontSize: compact ? 6 : 7,
           fontWeight: FontWeight.w800,
           letterSpacing: 0.7,
@@ -141,7 +123,7 @@ class GamePlayerCardWidget extends StatelessWidget {
 
   Widget _buildPlayerStatus(Color color) {
     return Row(
-      spacing: 5,
+      spacing: Dimens.six,
       children: [
         Text(
           player.symbol.value.toUpperCase(),
@@ -166,24 +148,15 @@ class GamePlayerCardWidget extends StatelessWidget {
             ),
           ),
         const Spacer(),
-        _buildPoints(
-          color: color,
-          compact: compact,
-        ),
+        _buildPoints(color: color, compact: compact),
       ],
     );
   }
 
-  Widget _buildPoints({
-    required Color color,
-    required bool compact,
-  }) {
+  Widget _buildPoints({required Color color, required bool compact}) {
     return TweenAnimationBuilder<int>(
       key: ValueKey(points),
-      tween: IntTween(
-        begin: points > 0 ? points - 1 : 0,
-        end: points,
-      ),
+      tween: IntTween(begin: points > 0 ? points - 1 : 0, end: points),
       duration: const Duration(milliseconds: 350),
       curve: Curves.easeOutBack,
       builder: (context, value, child) {
@@ -191,9 +164,7 @@ class GamePlayerCardWidget extends StatelessWidget {
           scale: value == points && points > 0 ? 1.0 : 0.9,
           duration: const Duration(milliseconds: 180),
           child: Container(
-            constraints: BoxConstraints(
-              minWidth: compact ? 22 : 26,
-            ),
+            constraints: BoxConstraints(minWidth: compact ? 22 : 26),
             padding: EdgeInsets.symmetric(
               horizontal: compact ? 5 : 6,
               vertical: compact ? 2 : 3,
@@ -201,9 +172,7 @@ class GamePlayerCardWidget extends StatelessWidget {
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(6),
-              border: Border.all(
-                color: color.withValues(alpha: 0.25),
-              ),
+              border: Border.all(color: color.withValues(alpha: 0.25)),
             ),
             child: Text(
               '$value',

@@ -14,6 +14,7 @@ abstract final class AppRoutes {
   static const localGame = '/local-game';
   static const localGameBoard = '/local-game-board';
   static const joinRoom = '/join-room';
+  static const publicRooms = '/public-rooms';
   static const game = '/game/:roomCode';
   static const result = '/result';
   static const settings = '/settings';

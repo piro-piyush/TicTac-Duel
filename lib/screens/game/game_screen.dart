@@ -5,46 +5,95 @@ class GameScreen extends GetView<GameController> {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      final room = controller.room;
-      final myPlayer = controller.myPlayer;
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) {
+          return;
+        }
 
-      Widget child;
+        final shouldQuit = await GameDialogUtils.confirmQuit();
 
-      if (controller.isLoading && room == null) {
-        child = const RoomStateWidget.connecting();
-      } else if (room == null) {
-        child = const RoomStateWidget.notFound();
-      } else if (myPlayer == null) {
-        child = const RoomStateWidget.playerNotFound();
-      } else {
-        child = controller.showGame
-            ? Stack(
-                alignment: Alignment.center,
-                children: [
-                  GameWidget(
-                    room: room,
-                    playerId: controller.playerId,
-                    board: controller.board,
-                    isMyTurn: controller.isMyTurn,
-                    winningIndexes: controller.winningIndexes,
-                    onCellTap: controller.makeMove,
-                  ),
-                  GameRoundAnimationWidget(
-                    showRoundAnimation: controller.showRoundAnimation,
-                    animatedRound: controller.animatedRound,
-                  ),
-                ],
-              )
-            : WaitingForPlayersWidget(
-                room: room,
-                playerId: controller.playerId,
-                waitingForNextRound: controller.waitingForNextRound,
-                onStartGame: controller.startGame,
-              );
-      }
+        if (!shouldQuit || !context.mounted) {
+          return;
+        }
 
-      return NeonBackgroundWidget(title: 'Tic Tac Duel', child: child);
-    });
+        controller.quitGame();
+
+        Get.back();
+      },
+      child: Obx(() {
+        final room = controller.room;
+
+        if (controller.isLoading && room == null) {
+          return const NeonBackgroundWidget(
+            needScroll: false,
+            child: RoomStateWidget.connecting(),
+          );
+        }
+
+        if (room == null) {
+          return const NeonBackgroundWidget(
+            needScroll: false,
+            child: RoomStateWidget.notFound(),
+          );
+        }
+
+        final child = AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          switchInCurve: Curves.easeOut,
+          switchOutCurve: Curves.easeIn,
+          child: controller.showGame
+              ? Stack(
+                  key: const ValueKey('game'),
+                  alignment: Alignment.center,
+                  children: [
+                    TicTacToeGameWidget(
+                      theme: room.theme,
+                      board: controller.board,
+                      winningIndexes: controller.winningIndexes,
+                      turnIndex: controller.turnIndex,
+                      isMyTurn: controller.isMyTurn,
+                      onCellTap: controller.makeMove,
+                      playerId: controller.playerId,
+                      playerOne: controller.playerOne,
+                      playerTwo: controller.playerTwo!,
+                      playerOnePoints: controller.playerOnePoints,
+                      playerOneReady: controller.playerOneReady,
+                      playerTwoPoints: controller.playerTwoPoints,
+                      playerTwoReady: controller.playerTwoReady,
+                      isOnline: true,
+                    ),
+                    GameRoundAnimationWidget(
+                      showRoundAnimation: controller.showRoundAnimation,
+                      animatedRound: controller.animatedRound,
+                    ),
+                  ],
+                )
+              : WaitingForPlayersWidget(
+                  key: const ValueKey('waiting'),
+                  playerOne: controller.playerOne,
+                  playerTwo: controller.playerTwo,
+                  playerId: controller.playerId,
+                  roomCode: room.roomCode,
+                  roomStatus: room.roundStatus,
+                  playerOneReady: controller.playerOneReady,
+                  playerTwoReady: controller.playerTwoReady,
+                  onStartGame: controller.startGame,
+                ),
+        );
+
+        return TicTacToeGameTemplateWidget(
+          currentRound: room.currentRound,
+          maxRounds: room.maxRounds,
+          player: controller.currentPlayer,
+          isOnline: true,
+          showGameStatus: controller.showGame,
+          theme: room.theme,
+          child: child,
+          isMe: (id) => id == controller.playerId,
+        );
+      }),
+    );
   }
 }

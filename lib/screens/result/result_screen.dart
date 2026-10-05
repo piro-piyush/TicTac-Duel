@@ -22,7 +22,6 @@ class ResultScreen extends GetView<ResultController> {
 
       return NeonBackgroundWidget(
         needScroll: false,
-        title: 'Game Result',
         bottomNavigationBar: _buildActions(),
         child: _buildContent(state),
       );
@@ -81,6 +80,15 @@ class ResultScreen extends GetView<ResultController> {
     if (state.isDraw) {
       title = 'DRAW';
       message = 'The game ended in a draw.';
+    } else if (state.isDismissed) {
+      final winner = state.gameWinner;
+
+      if (winner == null || state.dismissReason == null) {
+        return const SizedBox.shrink();
+      }
+
+      title = state.hasWon ? 'YOU WON!' : 'YOU LOSE';
+      message = state.dismissReason!.message;
     } else if (state.isLocal) {
       final winner = state.gameWinner;
 
@@ -144,7 +152,7 @@ class ResultScreen extends GetView<ResultController> {
   void _showConfetti(BuildContext context) {
     Confetti.launch(
       context,
-      options: const ConfettiOptions(particleCount: 100, spread: 70, y: 0.55,),
+      options: const ConfettiOptions(particleCount: 100, spread: 70, y: 0.55),
     );
   }
 }

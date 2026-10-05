@@ -54,8 +54,8 @@ class PublicRoomCardWidget extends StatelessWidget {
             ),
             subtitle: Text(
               '${room.theme.name}  •  '
-              '${room.maxRounds} '
-              '${room.maxRounds == 1 ? 'Round' : 'Rounds'}',
+                  '${room.maxRounds} '
+                  '${room.maxRounds == 1 ? 'Round' : 'Rounds'}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: textTheme.labelSmall,

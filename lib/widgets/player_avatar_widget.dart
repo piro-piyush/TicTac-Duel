@@ -80,17 +80,13 @@ class _PlayerAvatarWidgetState extends State<PlayerAvatarWidget>
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(radius),
             border: Border.all(
-              color: color.withValues(
-                alpha: widget.isTurn ? 0.8 : 0.45,
-              ),
+              color: color.withValues(alpha: widget.isTurn ? 0.8 : 0.45),
               width: widget.isTurn ? 2 : 1,
             ),
             boxShadow: [
               BoxShadow(
                 color: color.withValues(
-                  alpha: widget.isTurn
-                      ? 0.20 + (pulse * 0.25)
-                      : 0.20,
+                  alpha: widget.isTurn ? 0.20 + (pulse * 0.25) : 0.20,
                 ),
                 blurRadius: widget.isTurn
                     ? (widget.size * 0.15) + (pulse * widget.size * 0.20)
@@ -103,34 +99,14 @@ class _PlayerAvatarWidgetState extends State<PlayerAvatarWidget>
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(imageRadius),
-            child: SizedBox(
-              width: imageSize,
-              height: imageSize,
-              child: child,
-            ),
+            child: SizedBox(width: imageSize, height: imageSize, child: child),
           ),
         );
       },
-      child: SvgPicture.network(
-        widget.player.imageUrl,
-        width: imageSize,
-        height: imageSize,
-        fit: BoxFit.cover,
-        placeholderBuilder: (context) {
-          return ColoredBox(
-            color: AppColors.card,
-            child: Center(
-              child: SizedBox(
-                width: widget.size * 0.18,
-                height: widget.size * 0.18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: color,
-                ),
-              ),
-            ),
-          );
-        },
+      child: CacheSvgNetworkImageWidget(
+        url: widget.player.imageUrl,
+        size: imageSize,
+        color: color,
       ),
     );
   }

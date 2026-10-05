@@ -297,6 +297,73 @@ class AppTheme {
           ),
         ),
       ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: AppColors.card,
+
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: Dimens.sixteen,
+          vertical: Dimens.fourteen,
+        ),
+
+        hintStyle: const TextStyle(
+          color: AppColors.textSecondary,
+          fontSize: Dimens.fontSm,
+          fontWeight: FontWeight.w500,
+          letterSpacing: 0.6,
+        ),
+
+        labelStyle: const TextStyle(
+          color: AppColors.textSecondary,
+          fontSize: Dimens.fontSm,
+          fontWeight: FontWeight.w500,
+        ),
+
+        floatingLabelStyle: const TextStyle(
+          color: AppColors.neonPurple,
+          fontSize: Dimens.fontSm,
+          fontWeight: FontWeight.w600,
+        ),
+
+        prefixIconColor: AppColors.textSecondary,
+        suffixIconColor: AppColors.textSecondary,
+
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(Dimens.radiusMd),
+          borderSide: const BorderSide(color: AppColors.border, width: 1.2),
+        ),
+
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(Dimens.radiusMd),
+          borderSide: const BorderSide(color: AppColors.border, width: 1.2),
+        ),
+
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(Dimens.radiusMd),
+          borderSide: const BorderSide(color: AppColors.neonPurple, width: 1.5),
+        ),
+
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(Dimens.radiusMd),
+          borderSide: const BorderSide(color: AppColors.neonPink, width: 1.2),
+        ),
+
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(Dimens.radiusMd),
+          borderSide: const BorderSide(color: AppColors.neonPink, width: 1.5),
+        ),
+
+        errorStyle: const TextStyle(
+          color: AppColors.neonPink,
+          fontSize: Dimens.fontXs,
+          fontWeight: FontWeight.w500,
+        ),
+
+        counterStyle: const TextStyle(
+          color: AppColors.textSecondary,
+          fontSize: Dimens.fontXs,
+        ),
+      ),
     );
   }
 }

@@ -13,11 +13,22 @@ class PlayerModel {
 
   String get imageUrl => 'https://api.dicebear.com/10.x/pixelbot/svg?seed=$id';
 
-  PlayerModel copyWith({String? id, String? name, PlayerSymbol? symbol}) {
-    return PlayerModel(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      symbol: symbol ?? this.symbol,
-    );
+  PlayerModel copyWith({String? id, String? name, PlayerSymbol? symbol}) =>
+      PlayerModel(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        symbol: symbol ?? this.symbol,
+      );
+
+  factory PlayerModel.fromJson(Map<String, dynamic> json) {
+    try {
+      return PlayerModel(
+        id: json['id'] as String? ?? '',
+        name: json['name'] as String? ?? '',
+        symbol: PlayerSymbol.values.byName(json['symbol']),
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
 }

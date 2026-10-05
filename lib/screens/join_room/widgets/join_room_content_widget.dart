@@ -11,9 +11,7 @@ class JoinRoomContentWidget extends StatelessWidget {
     required this.onGenerateRandomName,
     required this.onPasteCode,
     required this.onJoinRoom,
-    required this.rooms,
-    required this.onRefresh,
-    required this.onJoinPublicRoom,
+
   });
 
   final GlobalKey<FormState> formKey;
@@ -27,10 +25,7 @@ class JoinRoomContentWidget extends StatelessWidget {
   final VoidCallback onGenerateRandomName;
   final VoidCallback onPasteCode;
   final VoidCallback onJoinRoom;
-  final ValueChanged<RoomModel> onJoinPublicRoom;
 
-  final List<RoomModel> rooms;
-  final VoidCallback onRefresh;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +33,13 @@ class JoinRoomContentWidget extends StatelessWidget {
       spacing: Dimens.twentyEight,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const JoinRoomHeaderWidget(),
+        // Join Room
+        const RoomHeaderWidget(
+          eyebrow: 'HAVE A ROOM',
+          title: 'CODE?',
+          description: 'Enter the room code and join the battle.',
+        ),
+
 
         PlayerNameAndRoomCodeFieldWidget(
           formKey: formKey,
@@ -53,12 +54,8 @@ class JoinRoomContentWidget extends StatelessWidget {
 
         const JoinRoomHintWidget(),
 
-        const JoinDividerWidget(),
-        PublicRoomWidget(
-          rooms: rooms,
-          onRefresh: onRefresh,
-          onJoinRoom: onJoinPublicRoom,
-        ),
+        const OrDividerWidget(),
+
         const NeonOutlinedButtonWidget(
           label: 'CREATE YOUR OWN ROOM',
           icon: Icons.add_rounded,

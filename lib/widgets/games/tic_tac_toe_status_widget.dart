@@ -1,24 +1,32 @@
 import 'package:tictac_duel/lib.dart';
 
-class GameStatusWidget extends StatelessWidget {
-  const GameStatusWidget({
+class TicTacToeStatusWidget extends StatelessWidget {
+  const TicTacToeStatusWidget({
     super.key,
     required this.player,
-    required this.status,
+    required this.isMe,
     required this.theme,
+    this.isOnline = false,
     this.compact = false,
   });
 
   final PlayerModel player;
-  final String status;
+  final bool Function(String id) isMe;
   final RoomTheme theme;
+  final bool isOnline;
   final bool compact;
+
+  String get _status {
+    if (isMe(player.id) || player.name == 'You') {
+      return 'Your turn';
+    }
+
+    return "${player.name}'s turn";
+  }
 
   @override
   Widget build(BuildContext context) {
-    final color = player.symbol == PlayerSymbol.x
-        ? theme.primary
-        : theme.secondary;
+    final color = PlayerSymbolX.color(player.symbol, theme);
 
     return Container(
       constraints: const BoxConstraints(maxWidth: 420),
@@ -34,11 +42,11 @@ class GameStatusWidget extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _StatusIndicator(color: color),
+          _StatusIndicator(color: color, isOnline: isOnline),
           const SizedBox(width: 7),
           Flexible(
             child: Text(
-              status,
+              _status,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: color,
@@ -54,21 +62,22 @@ class GameStatusWidget extends StatelessWidget {
 }
 
 class _StatusIndicator extends StatelessWidget {
-  const _StatusIndicator({required this.color});
+  const _StatusIndicator({required this.color, required this.isOnline});
 
   final Color color;
+  final bool isOnline;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 6,
-      height: 6,
+      width: Dimens.six,
+      height: Dimens.six,
       decoration: BoxDecoration(
-        color: color,
+        color: isOnline ? color : AppColors.textSecondary,
         shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(color: color.withValues(alpha: 0.6), blurRadius: 7),
-        ],
+        boxShadow: isOnline
+            ? [BoxShadow(color: color.withValues(alpha: 0.6), blurRadius: 7)]
+            : null,
       ),
     );
   }

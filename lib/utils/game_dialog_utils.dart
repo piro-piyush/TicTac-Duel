@@ -33,125 +33,47 @@ class GameDialogUtils {
         child: AlertDialog(
           backgroundColor: AppColors.surface,
           shape: _dialogShape,
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: 24,
+          ),
+          titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
           title: Text(
             title,
             textAlign: TextAlign.center,
             style: TextStyle(
               color: Get.theme.colorScheme.primary,
+              fontSize: 20,
               fontWeight: FontWeight.w800,
+              letterSpacing: 0.5,
             ),
           ),
-          content: Text(
-            message,
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Get.theme.colorScheme.onSurface),
-          ),
-          actionsAlignment: MainAxisAlignment.center,
-          actions: [
-            ElevatedButton(
-              onPressed: () {
-                Get.back();
-                onConfirm?.call();
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      ),
-      barrierDismissible: false,
-    );
-  }
-
-  // ===========================================================================
-  // GAME FINISHED
-  // ===========================================================================
-
-  static Future<void> showGameFinished({
-    required String playerOneName,
-    required PlayerSymbol playerOneSymbol,
-    required int playerOneScore,
-    required String playerTwoName,
-    required PlayerSymbol playerTwoSymbol,
-    required int playerTwoScore,
-    required PlayerSymbol mySymbol,
-  }) {
-    final isDraw = playerOneScore == playerTwoScore;
-
-    final winnerName = isDraw
-        ? null
-        : playerOneScore > playerTwoScore
-        ? playerOneName
-        : playerTwoName;
-
-    final winnerSymbol = isDraw
-        ? null
-        : playerOneScore > playerTwoScore
-        ? playerOneSymbol
-        : playerTwoSymbol;
-
-    final hasWon = winnerSymbol == mySymbol;
-
-    final title = isDraw
-        ? 'Game Draw'
-        : hasWon
-        ? 'You Won!'
-        : 'You Lose';
-
-    return Get.dialog<void>(
-      PopScope(
-        canPop: false,
-        child: AlertDialog(
-          backgroundColor: AppColors.surface,
-          shape: _dialogShape,
-          title: Text(
-            title,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Get.theme.colorScheme.primary,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
+          contentPadding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
           content: Column(
             mainAxisSize: MainAxisSize.min,
+            spacing: Dimens.sixteen,
             children: [
               Text(
-                isDraw
-                    ? 'The game ended in a draw.'
-                    : '$winnerName wins the game!',
+                message,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Get.theme.colorScheme.onSurface,
+                  fontSize: 15,
+                  height: 1.5,
                 ),
               ),
-              const SizedBox(height: 20),
-              _buildScoreRow(
-                playerOneName,
-                playerOneScore,
-              ),
-              const SizedBox(height: 8),
-              _buildScoreRow(
-                playerTwoName,
-                playerTwoScore,
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Get.back();
+                    onConfirm?.call();
+                  },
+                  child: const Text('OK'),
+                ),
               ),
             ],
           ),
-          actionsAlignment: MainAxisAlignment.center,
-          actions: [
-            OutlinedButton(
-              onPressed: () {
-                Get.back();
-                AppNavigation.goToHome();
-              },
-              child: const Text('Home'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Get.back();
-                AppNavigation.pushLocalGame();
-              },
-              child: const Text('New Game'),
-            ),
-          ],
         ),
       ),
       barrierDismissible: false,
@@ -177,28 +99,42 @@ class GameDialogUtils {
               fontWeight: FontWeight.w800,
             ),
           ),
-          content: Text(
-            reason,
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Get.theme.colorScheme.onSurface),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            spacing: Dimens.sixteen,
+            children: [
+              Text(
+                reason,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Get.theme.colorScheme.onSurface),
+              ),
+              Row(
+                spacing: Dimens.twelve,
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Get.back();
+                        AppNavigation.goToHome();
+                      },
+                      child: const Text('BACK HOME'),
+                    ),
+                  ),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Get.back();
+                        AppNavigation.replaceCreateRoom();
+                      },
+                      child: const Text('NEW GAME'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
+
           actionsAlignment: MainAxisAlignment.center,
-          actions: [
-            OutlinedButton(
-              onPressed: () {
-                Get.back();
-                AppNavigation.replaceHome();
-              },
-              child: const Text('Back Home'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Get.back();
-                AppNavigation.replaceCreateRoom();
-              },
-              child: const Text('Create Room'),
-            ),
-          ],
         ),
       ),
       barrierDismissible: false,
@@ -209,43 +145,58 @@ class GameDialogUtils {
   // GAME DISMISSED
   // ===========================================================================
 
-  static Future<void> showGameDismissed({required String reason}) {
+  static Future<void> showGameDismissed({
+    required GameDismissedResponse response,
+  }) {
+    final reason = response.reason;
+
     return Get.dialog<void>(
       PopScope(
         canPop: false,
         child: AlertDialog(
           backgroundColor: AppColors.surface,
           shape: _dialogShape,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+          icon: Icon(reason.icon, color: reason.color, size: 48),
           title: Text(
             'Game Dismissed',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Get.theme.colorScheme.primary,
-              fontWeight: FontWeight.w800,
-            ),
+            style: TextStyle(color: reason.color, fontWeight: FontWeight.w800),
           ),
-          content: Text(
-            reason,
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Get.theme.colorScheme.onSurface),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            spacing: 20,
+            children: [
+              Text(
+                reason.message,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Get.theme.colorScheme.onSurface),
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Get.back();
+                        AppNavigation.goToHome();
+                      },
+                      child: const Text('BACK HOME'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Get.back();
+                        AppNavigation.replaceCreateRoom();
+                      },
+                      child: const Text('NEW GAME'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-          actionsAlignment: MainAxisAlignment.center,
-          actions: [
-            OutlinedButton(
-              onPressed: () {
-                Get.back();
-                AppNavigation.goToHome();
-              },
-              child: const Text('Back Home'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Get.back();
-                AppNavigation.replaceCreateRoom();
-              },
-              child: const Text('New Game'),
-            ),
-          ],
         ),
       ),
       barrierDismissible: false,
@@ -263,31 +214,29 @@ class GameDialogUtils {
     ),
   );
 
-  static Widget _buildScoreRow(
-      String playerName,
-      int score,
-      ) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            playerName,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: Get.theme.colorScheme.onSurface,
-              fontWeight: FontWeight.w700,
-            ),
+  // ===========================================================================
+  // QUIT CONFIRMATION
+  // ===========================================================================
+
+  static Future<bool> confirmQuit() async {
+    final result = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('Quit Game?'),
+        content: const Text('Are you sure you want to quit the current game?'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: const Text('CANCEL'),
           ),
-        ),
-        Text(
-          '$score',
-          style: TextStyle(
-            color: Get.theme.colorScheme.secondary,
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
+          TextButton(
+            onPressed: () => Get.back(result: true),
+            child: const Text('QUIT'),
           ),
-        ),
-      ],
+        ],
+      ),
+      barrierDismissible: false,
     );
+
+    return result == true;
   }
 }

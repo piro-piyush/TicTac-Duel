@@ -25,11 +25,8 @@ class CreateRoomScreen extends GetView<RoomController> {
           onThemeChanged: controller.setSelectedTheme,
           onRoundsChanged: controller.setSelectedMaxRounds,
           onGenerateRandomName: controller.generateRandomName,
-          rooms: controller.rooms,
           isRoomPrivate: controller.isRoomPrivate,
           onPrivateRoomChanged: controller.setIsPrivateRoom,
-          onRefresh: controller.refreshRooms,
-          onJoinRoom: controller.joinPublicRoom,
         ),
       ),
     );

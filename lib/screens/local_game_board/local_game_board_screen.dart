@@ -5,42 +5,56 @@ class LocalGameBoardScreen extends GetView<LocalGameBoardController> {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(
-          () => NeonBackgroundWidget(
-        title: 'LOCAL GAME',
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            LocalGameWidget(
-              localGame: controller.game,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) {
+          return;
+        }
 
-              // Board
-              board: controller.board,
-              winningIndexes: controller.winningIndexes,
+        final shouldQuit = await GameDialogUtils.confirmQuit();
 
-              // Turn
-              currentPlayer: controller.currentPlayer,
-              turnIndex: controller.turnIndex,
+        if (shouldQuit) {
+          controller.quitGame();
+        }
+      },
+      child: Obx(() {
+        final game = controller.game;
+        final currentPlayer = controller.currentPlayer;
 
-              // Round
-              currentRound: controller.currentRound,
-
-              // Interaction
-              canMakeMove: controller.canMakeMove,
-              onCellTap: controller.onCellTap,
-
-              // Points
-              playerOnePoints: controller.playerOnePoints,
-              playerTwoPoints: controller.playerTwoPoints,
-            ),
-
-            GameRoundAnimationWidget(
-              showRoundAnimation: controller.showRoundAnimation,
-              animatedRound: controller.animatedRound,
-            ),
-          ],
-        ),
-      ),
+        return TicTacToeGameTemplateWidget(
+          currentRound: controller.currentRound,
+          maxRounds: game.maxRounds,
+          player: currentPlayer,
+          isMe: (id) => id == controller.playerId,
+          theme: game.theme,
+          isOnline: false,
+          showGameStatus: true,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              TicTacToeGameWidget(
+                theme: game.theme,
+                board: controller.board,
+                winningIndexes: controller.winningIndexes,
+                turnIndex: controller.turnIndex,
+                isMyTurn: controller.canMakeMove,
+                onCellTap: controller.onCellTap,
+                playerOnePoints: controller.playerOnePoints,
+                playerTwoPoints: controller.playerTwoPoints,
+                playerId: currentPlayer.id,
+                playerOne: game.playerOne,
+                playerTwo: game.playerTwo,
+                isOnline: false,
+              ),
+              GameRoundAnimationWidget(
+                showRoundAnimation: controller.showRoundAnimation,
+                animatedRound: controller.animatedRound,
+              ),
+            ],
+          ),
+        );
+      }),
     );
   }
 }

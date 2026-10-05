@@ -1,7 +1,7 @@
 import 'package:tictac_duel/lib.dart';
 
-class CreateRoomHeaderWidget extends StatelessWidget {
-  const CreateRoomHeaderWidget({super.key});
+class PublicRoomsHeaderWidget extends StatelessWidget {
+  const PublicRoomsHeaderWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -10,12 +10,12 @@ class CreateRoomHeaderWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('READY FOR A', style: textTheme.labelSmall),
+        Text('CHOOSE YOUR', style: textTheme.labelSmall),
         const SizedBox(height: Dimens.six),
-        Text('NEW DUEL?', style: textTheme.headlineSmall),
+        Text('NEXT ROOM', style: textTheme.headlineSmall),
         const SizedBox(height: Dimens.twelve),
         Text(
-          'Set up your arena and challenge a rival.',
+          'Browse available rooms and join a duel.',
           style: textTheme.bodyMedium,
         ),
       ],

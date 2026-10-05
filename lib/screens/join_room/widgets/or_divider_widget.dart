@@ -1,7 +1,7 @@
 import 'package:tictac_duel/lib.dart';
 
-class JoinDividerWidget extends StatelessWidget {
-  const JoinDividerWidget({super.key});
+class OrDividerWidget extends StatelessWidget {
+  const OrDividerWidget({super.key});
 
   @override
   Widget build(BuildContext context) {

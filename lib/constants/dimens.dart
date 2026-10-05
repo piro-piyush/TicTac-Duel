@@ -43,6 +43,7 @@ abstract final class Dimens {
   static const double seventyTwo = 72;
   static const double seventyFive = 75;
   static const double eighty = 80;
+  static const double eightyEight = 88;
   static const double eightySix = 86;
   static const double ninety = 90;
   static const double ninetySix = 96;
@@ -454,4 +455,15 @@ abstract final class Dimens {
 
   static const double dividerHeight = one;
   static const double elevatedButtonHeight = sixtyFour;
+
+  // =============================================================================
+// RESPONSIVE LAYOUT
+// =============================================================================
+
+  static const double mobileBreakpoint = 600;
+  static const double tabletBreakpoint = 1024;
+
+  static const double mobileMaxContentWidth = 460;
+  static const double tabletMaxContentWidth = 500;
+  static const double desktopMaxContentWidth = 640;
 }

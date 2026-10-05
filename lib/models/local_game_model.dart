@@ -6,14 +6,16 @@ class LocalGameModel {
     required this.playerTwo,
     required this.theme,
     required this.maxRounds,
-  })  : gameType = LocalGameType.friend,
-        difficulty = null;
+    this.boardSize = 3,
+  }) : gameType = LocalGameType.friend,
+       difficulty = null;
 
   factory LocalGameModel.computer({
-    required LocalPlayerModel playerOne,
+    required PlayerModel playerOne,
     required RoomTheme theme,
     required int maxRounds,
     required CpuDifficulty difficulty,
+    int boardSize = 3,
   }) {
     final cpuSymbol = playerOne.symbol == PlayerSymbol.x
         ? PlayerSymbol.o
@@ -21,13 +23,14 @@ class LocalGameModel {
 
     return LocalGameModel._(
       playerOne: playerOne,
-      playerTwo: LocalPlayerModel(
+      playerTwo: PlayerModel(
         id: GameConstants.localCpuId,
         name: GameConstants.localCpuName,
         symbol: cpuSymbol,
       ),
       theme: theme,
       maxRounds: maxRounds,
+      boardSize: boardSize,
       gameType: LocalGameType.computer,
       difficulty: difficulty,
     );
@@ -38,16 +41,17 @@ class LocalGameModel {
     required this.playerTwo,
     required this.theme,
     required this.maxRounds,
+    required this.boardSize,
     required this.gameType,
     required this.difficulty,
   });
 
-  final LocalPlayerModel playerOne;
-  final LocalPlayerModel playerTwo;
+  final PlayerModel playerOne;
+  final PlayerModel playerTwo;
 
   final RoomTheme theme;
   final int maxRounds;
-
+  final int boardSize;
   final LocalGameType gameType;
   final CpuDifficulty? difficulty;
 

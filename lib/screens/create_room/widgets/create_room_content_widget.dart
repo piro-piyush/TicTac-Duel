@@ -15,9 +15,6 @@ class CreateRoomContentWidget extends StatelessWidget {
     required this.onRoundsChanged,
     required this.onPrivateRoomChanged,
     required this.onGenerateRandomName,
-    required this.rooms,
-    required this.onRefresh,
-    required this.onJoinRoom,
   });
 
   final GlobalKey<FormState> formKey;
@@ -37,17 +34,18 @@ class CreateRoomContentWidget extends StatelessWidget {
 
   final VoidCallback onGenerateRandomName;
 
-  final List<RoomModel> rooms;
-  final VoidCallback onRefresh;
-  final ValueChanged<RoomModel> onJoinRoom;
-
   @override
   Widget build(BuildContext context) {
     return Column(
       spacing: Dimens.twentyEight,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const CreateRoomHeaderWidget(),
+        // Create Room
+        const RoomHeaderWidget(
+          eyebrow: 'READY FOR A',
+          title: 'NEW DUEL?',
+          description: 'Set up your room and challenge a rival.',
+        ),
 
         PlayerNameWidget(
           playerNameController: playerNameController,
@@ -71,19 +69,25 @@ class CreateRoomContentWidget extends StatelessWidget {
           onThemeChanged: onThemeChanged,
         ),
 
-        RoomPrivacyWidget(
-          isPrivate: isRoomPrivate,
+        SectionTileWidget.withSwitch(
+          icon: Icons.lock_rounded,
+          title: 'Private Room',
+          subtitle: isRoomPrivate
+              ? 'Only players with the room code can join.'
+              : 'Anyone can discover and join this room.',
+          color: AppColors.neonPink,
+          value: isRoomPrivate,
           onChanged: onPrivateRoomChanged,
         ),
 
-        if (!isRoomPrivate)
-          PublicRoomWidget(
-            rooms: rooms,
-            onRefresh: onRefresh,
-            onJoinRoom: onJoinRoom,
-          ),
-
         const CreateRoomInfoWidget(),
+        const OrDividerWidget(),
+
+        const NeonOutlinedButtonWidget(
+          label: 'BROWSE PUBLIC ROOMS',
+          icon: Icons.public_rounded,
+          onPressed: AppNavigation.replacePublicRooms,
+        ),
       ],
     );
   }

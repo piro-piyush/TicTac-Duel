@@ -4,14 +4,18 @@ class LocalGameBoardController extends GetxController {
   LocalGameBoardController({
     required this.game,
     required this._musicController,
+    required this._playerController,
   });
 
   final LocalGameModel game;
 
   final MusicController _musicController;
+  final PlayerController _playerController;
   Timer? _cpuMoveTimer;
   Timer? _roundAnimationTimer;
   Timer? _resultTimer;
+
+  String get playerId => _playerController.playerId;
 
   // ===========================================================================
   // BOARD
@@ -68,10 +72,10 @@ class LocalGameBoardController extends GetxController {
 
   bool get showRoundAnimation => _showRoundAnimation.value;
 
-  LocalPlayerModel get currentPlayer =>
+  PlayerModel get currentPlayer =>
       turnIndex == 0 ? game.playerOne : game.playerTwo;
 
-  LocalPlayerModel get opponentPlayer =>
+  PlayerModel get opponentPlayer =>
       turnIndex == 0 ? game.playerTwo : game.playerOne;
 
   PlayerSymbol get currentSymbol => currentPlayer.symbol;
@@ -95,8 +99,21 @@ class LocalGameBoardController extends GetxController {
 
   @override
   void onClose() {
-    _cancelTimers();
+    closeGame();
     super.onClose();
+  }
+
+  // ===========================================================================
+  // GAME LIFECYCLE
+  // ===========================================================================
+
+  void quitGame() {
+    closeGame();
+    Get.back();
+  }
+
+  void closeGame() {
+    _cancelTimers();
   }
 
   // ===========================================================================
@@ -242,7 +259,7 @@ class LocalGameBoardController extends GetxController {
 
     final hasWon = winner?.id == game.playerOne.id;
 
-    final result = ResultModel.local(
+    final result = ResultModel.completed(
       playerOne: game.playerOne,
       playerTwo: game.playerTwo,
       playerOnePoints: playerOnePoints,
@@ -253,6 +270,7 @@ class LocalGameBoardController extends GetxController {
       isDraw: isDraw,
       hasWon: hasWon,
       showConfetti: hasWon,
+      isOnline: false
     );
 
     AppNavigation.replaceResult(result);
@@ -328,7 +346,7 @@ class LocalGameBoardController extends GetxController {
 
   bool get _isFinalRound => currentRound >= game.maxRounds;
 
-  LocalPlayerModel? get gameWinner {
+  PlayerModel? get gameWinner {
     if (!_isFinalRound) {
       return null;
     }

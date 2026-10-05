@@ -37,7 +37,6 @@ class PlayerNameWidget extends StatelessWidget {
               icon: const Icon(
                 Icons.casino_outlined,
                 color: AppColors.neonPurple,
-                size: 20,
               ),
             ),
           ),

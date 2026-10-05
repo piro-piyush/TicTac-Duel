@@ -6,6 +6,7 @@ class LocalGameBoardBinding extends Bindings {
     LocalGameBoardController(
       game: Get.arguments as LocalGameModel,
       musicController: Get.find<MusicController>(),
+      playerController: Get.find<PlayerController>(),
     ),
   );
 }

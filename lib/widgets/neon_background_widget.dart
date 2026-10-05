@@ -9,16 +9,19 @@ class NeonBackgroundWidget extends StatefulWidget {
     this.title,
     this.actions,
     this.padding,
+    this.bottom,
     this.bottomNavigationBar,
     this.showGrid = true,
     this.showParticles = true,
     this.needScroll = true,
+    this.keyboardAware = false,
     this.showTapEffects = true,
     this.showVignette = true,
-    this.maxWidth = Dimens.fourHundredSixty,
+    this.maxWidth,
   });
 
   final Widget child;
+  final PreferredSizeWidget? bottom;
   final String? title;
   final List<Widget>? actions;
   final EdgeInsets? padding;
@@ -27,10 +30,11 @@ class NeonBackgroundWidget extends StatefulWidget {
   final bool showGrid;
   final bool showParticles;
   final bool needScroll;
+  final bool keyboardAware;
   final bool showTapEffects;
   final bool showVignette;
 
-  final double maxWidth;
+  final double? maxWidth;
 
   @override
   State<NeonBackgroundWidget> createState() => _NeonBackgroundWidgetState();
@@ -162,10 +166,12 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
 
             _ForegroundLayer(
               title: widget.title,
+              bottom: widget.bottom,
               actions: widget.actions,
               padding: widget.padding,
               bottomNavigationBar: widget.bottomNavigationBar,
               needScroll: widget.needScroll,
+              keyboardAware: widget.keyboardAware,
               maxWidth: widget.maxWidth,
               child: widget.child,
             ),
@@ -343,8 +349,10 @@ class _ForegroundLayer extends StatelessWidget {
     required this.title,
     required this.actions,
     required this.padding,
+    required this.bottom,
     required this.bottomNavigationBar,
     required this.needScroll,
+    required this.keyboardAware,
     required this.maxWidth,
   });
 
@@ -352,63 +360,100 @@ class _ForegroundLayer extends StatelessWidget {
   final String? title;
   final List<Widget>? actions;
   final EdgeInsets? padding;
+  final PreferredSizeWidget? bottom;
   final Widget? bottomNavigationBar;
   final bool needScroll;
-  final double maxWidth;
+  final bool keyboardAware;
+  final double? maxWidth;
+
+  double _getMaxWidth(double screenWidth) {
+    if (maxWidth != null) {
+      return maxWidth!;
+    }
+
+    if (screenWidth < Dimens.mobileBreakpoint) {
+      return screenWidth;
+    }
+
+    if (screenWidth < Dimens.tabletBreakpoint) {
+      return Dimens.tabletMaxContentWidth;
+    }
+
+    return Dimens.desktopMaxContentWidth;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.sizeOf(context);
+    final contentMaxWidth = _getMaxWidth(screenSize.width);
+
     return Positioned.fill(
       child: SafeArea(
         left: false,
         right: false,
-        child: Align(
-          alignment: Alignment.topCenter,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: maxWidth),
-            child: Column(
-              children: [
-                _NeonAppBar(title: title, actions: actions),
-                Expanded(
-                  child: _NeonContent(
-                    padding: padding,
-                    needScroll: needScroll,
-                    child: child,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: contentMaxWidth,
+                  maxHeight: constraints.maxHeight,
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: constraints.maxHeight,
+                  child: Column(
+                    children: [
+                      _NeonAppBar(
+                        title: title,
+                        bottom: bottom,
+                        actions: actions,
+                      ),
+                      Expanded(
+                        child: _NeonContent(
+                          padding: padding,
+                          needScroll: needScroll,
+                          keyboardAware: keyboardAware,
+                          child: child,
+                        ),
+                      ),
+                      if (bottomNavigationBar != null)
+                        _NeonBottomNavigation(
+                          navigationBar: bottomNavigationBar!,
+                          padding: padding,
+                        ),
+                    ],
                   ),
                 ),
-                if (bottomNavigationBar != null)
-                  _NeonBottomNavigation(
-                    navigationBar: bottomNavigationBar!,
-                    padding: padding,
-                  ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         ),
       ),
     );
   }
 }
-
 // =============================================================================
 // APP BAR
 // =============================================================================
 
 class _NeonAppBar extends StatelessWidget {
-  const _NeonAppBar({required this.title, required this.actions});
+  const _NeonAppBar({required this.title, required this.actions, this.bottom});
 
   final String? title;
   final List<Widget>? actions;
+  final PreferredSizeWidget? bottom;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: kToolbarHeight,
+      height: kToolbarHeight + (bottom?.preferredSize.height ?? 0),
       child: AppBar(
         title: title != null
             ? Text(title!, maxLines: 1, overflow: TextOverflow.ellipsis)
             : null,
         actions: actions,
+        bottom: bottom,
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
@@ -417,7 +462,6 @@ class _NeonAppBar extends StatelessWidget {
     );
   }
 }
-
 // =============================================================================
 // CONTENT
 // =============================================================================
@@ -427,11 +471,13 @@ class _NeonContent extends StatelessWidget {
     required this.child,
     required this.padding,
     required this.needScroll,
+    required this.keyboardAware,
   });
 
   final Widget child;
   final EdgeInsets? padding;
   final bool needScroll;
+  final bool keyboardAware;
 
   EdgeInsets get _contentPadding {
     return padding ?? Dimens.defaultPadding;
@@ -439,26 +485,44 @@ class _NeonContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!needScroll) {
+    if (needScroll) {
+      return _buildScrollableContent();
+    }
+
+    if (!keyboardAware) {
       return Padding(padding: _contentPadding, child: child);
     }
 
-    return CustomScrollView(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
+          padding: _contentPadding,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: constraints.maxHeight - _contentPadding.vertical,
+            ),
+            child: child,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildScrollableContent() {
+    return SingleChildScrollView(
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       physics: const BouncingScrollPhysics(
         parent: AlwaysScrollableScrollPhysics(),
       ),
-      slivers: [
-        SliverPadding(
-          padding: _contentPadding,
-          sliver: SliverToBoxAdapter(child: child),
-        ),
-        const SliverToBoxAdapter(child: SizedBox(height: Dimens.eight)),
-      ],
+      padding: _contentPadding,
+      child: child,
     );
   }
 }
-
 // =============================================================================
 // BOTTOM NAVIGATION
 // =============================================================================
@@ -476,12 +540,16 @@ class _NeonBottomNavigation extends StatelessWidget {
   Widget build(BuildContext context) {
     final contentPadding = padding ?? Dimens.defaultPadding;
 
-    return Padding(
-      padding: EdgeInsets.only(
-        left: contentPadding.left,
-        right: contentPadding.right,
+    return SizedBox(
+      width: double.infinity,
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: contentPadding.left,
+          right: contentPadding.right,
+          bottom: contentPadding.bottom / 2,
+        ),
+        child: navigationBar,
       ),
-      child: navigationBar,
     );
   }
 }
