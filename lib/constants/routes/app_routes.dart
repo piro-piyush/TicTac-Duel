@@ -1,38 +1,66 @@
+class AppRouteModel {
+  const AppRouteModel({required this.name, required this.path});
+
+  final String name;
+  final String path;
+}
 
 abstract final class AppRoutes {
   AppRoutes._();
 
   // ===========================================================================
-  // PATHS
+  // ROOT
   // ===========================================================================
 
-  static const home = '/';
-
-  static const createRoom = '/create-room';
-  static const waitingRoom = '/waiting-room';
-  static const quickMatch = '/quick-match';
-  static const localGame = '/local-game';
-  static const localGameBoard = '/local-game-board';
-  static const joinRoom = '/join-room';
-  static const publicRooms = '/public-rooms';
-  static const game = '/game/:roomCode';
-  static const result = '/result';
-  static const settings = '/settings';
-  static const privacyPolicy = '/privacy-policy';
-  static const help = '/help';
+  static const home = AppRouteModel(name: 'home', path: '/');
 
   // ===========================================================================
-  // NAMES
+  // GENERAL
   // ===========================================================================
 
-  // static const homeName = 'home';
-  // static const createRoomName = 'createRoom';
-  // static const waitingRoomName = 'waitingRoom';
-  // static const quickMatchName = 'quickMatch';
-  // static const joinRoomName = 'joinRoom';
-  // static const gameName = 'game';
-  // static const resultName = 'result';
-  // static const settingsName = 'settings';
-  // static const privacyPolicyName = 'privacyPolicy';
-  // static const helpName = 'help';
+  static const settings = AppRouteModel(name: 'settings', path: '/settings');
+
+  static const help = AppRouteModel(name: 'help', path: '/help');
+
+  // ===========================================================================
+  // ROOM
+  // ===========================================================================
+
+  static const createRoom = AppRouteModel(
+    name: 'create-room',
+    path: '/create-room',
+  );
+
+  static const joinRoom = AppRouteModel(name: 'join-room', path: '/join-room');
+
+  static const publicRooms = AppRouteModel(
+    name: 'public-rooms',
+    path: '/public-rooms',
+  );
+
+  // ===========================================================================
+  // LOCAL GAME
+  // ===========================================================================
+
+  static const localGame = AppRouteModel(
+    name: 'local-game',
+    path: '/local-game',
+  );
+
+  static const localGameBoard = AppRouteModel(
+    name: 'local-game-board',
+    path: '/local-game/board',
+  );
+
+  // ===========================================================================
+  // ONLINE GAME
+  // ===========================================================================
+
+  static const game = AppRouteModel(name: 'game', path: '/game/:roomCode');
+
+  // ===========================================================================
+  // RESULT
+  // ===========================================================================
+
+  static const result = AppRouteModel(name: 'result', path: '/result');
 }

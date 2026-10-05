@@ -3,57 +3,117 @@ import 'package:tictac_duel/lib.dart';
 abstract final class AppPages {
   AppPages._();
 
-  static final routes = <GetPage>[
-    GetPage(name: AppRoutes.home, page: HomeScreen.new),
+  // ===========================================================================
+  // NAVIGATOR KEYS
+  // ===========================================================================
 
-    GetPage(
-      name: AppRoutes.createRoom,
-      page: CreateRoomScreen.new,
-      binding: RoomBinding(),
-    ),
+  static final rootNavigatorKey = GlobalKey<NavigatorState>();
 
-    GetPage(
-      name: AppRoutes.joinRoom,
-      page: JoinRoomScreen.new,
-      binding: RoomBinding(),
-    ),
-    GetPage(
-      name: AppRoutes.quickMatch,
-      page: QuickMatchScreen.new,
-      binding: QuickMatchBinding(),
-    ),
+  static final rootScaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
-    GetPage(
-      name: AppRoutes.publicRooms,
-      page: PublicRoomsScreen.new,
-      binding: PublicRoomsBinding(),
-    ),
-    GetPage(
-      name: AppRoutes.localGame,
-      page: LocalGameScreen.new,
-      binding: LocalGameBinding(),
-    ),
-    GetPage(
-      name: AppRoutes.localGameBoard,
-      binding: LocalGameBoardBinding(),
-      page: LocalGameBoardScreen.new,
-    ),
-    // GetPage(
-    //   name: AppRoutes.waitingRoom,
-    //   page: WaitingRoomScreen.new,
-    //   binding: WaitingRoomBinding(),
-    // ),
-    GetPage(name: AppRoutes.game, page: GameScreen.new, binding: GameBinding()),
+  // ===========================================================================
+  // ROUTER
+  // ===========================================================================
 
-    GetPage(
-      name: AppRoutes.result,
-      page: ResultScreen.new,
-      binding: ResultBinding(),
-    ),
+  static final router = GoRouter(
+    debugLogDiagnostics: true,
+    initialLocation: AppRoutes.home.path,
+    navigatorKey: rootNavigatorKey,
+    routes: [
+      // =========================================================================
+      // HOME
+      // =========================================================================
 
-    GetPage(name: AppRoutes.settings, page: SettingsScreen.new),
+      GoRoute(
+        name: AppRoutes.home.name,
+        path: AppRoutes.home.path,
+        builder: (context, state) => const HomeScreen(),
+        routes: [
+          // =======================================================================
+          // GENERAL
+          // =======================================================================
 
-    // GetPage(name: AppRoutes.privacyPolicy, page: PrivacyPolicyScreen.new),
-    GetPage(name: AppRoutes.help, page: HelpScreen.new),
-  ];
+          GoRoute(
+            name: AppRoutes.settings.name,
+            path: childPath(AppRoutes.settings.path),
+            builder: (context, state) => const SettingsScreen(),
+          ),
+
+          GoRoute(
+            name: AppRoutes.help.name,
+            path: childPath(AppRoutes.help.path),
+            builder: (context, state) => const HelpScreen(),
+          ),
+
+          // =======================================================================
+          // ROOM
+          // =======================================================================
+          ControllerRoute(
+            name: AppRoutes.createRoom.name,
+            path: AppRoutes.createRoom.path,
+            routeControllerConfig: RoomRouter(screen: RoomScreenType.create),
+          ),
+
+          ControllerRoute(
+            name: AppRoutes.joinRoom.name,
+            path: AppRoutes.joinRoom.path,
+            routeControllerConfig: RoomRouter(screen: RoomScreenType.join),
+          ),
+
+          ControllerRoute(
+            name: AppRoutes.publicRooms.name,
+            path: childPath(AppRoutes.publicRooms.path),
+            routeControllerConfig: PublicRoomsRouter(),
+          ),
+
+          // =======================================================================
+          // LOCAL GAME
+          // =======================================================================
+          ControllerRoute(
+            name: AppRoutes.localGame.name,
+            path: childPath(AppRoutes.localGame.path),
+            routeControllerConfig: LocalGameRouter(),
+            routes: [
+              ControllerRoute(
+                name: AppRoutes.localGameBoard.name,
+                path: childPath(
+                  AppRoutes.localGameBoard.path.replaceFirst(
+                    '${AppRoutes.localGame.path}/',
+                    '',
+                  ),
+                ),
+                routeControllerConfig: LocalGameBoardRouter(),
+              ),
+            ],
+          ),
+        ],
+      ),
+
+      // =========================================================================
+      // ONLINE GAME
+      // =========================================================================
+      ControllerRoute(
+        name: AppRoutes.game.name,
+        path: AppRoutes.game.path,
+        routeControllerConfig: GameRouter(),
+      ),
+
+      // =========================================================================
+      // RESULT
+      // =========================================================================
+      ControllerRoute(
+        name: AppRoutes.result.name,
+        path: AppRoutes.result.path,
+        routeControllerConfig: ResultRouter(),
+      ),
+    ],
+  );
+
+  // ===========================================================================
+  // HELPERS
+  // ===========================================================================
+
+  static String childPath(String path) {
+    return path.startsWith('/') ? path.substring(1) : path;
+  }
 }

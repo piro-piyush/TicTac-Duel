@@ -315,6 +315,7 @@ class GameController extends GetxController {
       isOnline: true,
       gameWinner: winner,
       dismissReason: response.reason,
+      theme: currentRoom.theme,
     );
 
     AppNavigation.replaceResult(result);
@@ -449,6 +450,17 @@ class GameController extends GetxController {
     }
 
     return false;
+  }
+
+  bool get isWaitingForPlayers {
+    final currentRoom = room;
+
+    if (currentRoom == null) {
+      return false;
+    }
+
+    return currentRoom.roundStatus == RoundStatus.waiting &&
+        currentRoom.players.length < GameConstants.maxPlayers;
   }
 
   // ===========================================================================
@@ -656,6 +668,7 @@ class GameController extends GetxController {
         isDraw: isDraw,
         showConfetti: winner?.id == playerId,
         isOnline: true,
+        theme: currentRoom.theme,
       );
 
       AppNavigation.replaceResult(result);

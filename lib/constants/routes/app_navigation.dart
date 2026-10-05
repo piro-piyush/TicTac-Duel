@@ -1,77 +1,62 @@
+import 'package:go_router/go_router.dart';
 import 'package:tictac_duel/lib.dart';
 
 abstract final class AppNavigation {
   AppNavigation._();
+
+  static GoRouter get router => AppPages.router;
 
   // ===========================================================================
   // HOME
   // ===========================================================================
 
   static void goToHome() {
-    Get.offAllNamed(AppRoutes.home);
-  }
-
-  static void replaceHome() {
-    Get.offAllNamed(AppRoutes.home);
+    router.goNamed(AppRoutes.home.name);
   }
 
   // ===========================================================================
-  // CREATE ROOM
+  // ROOM
   // ===========================================================================
 
   static void pushCreateRoom() {
-    Get.toNamed(AppRoutes.createRoom);
+    router.pushNamed(AppRoutes.createRoom.name);
+  }
+
+  static void pushJoinRoom() {
+    router.pushNamed(AppRoutes.joinRoom.name);
+  }
+
+  static void goToCreateRoom() {
+    router.goNamed(AppRoutes.createRoom.name);
   }
 
   static void replaceCreateRoom() {
-    Get.offNamed(AppRoutes.createRoom);
+    router.pushReplacementNamed(AppRoutes.createRoom.name);
   }
 
   // ===========================================================================
-  // JOIN ROOM
+  // GAME
   // ===========================================================================
-
-  static void pushJoinRoom() {
-    Get.toNamed(AppRoutes.joinRoom);
-  }
-
-  static void replaceJoinRoom() {
-    Get.offNamed(AppRoutes.joinRoom);
-  }
-
-  // ===========================================================================
-  // WAITING ROOM
-  // ===========================================================================
-
-  static void replaceWaitingRoom(RoomModel room) {
-    Get.offNamed(AppRoutes.waitingRoom, arguments: room);
-  }
-
-  // ===========================================================================
-  // ONLINE GAME
-  // ===========================================================================
-
-  static void replaceGame(String roomCode) {
-    Get.offNamed(
-      AppRoutes.game.replaceFirst(':roomCode', roomCode),
-      arguments: roomCode,
-    );
-  }
 
   static void pushGame(String roomCode) {
-    Get.toNamed(
-      AppRoutes.game.replaceFirst(':roomCode', roomCode),
-      arguments: roomCode,
+    router.pushNamed(
+      AppRoutes.game.name,
+      pathParameters: {'roomCode': roomCode},
     );
   }
 
-
   // ===========================================================================
-  // QUICK MATCH
+  // RESULT
   // ===========================================================================
 
-  static void pushQuickMatch() {
-    Get.toNamed(AppRoutes.quickMatch);
+  static void replaceResult(ResultModel result) {
+    final navigator = AppPages.rootNavigatorKey.currentState;
+
+    if (navigator != null && navigator.canPop()) {
+      navigator.pop();
+    }
+
+    router.pushReplacementNamed(AppRoutes.result.name, extra: result);
   }
 
   // ===========================================================================
@@ -79,34 +64,27 @@ abstract final class AppNavigation {
   // ===========================================================================
 
   static void pushLocalGame() {
-    Get.toNamed(AppRoutes.localGame);
+    router.pushNamed(AppRoutes.localGame.name);
   }
+
+  static void pushLocalGameBoard({required LocalGameModel game}) {
+    router.pushNamed(AppRoutes.localGameBoard.name, extra: game);
+  }
+
+  static void goToLocalGame() {
+    router.goNamed(AppRoutes.localGame.name);
+  }
+
+  // ===========================================================================
+  // PUBLIC ROOMS
+  // ===========================================================================
 
   static void pushPublicRooms() {
-    Get.toNamed(AppRoutes.publicRooms);
+    router.pushNamed(AppRoutes.publicRooms.name);
   }
+
   static void replacePublicRooms() {
-    Get.offNamed(AppRoutes.publicRooms);
-  }
-
-  static void pushLocalGameBoard(LocalGameModel localGame) {
-    Get.toNamed(AppRoutes.localGameBoard, arguments: localGame);
-  }
-
-  static void replaceLocalGameBoard(LocalGameModel localGame) {
-    Get.offNamed(AppRoutes.localGameBoard, arguments: localGame);
-  }
-
-  // ===========================================================================
-  // RESULT
-  // ===========================================================================
-
-  static void pushResult(ResultModel result) {
-    Get.toNamed(AppRoutes.result, arguments: result);
-  }
-
-  static void replaceResult(ResultModel result) {
-    Get.offNamed(AppRoutes.result, arguments: result);
+    router.pushReplacementNamed(AppRoutes.publicRooms.name);
   }
 
   // ===========================================================================
@@ -114,7 +92,7 @@ abstract final class AppNavigation {
   // ===========================================================================
 
   static void pushSettings() {
-    Get.toNamed(AppRoutes.settings);
+    router.pushNamed(AppRoutes.settings.name);
   }
 
   // ===========================================================================
@@ -122,15 +100,7 @@ abstract final class AppNavigation {
   // ===========================================================================
 
   static void pushHelp() {
-    Get.toNamed(AppRoutes.help);
-  }
-
-  // ===========================================================================
-  // PRIVACY POLICY
-  // ===========================================================================
-
-  static void pushPrivacyPolicy() {
-    Get.toNamed(AppRoutes.privacyPolicy);
+    router.pushNamed(AppRoutes.help.name);
   }
 
   // ===========================================================================
@@ -138,15 +108,8 @@ abstract final class AppNavigation {
   // ===========================================================================
 
   static void back() {
-    if (Get.isDialogOpen == true ||
-        Get.isBottomSheetOpen == true ||
-        Get.isSnackbarOpen) {
-      Get.back();
-      return;
+    if (router.canPop()) {
+      router.pop();
     }
-
-    // if (Get.canPop()) {
-    //   Get.back();
-    // }
   }
 }

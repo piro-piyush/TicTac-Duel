@@ -2,8 +2,9 @@ export 'dart:async' hide AsyncError;
 export 'dart:convert';
 
 export 'package:equatable/equatable.dart';
-export 'package:flutter/material.dart';
+export 'package:flutter/material.dart' hide ViewBuilder;
 export 'package:flutter_confetti/flutter_confetti.dart';
+export 'package:getx_go/getx_go.dart';
 export 'package:flutter_dotenv/flutter_dotenv.dart';
 export 'package:flutter_native_splash/flutter_native_splash.dart';
 export 'package:connectivity_plus/connectivity_plus.dart';
@@ -12,9 +13,11 @@ export 'package:flutter_svg/flutter_svg.dart';
 export 'package:get/get.dart';
 export 'package:just_audio/just_audio.dart' hide PlayerState;
 export 'package:lottie/lottie.dart';
+export 'package:go_router/go_router.dart';
 export 'package:uuid/uuid.dart';
 
 export 'bindings/bindings.dart';
+export 'router_controller_config/router_controller_config.dart';
 export 'constants/constants.dart';
 export 'controller/controller.dart';
 export 'models/models.dart';

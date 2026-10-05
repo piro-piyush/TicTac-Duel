@@ -20,14 +20,16 @@ class ChooseYourSymbolWidget extends StatelessWidget {
         Row(
           spacing: Dimens.eight,
           children: PlayerSymbol.values
-              .map((symbol) => Expanded(child: _buildSymbolCard(symbol)))
+              .map(
+                (symbol) => Expanded(child: _buildSymbolCard(context, symbol)),
+              )
               .toList(),
         ),
       ],
     );
   }
 
-  Widget _buildSymbolCard(PlayerSymbol symbol) {
+  Widget _buildSymbolCard(BuildContext context, PlayerSymbol symbol) {
     final isSelected = selectedSymbol == symbol;
     final color = symbol.symbolColor;
 
@@ -69,9 +71,8 @@ class ChooseYourSymbolWidget extends StatelessWidget {
               Expanded(
                 child: Text(
                   symbol.displayName,
-                  style: Get.theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: Theme.of(context).textTheme.titleSmall
+                      ?.copyWith(fontWeight: FontWeight.w700),
                 ),
               ),
               AnimatedSwitcher(
