@@ -82,7 +82,8 @@ class GlobalBindings extends Bindings {
 
     Get.put<MusicController>(
       MusicController(
-        player: AudioPlayer(),
+        backgroundPlayer: AudioPlayer(),
+        touchPlayer:AudioPlayer() ,
         effectPlayer: AudioPlayer(),
         storage: Get.find<LocalStorageService>(),
       ),

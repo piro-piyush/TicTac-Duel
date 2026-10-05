@@ -4,18 +4,21 @@ class LocalGameBoardController extends GetxController {
   LocalGameBoardController({
     required this.game,
     required this._musicController,
-    required this._playerController,
   });
 
   final LocalGameModel game;
-
   final MusicController _musicController;
-  final PlayerController _playerController;
+
   Timer? _cpuMoveTimer;
   Timer? _roundAnimationTimer;
   Timer? _resultTimer;
+  Timer? _reactionTimer;
 
-  String get playerId => _playerController.playerId;
+  // ===========================================================================
+  // PLAYER
+  // ===========================================================================
+
+  String get playerId => GameConstants.localPlayerOneId;
 
   // ===========================================================================
   // BOARD
@@ -28,6 +31,10 @@ class LocalGameBoardController extends GetxController {
 
   final RxSet<int> _winningIndexes = <int>{}.obs;
 
+  List<PlayerSymbol?> get board => _board.toList();
+
+  Set<int> get winningIndexes => _winningIndexes.toSet();
+
   // ===========================================================================
   // GAME STATE
   // ===========================================================================
@@ -35,6 +42,10 @@ class LocalGameBoardController extends GetxController {
   final RxInt _turnIndex = 0.obs;
   final RxInt _currentRound = 0.obs;
   final RxBool _isRoundFinished = false.obs;
+
+  int get turnIndex => _turnIndex.value;
+
+  int get currentRound => _currentRound.value;
 
   bool get isRoundFinished => _isRoundFinished.value;
 
@@ -44,6 +55,10 @@ class LocalGameBoardController extends GetxController {
 
   final RxBool _showRoundAnimation = false.obs;
   final RxInt _animatedRound = 1.obs;
+
+  bool get showRoundAnimation => _showRoundAnimation.value;
+
+  int get animatedRound => _animatedRound.value;
 
   // ===========================================================================
   // POINTS
@@ -57,20 +72,16 @@ class LocalGameBoardController extends GetxController {
   int get playerTwoPoints => _playerTwoPoints.value;
 
   // ===========================================================================
-  // GETTERS
+  // REACTION
   // ===========================================================================
 
-  List<PlayerSymbol?> get board => _board.toList();
+  final Rxn<GameReactionEvent> _reactionEvent = Rxn<GameReactionEvent>();
 
-  Set<int> get winningIndexes => _winningIndexes.toSet();
+  GameReactionEvent? get reactionEvent => _reactionEvent.value;
 
-  int get turnIndex => _turnIndex.value;
-
-  int get currentRound => _currentRound.value;
-
-  int get animatedRound => _animatedRound.value;
-
-  bool get showRoundAnimation => _showRoundAnimation.value;
+  // ===========================================================================
+  // PLAYER STATE
+  // ===========================================================================
 
   PlayerModel get currentPlayer =>
       turnIndex == 0 ? game.playerOne : game.playerTwo;
@@ -85,7 +96,25 @@ class LocalGameBoardController extends GetxController {
   bool get isCpuTurn =>
       game.isComputerGame && currentPlayer.id == game.playerTwo.id;
 
-  bool get canMakeMove => !isBoardFull && !isCpuTurn;
+  bool get canMakeMove => !isBoardFull && !isRoundFinished && !isCpuTurn;
+
+  bool get _isFinalRound => currentRound >= game.maxRounds;
+
+  PlayerModel? get gameWinner {
+    if (!_isFinalRound) {
+      return null;
+    }
+
+    if (playerOnePoints > playerTwoPoints) {
+      return game.playerOne;
+    }
+
+    if (playerTwoPoints > playerOnePoints) {
+      return game.playerTwo;
+    }
+
+    return null;
+  }
 
   // ===========================================================================
   // LIFECYCLE
@@ -99,7 +128,7 @@ class LocalGameBoardController extends GetxController {
 
   @override
   void onClose() {
-    closeGame();
+    _cancelTimers();
     super.onClose();
   }
 
@@ -123,7 +152,6 @@ class LocalGameBoardController extends GetxController {
   void _startGame() {
     _playerOnePoints.value = 0;
     _playerTwoPoints.value = 0;
-
     _currentRound.value = 0;
 
     startNextRound(game.playerOne.symbol);
@@ -144,7 +172,7 @@ class LocalGameBoardController extends GetxController {
   Future<void> _makeCpuMove() async {
     _cpuMoveTimer = null;
 
-    if (!isCpuTurn || isBoardFull) {
+    if (!isCpuTurn || isBoardFull || isRoundFinished) {
       return;
     }
 
@@ -173,11 +201,7 @@ class LocalGameBoardController extends GetxController {
       return false;
     }
 
-    if (isBoardFull || isRoundFinished) {
-      return false;
-    }
-
-    if (game.isComputerGame && isCpuTurn) {
+    if (!canMakeMove) {
       return false;
     }
 
@@ -185,11 +209,10 @@ class LocalGameBoardController extends GetxController {
   }
 
   Future<void> _makeMove(int index) async {
-    if (index < 0 || index >= _board.length) {
-      return;
-    }
-
-    if (_board[index] != null) {
+    if (index < 0 ||
+        index >= _board.length ||
+        _board[index] != null ||
+        isRoundFinished) {
       return;
     }
 
@@ -210,20 +233,8 @@ class LocalGameBoardController extends GetxController {
   }
 
   // ===========================================================================
-  // MOVE VALIDATION
+  // ROUND RESULT
   // ===========================================================================
-
-  // bool _canMakeMove(int index) {
-  //   if (index < 0 || index >= _board.length) {
-  //     return false;
-  //   }
-  //
-  //   if (!canMakeMove) {
-  //     return false;
-  //   }
-  //
-  //   return _board[index] == null;
-  // }
 
   // ===========================================================================
   // ROUND RESULT
@@ -232,7 +243,9 @@ class LocalGameBoardController extends GetxController {
   void _handleRoundResult(GameResult result) {
     _cancelCpuTimer();
     _cancelResultTimer();
+
     _isRoundFinished.value = true;
+
     if (result.hasWinner) {
       final winner = result.winner;
 
@@ -243,10 +256,66 @@ class LocalGameBoardController extends GetxController {
       }
     }
 
+    // Allow the winning line to render before starting the result delay.
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (isClosed) {
+        return;
+      }
+
       _showRoundResultDialog(result);
     });
   }
+
+  void _showRoundResultDialog(GameResult result) {
+    _cancelResultTimer();
+
+    _resultTimer = Timer(GameConstants.resultDelay, () {
+      if (isClosed) {
+        return;
+      }
+
+      _resultTimer = null;
+
+      if (_isFinalRound) {
+        _showFinalResult();
+        return;
+      }
+
+      GameDialogUtils.showGameResult(
+        result: result,
+        mySymbol: game.playerOne.symbol,
+        onConfirm: () {
+          final winner = result.winner;
+
+          if (winner != null) {
+            startNextRound(winner);
+            return;
+          }
+
+          final nextStarter = currentRound.isEven
+              ? game.playerOne.symbol
+              : game.playerTwo.symbol;
+
+          startNextRound(nextStarter);
+        },
+      );
+    });
+  }
+
+  void _updateWinnerScore(PlayerSymbol winner) {
+    if (winner == game.playerOne.symbol) {
+      _playerOnePoints.value++;
+      return;
+    }
+
+    if (winner == game.playerTwo.symbol) {
+      _playerTwoPoints.value++;
+    }
+  }
+
+  // ===========================================================================
+  // FINAL RESULT
+  // ===========================================================================
 
   void _showFinalResult() {
     final isDraw = playerOnePoints == playerTwoPoints;
@@ -277,90 +346,23 @@ class LocalGameBoardController extends GetxController {
     AppNavigation.replaceResult(result);
   }
 
-  void _showRoundResultDialog(GameResult result) {
-    _cancelResultTimer();
-
-    _resultTimer = Timer(GameConstants.resultDelay, () {
-      if (_isFinalRound) {
-        _showFinalResult();
-        return;
-      }
-
-      GameDialogUtils.showGameResult(
-        result: result,
-        mySymbol: game.playerOne.symbol,
-        onConfirm: () {
-          final winner = result.winner;
-
-          if (winner != null) {
-            startNextRound(winner);
-            return;
-          }
-
-          // Draw: alternate the starting player.
-          final nextStarter = currentRound.isEven
-              ? game.playerOne.symbol
-              : game.playerTwo.symbol;
-
-          startNextRound(nextStarter);
-        },
-      );
-    });
-  }
-
-  void _updateWinnerScore(PlayerSymbol winner) {
-    if (winner == game.playerOne.symbol) {
-      _playerOnePoints.value++;
-    } else if (winner == game.playerTwo.symbol) {
-      _playerTwoPoints.value++;
-    }
-  }
-
   // ===========================================================================
   // TURN
   // ===========================================================================
 
   void _switchTurn() {
     _turnIndex.value = turnIndex == 0 ? 1 : 0;
-
     _scheduleCpuMove();
   }
 
   void _scheduleCpuMove() {
     _cancelCpuTimer();
 
-    if (!isCpuTurn || isBoardFull) {
+    if (!isCpuTurn || isBoardFull || isRoundFinished) {
       return;
     }
 
     _cpuMoveTimer = Timer(GameConstants.cpuMoveDelay, _makeCpuMove);
-  }
-
-  // ===========================================================================
-  // GAME WINNER
-  // ===========================================================================
-
-  // int get _requiredWins => (game.maxRounds ~/ 2) + 1;
-  //
-  // bool get _hasGameWinner =>
-  //     playerOneScore >= _requiredWins || playerTwoScore >= _requiredWins;
-
-  bool get _isFinalRound => currentRound >= game.maxRounds;
-
-  PlayerModel? get gameWinner {
-    if (!_isFinalRound) {
-      return null;
-    }
-
-    if (playerOnePoints > playerTwoPoints) {
-      return game.playerOne;
-    }
-
-    if (playerTwoPoints > playerOnePoints) {
-      return game.playerTwo;
-    }
-
-    return null;
   }
 
   // ===========================================================================
@@ -403,7 +405,7 @@ class LocalGameBoardController extends GetxController {
   }
 
   // ===========================================================================
-  // RESET
+  // RESTART
   // ===========================================================================
 
   void restartGame() {
@@ -424,6 +426,10 @@ class LocalGameBoardController extends GetxController {
     _scheduleCpuMove();
   }
 
+  // ===========================================================================
+  // RESET
+  // ===========================================================================
+
   void resetBoard() {
     _cancelRoundTimers();
     _resetBoard();
@@ -440,6 +446,34 @@ class LocalGameBoardController extends GetxController {
   }
 
   // ===========================================================================
+  // REACTION
+  // ===========================================================================
+
+  void sendReaction(GameReaction reaction) {
+    final senderId = playerId;
+
+    final targetPlayerId = senderId == game.playerOne.id
+        ? game.playerTwo.id
+        : game.playerOne.id;
+
+    _reactionTimer?.cancel();
+
+    _reactionEvent.value = GameReactionEvent(
+      reaction: reaction,
+      senderId: senderId,
+      targetPlayerId: targetPlayerId,
+    );
+
+    _reactionTimer = Timer(GameConstants.reactionTotalDuration, () {
+      if (!isClosed) {
+        _reactionEvent.value = null;
+      }
+
+      _reactionTimer = null;
+    });
+  }
+
+  // ===========================================================================
   // TIMER HELPERS
   // ===========================================================================
 
@@ -448,20 +482,29 @@ class LocalGameBoardController extends GetxController {
     _cpuMoveTimer = null;
   }
 
+  void _cancelRoundAnimationTimer() {
+    _roundAnimationTimer?.cancel();
+    _roundAnimationTimer = null;
+  }
+
   void _cancelResultTimer() {
     _resultTimer?.cancel();
     _resultTimer = null;
   }
 
+  void _cancelReactionTimer() {
+    _reactionTimer?.cancel();
+    _reactionTimer = null;
+  }
+
   void _cancelRoundTimers() {
     _cancelCpuTimer();
     _cancelResultTimer();
+    _cancelRoundAnimationTimer();
   }
 
   void _cancelTimers() {
     _cancelRoundTimers();
-
-    _roundAnimationTimer?.cancel();
-    _roundAnimationTimer = null;
+    _cancelReactionTimer();
   }
 }
