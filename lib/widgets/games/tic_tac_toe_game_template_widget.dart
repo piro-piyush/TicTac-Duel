@@ -11,6 +11,7 @@ class TicTacToeGameTemplateWidget extends StatelessWidget {
     required this.child,
     required this.isOnline,
     required this.isMe,
+     this.actions,
     required this.showGameStatus,
   });
 
@@ -23,7 +24,7 @@ class TicTacToeGameTemplateWidget extends StatelessWidget {
   final bool isOnline;
   final bool Function(String) isMe;
   final bool showGameStatus;
-
+  final List<Widget>? actions;
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -33,7 +34,7 @@ class TicTacToeGameTemplateWidget extends StatelessWidget {
         return NeonBackgroundWidget(
           title: title,
           needScroll: false,
-
+          actions:actions,
           bottom: showGameStatus
               ? TicTacToeRoundWidget(
                   compact: isCompact,
