@@ -1,4 +1,3 @@
-import 'package:go_router/go_router.dart';
 import 'package:tictac_duel/lib.dart';
 
 abstract final class AppNavigation {
