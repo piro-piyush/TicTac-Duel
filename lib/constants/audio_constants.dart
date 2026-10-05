@@ -8,4 +8,5 @@ class AudioConstants {
   static const String loseSound = 'assets/audio/lose.mp3';
   static const String joinSound = 'assets/audio/join_bell.mp3';
   static const String roundSound = 'assets/audio/round.mp3';
+  static const String swooshSound = 'assets/audio/swoosh.mp3';
 }

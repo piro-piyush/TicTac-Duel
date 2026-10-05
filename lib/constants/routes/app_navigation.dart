@@ -49,11 +49,7 @@ abstract final class AppNavigation {
   // ===========================================================================
 
   static void replaceResult(ResultModel result) {
-    final navigator = AppPages.rootNavigatorKey.currentState;
-
-    if (navigator != null && navigator.canPop()) {
-      navigator.pop();
-    }
+    GameDialogUtils.closeOpenDialog();
 
     router.pushReplacementNamed(AppRoutes.result.name, extra: result);
   }

@@ -364,6 +364,19 @@ class AppTheme {
           fontSize: Dimens.fontXs,
         ),
       ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: AppColors.card,
+        foregroundColor: AppColors.neonCyan,
+        elevation: 0,
+        focusElevation: 0,
+        hoverElevation: 0,
+        highlightElevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(Dimens.radiusMd),
+          side: const BorderSide(color: AppColors.neonCyan, width: 1.2),
+        ),
+        iconSize: Dimens.twentyFour,
+      ),
     );
   }
 }
