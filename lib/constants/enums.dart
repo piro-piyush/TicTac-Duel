@@ -14,7 +14,10 @@ enum LocalGameType {
   friend,
   computer,
 }
-
+enum RoomScreenType {
+  create,
+  join,
+}
 enum CpuDifficulty {
   easy,
   medium,

@@ -62,7 +62,7 @@ class LocalGameController extends GetxController {
           difficulty: selectedDifficulty,
         ),
       };
-      AppNavigation.pushLocalGameBoard(game);
+      AppNavigation.pushLocalGameBoard(game: game);
     } catch (error, stackTrace) {
       LoggerUtils.error('LocalGameController.startGame', error, stackTrace);
       PopupUtils.showError(error.toString());

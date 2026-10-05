@@ -109,7 +109,7 @@ class LocalGameBoardController extends GetxController {
 
   void quitGame() {
     closeGame();
-    Get.back();
+    AppNavigation.back();
   }
 
   void closeGame() {
@@ -270,7 +270,8 @@ class LocalGameBoardController extends GetxController {
       isDraw: isDraw,
       hasWon: hasWon,
       showConfetti: hasWon,
-      isOnline: false
+      isOnline: false,
+      theme: game.theme,
     );
 
     AppNavigation.replaceResult(result);

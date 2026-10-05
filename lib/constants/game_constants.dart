@@ -73,6 +73,28 @@ class GameConstants {
   static final RegExp roomCodePattern = RegExp(
     '^[$roomCodeCharacters]{$roomCodeLength}\$',
   );
+  static const String roomJoinUrl = 'https://tictacduel.app/join-room';
+
+  static String getRoomJoinLink(String roomCode) {
+    return '$roomJoinUrl?code=$roomCode';
+  }
+
+  static String getRoomShareText(String roomCode) {
+    final joinLink = getRoomJoinLink(roomCode);
+
+    return '''
+🎮 Join me in $appName!
+
+Let's play a game of Tic-Tac-Toe.
+
+🔑 Room Code: $roomCode
+
+Tap the link below to join:
+$joinLink
+
+See you in the arena! ⚡
+''';
+  }
 
   // ===========================================================================
   // Network

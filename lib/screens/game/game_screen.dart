@@ -1,3 +1,4 @@
+import 'package:share_plus/share_plus.dart';
 import 'package:tictac_duel/lib.dart';
 
 class GameScreen extends GetView<GameController> {
@@ -20,7 +21,7 @@ class GameScreen extends GetView<GameController> {
 
         controller.quitGame();
 
-        Get.back();
+        AppNavigation.back();
       },
       child: Obx(() {
         final room = controller.room;
@@ -86,6 +87,15 @@ class GameScreen extends GetView<GameController> {
         return TicTacToeGameTemplateWidget(
           currentRound: room.currentRound,
           maxRounds: room.maxRounds,
+          actions: controller.isWaitingForPlayers
+              ? [
+                  IconButton(
+                    onPressed: () => _shareRoomCode(room.roomCode),
+                    icon: const Icon(Icons.share_rounded),
+                    tooltip: 'Share room',
+                  ),
+                ]
+              : null,
           player: controller.currentPlayer,
           isOnline: true,
           showGameStatus: controller.showGame,
@@ -94,6 +104,15 @@ class GameScreen extends GetView<GameController> {
           isMe: (id) => id == controller.playerId,
         );
       }),
+    );
+  }
+
+  void _shareRoomCode(String roomCode) async {
+    await SharePlus.instance.share(
+      ShareParams(
+        text: GameConstants.getRoomShareText(roomCode),
+        subject: GameConstants.appName,
+      ),
     );
   }
 }
