@@ -21,6 +21,12 @@ class GameConstants {
   static const int totalCells = boardSize * boardSize;
 
   static const List<int> roundOptions = [3, 5, 7];
+  static const int defaultMaxRounds = 3;
+
+  static const defaultLocalGameType = LocalGameType.friend;
+  static const defaultLocalPlayerSymbol = PlayerSymbol.x;
+  static const defaultLocalTheme = RoomTheme.classic;
+  static const defaultCpuDifficulty = CpuDifficulty.medium;
 
   static const List<PlayerSymbol?> themePreviewSymbols = [
     PlayerSymbol.x,
