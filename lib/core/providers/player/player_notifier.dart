@@ -15,8 +15,6 @@ class PlayerNotifier extends Notifier<PlayerState> {
     _storage = ref.read(localStorageServiceProvider);
     _playerApiService = ref.read(playerApiServiceProvider);
 
-    Future.microtask(_initialize);
-
     return const PlayerState();
   }
 
@@ -32,7 +30,11 @@ class PlayerNotifier extends Notifier<PlayerState> {
 
   bool get isInitialized => state.isInitialized;
 
-  Future<void> _initialize() async {
+  Future<void> initialize() async {
+    if (state.isInitialized) {
+      return;
+    }
+
     try {
       var playerId = await _storage.getString(_playerIdKey);
 
@@ -46,7 +48,9 @@ class PlayerNotifier extends Notifier<PlayerState> {
 
       state = state.copyWith(playerId: playerId, isInitialized: true);
     } catch (error, stackTrace) {
-      LoggerUtils.error('PlayerNotifier._initialize', error, stackTrace);
+      LoggerUtils.error('PlayerNotifier.initialize', error, stackTrace);
+
+      rethrow;
     }
   }
 }

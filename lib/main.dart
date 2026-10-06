@@ -8,9 +8,11 @@ Future<void> main() async {
   await dotenv.load();
 
   final container = ProviderContainer();
-
-  await container.read(audioProvider.notifier).initialize();
-
+  await Future.wait([
+    container.read(audioProvider.notifier).initialize(),
+    container.read(playerProvider.notifier).initialize(),
+  ]);
+  
   FlutterNativeSplash.remove();
 
   runApp(UncontrolledProviderScope(container: container, child: const MyApp()));

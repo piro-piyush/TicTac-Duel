@@ -7,17 +7,14 @@ import 'package:tictac_duel/lib.dart';
 class AudioNotifier extends Notifier<AudioState> {
   AudioNotifier();
 
-  // ===========================================================================
-  // AUDIO PLAYERS
-  // ===========================================================================
-
   final AudioPlayer _backgroundPlayer = AudioPlayer();
   final AudioPlayer _touchPlayer = AudioPlayer();
-  final AudioPlayer _effectPlayer = AudioPlayer();
-
-  // ===========================================================================
-  // CONSTANTS
-  // ===========================================================================
+  final List<AudioPlayer> _effectPlayers = [
+    AudioPlayer(),
+    AudioPlayer(),
+    AudioPlayer(),
+    AudioPlayer(),
+  ];
 
   static const String _musicEnabledKey = 'background_music_enabled';
   static const String _effectsEnabledKey = 'sound_effects_enabled';
@@ -25,19 +22,11 @@ class AudioNotifier extends Notifier<AudioState> {
 
   static const String _logName = 'AudioNotifier';
 
-  // ===========================================================================
-  // INTERNAL STATE
-  // ===========================================================================
-
   int _musicOperation = 0;
+  int _effectPlayerIndex = 0;
   bool _disposed = false;
 
-  // Web browsers require a user interaction before audio can start.
   bool get isWeb => kIsWeb;
-
-  // ===========================================================================
-  // PROVIDER LIFECYCLE
-  // ===========================================================================
 
   @override
   AudioState build() {
@@ -49,10 +38,6 @@ class AudioNotifier extends Notifier<AudioState> {
     return const AudioState();
   }
 
-  // ===========================================================================
-  // INITIALIZATION
-  // ===========================================================================
-
   Future<void> initialize() async {
     if (_disposed || state.isInitialized) {
       return;
@@ -61,11 +46,9 @@ class AudioNotifier extends Notifier<AudioState> {
     final storage = ref.read(localStorageServiceProvider);
 
     try {
-      final isEnabled =
-          await storage.getBool(_musicEnabledKey) ?? true;
+      final isEnabled = await storage.getBool(_musicEnabledKey) ?? true;
 
-      final effectsEnabled =
-          await storage.getBool(_effectsEnabledKey) ?? true;
+      final effectsEnabled = await storage.getBool(_effectsEnabledKey) ?? true;
 
       final vibrationEnabled =
           await storage.getBool(_vibrationEnabledKey) ?? true;
@@ -74,23 +57,19 @@ class AudioNotifier extends Notifier<AudioState> {
         return;
       }
 
-      await _backgroundPlayer.setAsset(
-        AudioConstants.backgroundMusic,
-      );
+      await _backgroundPlayer.setAsset(AudioConstants.backgroundMusic);
 
-      await _backgroundPlayer.setLoopMode(
-        LoopMode.one,
-      );
+      await _backgroundPlayer.setLoopMode(LoopMode.one);
 
       await _backgroundPlayer.setVolume(0.3);
 
-      await _touchPlayer.setAsset(
-        AudioConstants.touchSound,
-      );
+      await _touchPlayer.setAsset(AudioConstants.touchSound);
 
       await _touchPlayer.setVolume(1.0);
 
-      await _effectPlayer.setVolume(1.0);
+      for (final player in _effectPlayers) {
+        await player.setVolume(1.0);
+      }
 
       if (_disposed) {
         return;
@@ -107,20 +86,20 @@ class AudioNotifier extends Notifier<AudioState> {
         unawaited(play());
       }
     } catch (error, stackTrace) {
-      await _disposePlayers();
-
       dev.log(
         'Failed to initialize audio notifier',
         name: _logName,
         error: error,
         stackTrace: stackTrace,
       );
+
+      await _disposePlayers();
+
+      if (!_disposed) {
+        rethrow;
+      }
     }
   }
-
-  // ===========================================================================
-  // BACKGROUND MUSIC
-  // ===========================================================================
 
   Future<void> play() async {
     if (_disposed || !state.isInitialized || !state.isEnabled) {
@@ -131,7 +110,6 @@ class AudioNotifier extends Notifier<AudioState> {
 
     if (_backgroundPlayer.playing) {
       state = state.copyWith(isPlaying: true);
-
       return;
     }
 
@@ -142,12 +120,12 @@ class AudioNotifier extends Notifier<AudioState> {
         return;
       }
 
-      // A newer music operation may have disabled music
-      // while this play operation was still pending.
       if (operation != _musicOperation || !state.isEnabled) {
         await _backgroundPlayer.pause();
 
-        state = state.copyWith(isPlaying: false);
+        if (!_disposed) {
+          state = state.copyWith(isPlaying: false);
+        }
 
         return;
       }
@@ -168,7 +146,6 @@ class AudioNotifier extends Notifier<AudioState> {
       return;
     }
 
-    // Invalidate any pending play operation.
     _musicOperation++;
 
     try {
@@ -192,7 +169,6 @@ class AudioNotifier extends Notifier<AudioState> {
       return;
     }
 
-    // Invalidate any pending play operation.
     _musicOperation++;
 
     try {
@@ -219,16 +195,11 @@ class AudioNotifier extends Notifier<AudioState> {
     await play();
   }
 
-  // ===========================================================================
-  // TOUCH SOUND
-  // ===========================================================================
-
   void playTouch() {
     if (_disposed || !state.isInitialized) {
       return;
     }
 
-    // On Web, the first user interaction unlocks the audio context.
     if (state.isEnabled && isWeb && !_backgroundPlayer.playing) {
       unawaited(play());
     }
@@ -259,10 +230,6 @@ class AudioNotifier extends Notifier<AudioState> {
       );
     }
   }
-
-  // ===========================================================================
-  // SOUND EFFECTS
-  // ===========================================================================
 
   void playConfetti() {
     if (_disposed || !state.isInitialized) {
@@ -325,15 +292,33 @@ class AudioNotifier extends Notifier<AudioState> {
       return;
     }
 
+    final player = _nextEffectPlayer();
+
     try {
-      await _effectPlayer.stop();
+      await player.stop();
 
-      await _effectPlayer.setAsset(asset);
+      if (_disposed || !state.effectsEnabled) {
+        return;
+      }
 
-      await _effectPlayer.seek(Duration.zero);
+      await player.setAsset(asset);
 
-      await _effectPlayer.play();
+      if (_disposed || !state.effectsEnabled) {
+        return;
+      }
+
+      await player.seek(Duration.zero);
+
+      if (_disposed || !state.effectsEnabled) {
+        return;
+      }
+
+      await player.play();
     } catch (error, stackTrace) {
+      if (_disposed) {
+        return;
+      }
+
       dev.log(
         'Failed to play sound effect: $asset',
         name: _logName,
@@ -343,9 +328,13 @@ class AudioNotifier extends Notifier<AudioState> {
     }
   }
 
-  // ===========================================================================
-  // MUSIC SETTINGS
-  // ===========================================================================
+  AudioPlayer _nextEffectPlayer() {
+    final player = _effectPlayers[_effectPlayerIndex];
+
+    _effectPlayerIndex = (_effectPlayerIndex + 1) % _effectPlayers.length;
+
+    return player;
+  }
 
   Future<void> setEnabled(bool enabled) async {
     if (_disposed || !state.isInitialized) {
@@ -361,7 +350,6 @@ class AudioNotifier extends Notifier<AudioState> {
     try {
       state = state.copyWith(isEnabled: enabled);
 
-      // Invalidate any pending play operation immediately.
       _musicOperation++;
 
       await storage.setBool(_musicEnabledKey, enabled);
@@ -391,10 +379,6 @@ class AudioNotifier extends Notifier<AudioState> {
     }
   }
 
-  // ===========================================================================
-  // SOUND EFFECT SETTINGS
-  // ===========================================================================
-
   Future<void> setEffectsEnabled(bool enabled) async {
     if (_disposed || !state.isInitialized) {
       return;
@@ -416,7 +400,10 @@ class AudioNotifier extends Notifier<AudioState> {
       }
 
       if (!enabled) {
-        await Future.wait([_touchPlayer.stop(), _effectPlayer.stop()]);
+        await Future.wait([
+          _touchPlayer.stop(),
+          ..._effectPlayers.map((player) => player.stop()),
+        ]);
       }
     } catch (error, stackTrace) {
       dev.log(
@@ -429,10 +416,6 @@ class AudioNotifier extends Notifier<AudioState> {
       rethrow;
     }
   }
-
-  // ===========================================================================
-  // VIBRATION / HAPTIC FEEDBACK
-  // ===========================================================================
 
   Future<void> setVibrationEnabled(bool enabled) async {
     if (_disposed || !state.isInitialized) {
@@ -512,10 +495,6 @@ class AudioNotifier extends Notifier<AudioState> {
     }
   }
 
-  // ===========================================================================
-  // VOLUME
-  // ===========================================================================
-
   Future<void> setVolume(double volume) async {
     if (_disposed || !state.isInitialized) {
       return;
@@ -527,7 +506,7 @@ class AudioNotifier extends Notifier<AudioState> {
       await Future.wait([
         _backgroundPlayer.setVolume(clampedVolume * 0.4),
         _touchPlayer.setVolume(clampedVolume),
-        _effectPlayer.setVolume(clampedVolume),
+        ..._effectPlayers.map((player) => player.setVolume(clampedVolume)),
       ]);
     } catch (error, stackTrace) {
       dev.log(
@@ -541,10 +520,6 @@ class AudioNotifier extends Notifier<AudioState> {
     }
   }
 
-  // ===========================================================================
-  // DISPOSE
-  // ===========================================================================
-
   Future<void> _disposePlayers() async {
     _musicOperation++;
 
@@ -552,7 +527,7 @@ class AudioNotifier extends Notifier<AudioState> {
       await Future.wait([
         _backgroundPlayer.dispose(),
         _touchPlayer.dispose(),
-        _effectPlayer.dispose(),
+        ..._effectPlayers.map((player) => player.dispose()),
       ]);
     } catch (error, stackTrace) {
       dev.log(
@@ -564,10 +539,6 @@ class AudioNotifier extends Notifier<AudioState> {
     }
   }
 }
-
-// ==============================================================================
-// PROVIDER
-// ==============================================================================
 
 final audioProvider = NotifierProvider<AudioNotifier, AudioState>(
   AudioNotifier.new,
