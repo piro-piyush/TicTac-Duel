@@ -1,6 +1,5 @@
 import 'dart:math' as math;
 
-import 'package:tictac_duel/constants/extensions/game_reaction_extension.dart';
 import 'package:tictac_duel/lib.dart';
 
 class TicTacToeGameWidget extends StatelessWidget {

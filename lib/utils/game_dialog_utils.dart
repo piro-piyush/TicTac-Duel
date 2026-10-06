@@ -1,28 +1,35 @@
 import 'package:tictac_duel/lib.dart';
 
+final gameDialogProvider = Provider<GameDialogUtils>((ref) {
+  return GameDialogUtils(ref.watch(appNavigationProvider));
+});
+
 class GameDialogUtils {
-  GameDialogUtils._();
+  GameDialogUtils(this._navigation);
 
-  static NavigatorState get _navigator =>
-      AppPages.rootNavigatorKey.currentState!;
+  final AppNavigation _navigation;
 
-  static BuildContext get _context => _navigator.context;
+  static final rootNavigatorKey = AppPages.rootNavigatorKey;
 
-  static bool _isDialogOpen = false;
+  NavigatorState get _navigator => rootNavigatorKey.currentState!;
+
+  BuildContext get _context => _navigator.context;
+
+  bool _isDialogOpen = false;
 
   // ===========================================================================
   // DIALOG STATE
   // ===========================================================================
 
-  static void _markDialogOpen() {
+  void _markDialogOpen() {
     _isDialogOpen = true;
   }
 
-  static void _markDialogClosed() {
+  void _markDialogClosed() {
     _isDialogOpen = false;
   }
 
-  static void closeOpenDialog() {
+  void closeOpenDialog() {
     if (!_isDialogOpen) {
       return;
     }
@@ -38,7 +45,7 @@ class GameDialogUtils {
   // ROUND RESULT
   // ===========================================================================
 
-  static Future<void> showGameResult({
+  Future<void> showGameResult({
     required GameResult result,
     required PlayerSymbol mySymbol,
     VoidCallback? onConfirm,
@@ -121,7 +128,7 @@ class GameDialogUtils {
   // ROOM CLOSED
   // ===========================================================================
 
-  static Future<void> showRoomClosed({required String reason}) {
+  Future<void> showRoomClosed({required String reason}) {
     _markDialogOpen();
 
     return showDialog<void>(
@@ -160,7 +167,7 @@ class GameDialogUtils {
                         onPressed: () {
                           _navigator.pop();
                           _markDialogClosed();
-                          AppNavigation.goToHome();
+                          _navigation.goToHome();
                         },
                         child: const Text('BACK HOME'),
                       ),
@@ -170,7 +177,7 @@ class GameDialogUtils {
                         onPressed: () {
                           _navigator.pop();
                           _markDialogClosed();
-                          AppNavigation.replaceCreateRoom();
+                          _navigation.replaceCreateRoom();
                         },
                         child: const Text('NEW GAME'),
                       ),
@@ -190,9 +197,7 @@ class GameDialogUtils {
   // GAME DISMISSED
   // ===========================================================================
 
-  static Future<void> showGameDismissed({
-    required GameDismissedResponse response,
-  }) {
+  Future<void> showGameDismissed({required GameDismissedResponse response}) {
     final reason = response.reason;
 
     _markDialogOpen();
@@ -234,7 +239,7 @@ class GameDialogUtils {
                         onPressed: () {
                           _navigator.pop();
                           _markDialogClosed();
-                          AppNavigation.goToHome();
+                          _navigation.goToHome();
                         },
                         child: const Text('BACK HOME'),
                       ),
@@ -245,7 +250,7 @@ class GameDialogUtils {
                         onPressed: () {
                           _navigator.pop();
                           _markDialogClosed();
-                          AppNavigation.replaceCreateRoom();
+                          _navigation.replaceCreateRoom();
                         },
                         child: const Text('NEW GAME'),
                       ),
@@ -264,7 +269,7 @@ class GameDialogUtils {
   // QUIT CONFIRMATION
   // ===========================================================================
 
-  static Future<bool> confirmQuit() async {
+  Future<bool> confirmQuit() async {
     _markDialogOpen();
 
     final result = await showDialog<bool>(
@@ -299,12 +304,31 @@ class GameDialogUtils {
   // HELPERS
   // ===========================================================================
 
-  static RoundedRectangleBorder _dialogShape(BuildContext context) {
+  RoundedRectangleBorder _dialogShape(BuildContext context) {
     return RoundedRectangleBorder(
       borderRadius: Dimens.radius16,
       side: BorderSide(
         color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.4),
       ),
     );
+  }
+
+  // ===========================================================================
+  // GENERIC DIALOG
+  // ===========================================================================
+
+  Future<T?> show<T>({
+    required Widget child,
+    bool barrierDismissible = true,
+    Color? barrierColor,
+  }) {
+    _markDialogOpen();
+
+    return showDialog<T>(
+      context: _context,
+      barrierDismissible: barrierDismissible,
+      barrierColor: barrierColor,
+      builder: (_) => child,
+    ).whenComplete(_markDialogClosed);
   }
 }

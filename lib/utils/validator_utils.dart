@@ -71,10 +71,7 @@ class ValidatorUtils {
   // Common
   // ===========================================================================
 
-  static String? required(
-      String? value, {
-        String fieldName = 'This field',
-      }) {
+  static String? required(String? value, {String fieldName = 'This field'}) {
     if (value?.trim().isEmpty ?? true) {
       return '$fieldName is required';
     }
