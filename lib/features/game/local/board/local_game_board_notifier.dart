@@ -179,7 +179,7 @@ class LocalGameBoardNotifier extends Notifier<LocalGameBoardState> {
 
       _gameDialog.showGameResult(
         result: result,
-        mySymbol: state.game.playerOne.symbol,
+        mySymbol: state.game.host.symbol,
         onConfirm: () {
           final winner = result.winner;
 
@@ -189,8 +189,8 @@ class LocalGameBoardNotifier extends Notifier<LocalGameBoardState> {
           }
 
           final nextStarter = state.currentRound.isEven
-              ? state.game.playerOne.symbol
-              : state.game.playerTwo.symbol;
+              ? state.game.host.symbol
+              : state.game.guest.symbol;
 
           startNextRound(nextStarter);
         },
@@ -199,13 +199,13 @@ class LocalGameBoardNotifier extends Notifier<LocalGameBoardState> {
   }
 
   void _updateWinnerScore(PlayerSymbol winner) {
-    if (winner == state.game.playerOne.symbol) {
-      state = state.copyWith(playerOnePoints: state.playerOnePoints + 1);
+    if (winner == state.game.host.symbol) {
+      state = state.copyWith(hostPoints: state.hostPoints + 1);
       return;
     }
 
-    if (winner == state.game.playerTwo.symbol) {
-      state = state.copyWith(playerTwoPoints: state.playerTwoPoints + 1);
+    if (winner == state.game.guest.symbol) {
+      state = state.copyWith(guestPoints: state.guestPoints + 1);
     }
   }
 
@@ -214,21 +214,21 @@ class LocalGameBoardNotifier extends Notifier<LocalGameBoardState> {
   // ===========================================================================
 
   void _showFinalResult() {
-    final isDraw = state.playerOnePoints == state.playerTwoPoints;
+    final isDraw = state.hostPoints == state.guestPoints;
 
     final winner = isDraw
         ? null
-        : state.playerOnePoints > state.playerTwoPoints
-        ? state.game.playerOne
-        : state.game.playerTwo;
+        : state.hostPoints > state.guestPoints
+        ? state.game.host
+        : state.game.guest;
 
-    final hasWon = winner?.id == state.game.playerOne.id;
+    final hasWon = winner?.id == state.game.host.id;
 
     final result = ResultModel.completed(
-      playerOne: state.game.playerOne,
-      playerTwo: state.game.playerTwo,
-      playerOnePoints: state.playerOnePoints,
-      playerTwoPoints: state.playerTwoPoints,
+      host: state.game.host,
+      guest: state.game.guest,
+      hostPoints: state.hostPoints,
+      guestPoints: state.guestPoints,
       currentRound: state.currentRound,
       maxRounds: state.game.maxRounds,
       gameWinner: winner,
@@ -247,7 +247,11 @@ class LocalGameBoardNotifier extends Notifier<LocalGameBoardState> {
   // ===========================================================================
 
   void _switchTurn() {
-    state = state.copyWith(turnIndex: state.turnIndex == 0 ? 1 : 0);
+    state = state.copyWith(
+      turnPlayerId: state.turnPlayerId == state.game.host.id
+          ? state.game.guest.id
+          : state.game.host.id,
+    );
 
     _scheduleCpuMove();
   }
@@ -280,7 +284,7 @@ class LocalGameBoardNotifier extends Notifier<LocalGameBoardState> {
 
     state = state.copyWith(
       currentRound: state.currentRound + 1,
-      turnIndex: startingSymbol == state.game.playerOne.symbol ? 0 : 1,
+      turnPlayerId: startingSymbol == state.game.host.symbol ? state.game.host.id : state.game.guest.id,
     );
 
     _audioNotifier.playRoundStart();
@@ -322,10 +326,10 @@ class LocalGameBoardNotifier extends Notifier<LocalGameBoardState> {
     _resetBoard();
 
     state = state.copyWith(
-      turnIndex: 0,
+      turnPlayerId: state.game.host.id,
       currentRound: 1,
-      playerOnePoints: 0,
-      playerTwoPoints: 0,
+      hostPoints: 0,
+      guestPoints: 0,
       showRoundAnimation: false,
       animatedRound: 1,
     );
@@ -353,35 +357,7 @@ class LocalGameBoardNotifier extends Notifier<LocalGameBoardState> {
     );
   }
 
-  // ===========================================================================
-  // REACTION
-  // ===========================================================================
 
-  void sendReaction(GameReaction reaction) {
-    final senderId = playerId;
-
-    final targetPlayerId = senderId == state.game.playerOne.id
-        ? state.game.playerTwo.id
-        : state.game.playerOne.id;
-
-    _reactionTimer?.cancel();
-
-    state = state.copyWith(
-      reactionEvent: GameReactionEvent(
-        reaction: reaction,
-        senderId: senderId,
-        targetPlayerId: targetPlayerId,
-      ),
-    );
-
-    _reactionTimer = Timer(GameConstants.reactionTotalDuration, () {
-      if (!_disposed) {
-        state = state.copyWith(clearReactionEvent: true);
-      }
-
-      _reactionTimer = null;
-    });
-  }
 
   // ===========================================================================
   // GAME LIFECYCLE
@@ -402,12 +378,12 @@ class LocalGameBoardNotifier extends Notifier<LocalGameBoardState> {
     }
 
     state = state.copyWith(
-      playerOnePoints: 0,
-      playerTwoPoints: 0,
+      hostPoints: 0,
+      guestPoints: 0,
       currentRound: 0,
     );
 
-    startNextRound(state.game.playerOne.symbol);
+    startNextRound(state.game.host.symbol);
   }
 
   // ===========================================================================

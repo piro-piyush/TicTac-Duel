@@ -62,8 +62,8 @@ class LocalGameNotifier extends Notifier<LocalGameState> {
 
       final game = switch (state.gameType) {
         LocalGameType.friend => LocalGameModel.friend(
-          playerOne: playerOne,
-          playerTwo: PlayerModel(
+          host: playerOne,
+          guest: PlayerModel(
             id: GameConstants.localPlayerTwoId,
             name: GameConstants.localPlayerTwoName,
             symbol: _opponentSymbol,

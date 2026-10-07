@@ -128,7 +128,7 @@ class GameDialogUtils {
   // ROOM CLOSED
   // ===========================================================================
 
-  Future<void> showRoomClosed({required String reason}) {
+  Future<void> showRoomClosed({required GameDismissReason reason}) {
     _markDialogOpen();
 
     return showDialog<void>(
@@ -140,25 +140,75 @@ class GameDialogUtils {
           child: AlertDialog(
             backgroundColor: AppColors.surface,
             shape: _dialogShape(context),
-            title: Text(
-              'Room Closed',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.w800,
-              ),
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: Dimens.twentyFour,
+            ),
+            titlePadding: const EdgeInsets.fromLTRB(
+              Dimens.twentyFour,
+              Dimens.twentyFour,
+              Dimens.twentyFour,
+              Dimens.eight,
+            ),
+            contentPadding: const EdgeInsets.fromLTRB(
+              Dimens.twentyFour,
+              Dimens.eight,
+              Dimens.twentyFour,
+              Dimens.twentyFour,
+            ),
+            title: Column(
+              spacing: Dimens.sixteen,
+              children: [
+                Container(
+                  width: Dimens.fiftySix,
+                  height: Dimens.fiftySix,
+                  decoration: BoxDecoration(
+                    color: reason.color.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: reason.color.withValues(alpha: 0.35),
+                    ),
+                  ),
+                  child: Icon(
+                    reason.icon,
+                    color: reason.color,
+                    size: Dimens.twentyEight,
+                  ),
+                ),
+                Text(
+                  'Room Closed',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontSize: Dimens.twenty,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
             ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
-              spacing: Dimens.sixteen,
+              spacing: Dimens.twelve,
               children: [
                 Text(
-                  reason,
+                  reason.title,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurface,
+                    fontSize: Dimens.sixteen,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
+                Text(
+                  reason.subtitle,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface
+                        .withValues(alpha: 0.65),
+                    fontSize: Dimens.thirteen,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: Dimens.four),
                 Row(
                   spacing: Dimens.twelve,
                   children: [
@@ -172,79 +222,6 @@ class GameDialogUtils {
                         child: const Text('BACK HOME'),
                       ),
                     ),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          _navigator.pop();
-                          _markDialogClosed();
-                          _navigation.replaceCreateRoom();
-                        },
-                        child: const Text('NEW GAME'),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            actionsAlignment: MainAxisAlignment.center,
-          ),
-        );
-      },
-    ).whenComplete(_markDialogClosed);
-  }
-
-  // ===========================================================================
-  // GAME DISMISSED
-  // ===========================================================================
-
-  Future<void> showGameDismissed({required GameDismissedResponse response}) {
-    final reason = response.reason;
-
-    _markDialogOpen();
-
-    return showDialog<void>(
-      context: _context,
-      barrierDismissible: false,
-      builder: (context) {
-        return PopScope(
-          canPop: false,
-          child: AlertDialog(
-            backgroundColor: AppColors.surface,
-            shape: _dialogShape(context),
-            insetPadding: const EdgeInsets.symmetric(horizontal: 24),
-            icon: Icon(reason.icon, color: reason.color, size: 48),
-            title: Text(
-              'Game Dismissed',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: reason.color,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              spacing: 20,
-              children: [
-                Text(
-                  reason.message,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {
-                          _navigator.pop();
-                          _markDialogClosed();
-                          _navigation.goToHome();
-                        },
-                        child: const Text('BACK HOME'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () {

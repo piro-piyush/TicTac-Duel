@@ -4,7 +4,7 @@ import 'package:tictac_duel/lib.dart';
 class GameScreen extends ConsumerWidget {
   const GameScreen({super.key, required this.room});
 
-  final Room room;
+  final RoomModel room;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -69,35 +69,34 @@ class GameScreen extends ConsumerWidget {
                   theme: room.theme,
                   board: state.board,
                   winningIndexes: state.winningIndexes,
-                  turnIndex: state.turnIndex,
+                  turnPlayerId: state.room.turnPlayerId,
                   isMyTurn: notifier.isMyTurn,
                   onCellTap: notifier.makeMove,
                   playerId: notifier.playerId,
-                  playerOne: notifier.playerOne,
-                  playerTwo: notifier.playerTwo!,
-                  playerOnePoints: state.playerOnePoints,
-                  playerOneReady: state.playerOneReady,
-                  playerTwoPoints: state.playerTwoPoints,
-                  playerTwoReady: state.playerTwoReady,
+                  host: notifier.host,
+                  guest: notifier.guest!,
+                  hostPoints: state.room.hostPoints,
+                  guestPoints: state.room.guestPoints,
+
                   isOnline: true,
                   reactionEvent: state.reactionEvent,
                   showRoundAnimation: state.showRoundAnimation,
                 ),
                 GameRoundAnimationWidget(
                   showRoundAnimation: state.showRoundAnimation,
-                  animatedRound: state.animatedRound,
+                  animatedRound: state.room.currentRound,
                 ),
               ],
             )
           : WaitingForPlayersWidget(
               key: const ValueKey('waiting'),
-              playerOne: notifier.playerOne,
-              playerTwo: notifier.playerTwo,
+              guest: notifier.guest,
+              hostReady: notifier.room.hostReady,
               playerId: notifier.playerId,
               roomCode: room.roomCode,
               status: room.status,
-              playerOneReady: state.playerOneReady,
-              playerTwoReady: state.playerTwoReady,
+              host: state.room.host,
+              guestReady: state.room.guestReady,
               onStartGame: notifier.startGame,
             ),
     );
