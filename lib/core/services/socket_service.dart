@@ -157,7 +157,7 @@ class SocketService {
   }
 
   /// Logs every event emitted by the client.
-  void _handleOutgoingEvent(String event, dynamic data) {
+  void _handleOutgoingEvent(String event, [dynamic data]) {
     try {
       LoggerUtils.info('[SOCKET →] $event', data);
     } catch (error, stackTrace) {
@@ -229,11 +229,16 @@ class SocketService {
   // EMIT
   // ===========================================================================
 
-  void emit(String event, [dynamic data]) {
+  Future<void> emit(String event, [dynamic data]) async {
     _ensureNotDisposed();
 
     if (!isConnected) {
-      throw StateError(SocketConstants.notConnectedMessage);
+      await connect();
+    }
+
+    if (data == null) {
+      _socket.emit(event);
+      return;
     }
 
     _socket.emit(event, data);

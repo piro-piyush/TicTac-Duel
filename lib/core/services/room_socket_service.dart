@@ -122,7 +122,7 @@ class RoomSocketService {
   void onMoveMade(void Function(MoveResultResponse response) callback) =>
       _socket.on(
         RoomSocketEvents.moveMade,
-        (data) => callback(MoveResultResponse.fromJson(data)),
+        (data) => callback(MoveResultResponse.fromSocket(data)),
       );
 
   void onRoundResult(void Function(RoundResultResponse response) callback) =>

@@ -473,12 +473,25 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
   }
 
   void _handleMoveMade(MoveResultResponse response) {
+    final room = state.room;
+
+    final player = room.host.id == response.playerId
+        ? room.host
+        : room.guest?.id == response.playerId
+        ? room.guest
+        : null;
+
+    if (player == null) {
+      setInfo('Unable to identify the player who made the move.');
+      return;
+    }
+
     state = state.copyWith(
       movePending: false,
-      room: state.room.copyWith(turnPlayerId: response.turnPlayerId),
+      room: room.copyWith(turnPlayerId: response.turnPlayerId),
     );
 
-    updateBoardValue(response.index, response.symbol);
+    updateBoardValue(response.index, player.symbol);
 
     _handleMoveResult(response);
   }
