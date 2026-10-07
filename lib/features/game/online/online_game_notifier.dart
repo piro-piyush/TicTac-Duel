@@ -1,18 +1,17 @@
 import 'package:tictac_duel/lib.dart';
 
 final onlineGameProvider =
-    NotifierProvider.family<OnlineGameNotifier, OnlineGameState, String>(
+    NotifierProvider.family<OnlineGameNotifier, OnlineGameState, Room>(
       OnlineGameNotifier.new,
     );
 
 class OnlineGameNotifier extends Notifier<OnlineGameState> {
-  OnlineGameNotifier(this.roomCode);
+  OnlineGameNotifier(this.room);
 
-  final String roomCode;
+  final Room room;
 
   late final RoomSocketService _roomSocketService;
   late final AudioNotifier _audioNotifier;
-  late final PlayerNotifier _playerNotifier;
   late final AppNavigation _navigation;
   late final GameDialogUtils _gameDialog;
 
@@ -22,149 +21,106 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
 
   bool _disposed = false;
 
-  // ===========================================================================
-  // LIFECYCLE
-  // ===========================================================================
-
   @override
   OnlineGameState build() {
     _roomSocketService = ref.read(roomSocketServiceProvider);
     _audioNotifier = ref.read(audioProvider.notifier);
-    _playerNotifier = ref.read(playerProvider.notifier);
     _navigation = ref.read(appNavigationProvider);
     _gameDialog = ref.read(gameDialogProvider);
 
     ref.onDispose(_dispose);
 
-    final initialState = OnlineGameState(
-      board: List<PlayerSymbol?>.filled(GameConstants.totalCells, null),
-    );
-
     Future.microtask(_initialize);
 
-    return initialState;
+    return OnlineGameState(
+      room: room,
+      turnPlayerId: room.turnPlayerId,
+      turnIndex: _getTurnIndex(room),
+      board: List<PlayerSymbol?>.filled(GameConstants.totalCells, null),
+    );
   }
 
-  String get playerId => _playerNotifier.playerId;
+  String get playerId => _roomSocketService.socketId;
 
-  // ===========================================================================
-  // PLAYERS
-  // ===========================================================================
+  PlayerModel get playerOne => state.room.host;
 
-  PlayerModel get playerOne {
-    final currentRoom = state.room;
-
-    if (currentRoom == null || currentRoom.players.isEmpty) {
-      throw StateError('Room is not initialized');
-    }
-
-    return currentRoom.players.first;
-  }
-
-  PlayerModel? get playerTwo {
-    final currentRoom = state.room;
-
-    if (currentRoom == null || currentRoom.players.length < 2) {
-      return null;
-    }
-
-    return currentRoom.players[1];
-  }
+  PlayerModel? get playerTwo => state.room.guest;
 
   PlayerModel get myPlayer {
     final currentRoom = state.room;
 
-    if (currentRoom == null) {
-      throw StateError('Room is not initialized');
+    if (currentRoom.host.id == playerId) {
+      return currentRoom.host;
     }
 
-    return currentRoom.players.firstWhere(
-      (player) => player.id == playerId,
-      orElse: () => throw StateError('Current player not found in room'),
-    );
-  }
+    final guest = currentRoom.guest;
 
-  PlayerModel? get currentPlayer {
-    final currentRoom = state.room;
-
-    if (currentRoom == null ||
-        state.turnIndex < 0 ||
-        state.turnIndex >= currentRoom.players.length) {
-      return null;
+    if (guest != null && guest.id == playerId) {
+      return guest;
     }
 
-    return currentRoom.players[state.turnIndex];
+    throw StateError('Current player not found in room');
   }
+
+  // PlayerModel? get currentPlayer {
+  //   final turnPlayerId = state.turnPlayerId;
+  //
+  //   if (turnPlayerId == state.room.host.id) {
+  //     return state.room.host;
+  //   }
+  //
+  //   final guest = state.room.guest;
+  //
+  //   if (guest?.id == turnPlayerId) {
+  //     return guest!;
+  //   }
+  //
+  //  return null;
+  // }
+
+  String? get turnPlayerId => state.turnPlayerId;
 
   bool get amIReady {
-    final first = playerOne;
-    final second = playerTwo;
     final current = myPlayer;
 
-    if (current.id == first.id) {
+    if (current.id == playerOne.id) {
       return state.playerOneReady;
     }
 
-    return second?.id == current.id && state.playerTwoReady;
+    return current.id == playerTwo?.id && state.playerTwoReady;
   }
-
-  // ===========================================================================
-  // GAME STATE
-  // ===========================================================================
 
   bool get isMyTurn =>
       state.turnPlayerId != null && state.turnPlayerId == playerId;
 
-  bool get isGamePlaying => state.room?.roundStatus == RoundStatus.playing;
+  bool get isGamePlaying => state.room.status == RoomStatus.playing;
 
   bool get isRoundAnimationPlaying => state.showRoundAnimation;
 
   bool get showGame {
     final currentRoom = state.room;
 
-    if (currentRoom == null) {
-      return false;
-    }
-
-    if (currentRoom.roundStatus == RoundStatus.playing) {
+    if (currentRoom.status == RoomStatus.playing) {
       return true;
     }
 
-    if (currentRoom.roundStatus == RoundStatus.result) {
+    if (currentRoom.status == RoomStatus.result) {
       return !amIReady;
     }
 
     return false;
   }
 
-  bool get isWaitingForPlayers {
-    final currentRoom = state.room;
+  bool get isWaitingForPlayers =>
+      state.room.status == RoomStatus.waiting && state.room.guest == null;
 
-    if (currentRoom == null) {
-      return false;
-    }
-
-    return currentRoom.roundStatus == RoundStatus.waiting &&
-        currentRoom.players.length < GameConstants.maxPlayers;
-  }
-
-  bool get waitingForNextRound => (state.room?.currentRound ?? 0) > 0;
-
-  // ===========================================================================
-  // INITIALIZATION
-  // ===========================================================================
+  bool get waitingForNextRound => state.room.currentRound > 0;
 
   Future<void> _initialize() async {
-    state = state.copyWith(isLoading: true, clearError: true, clearInfo: true);
+    state = state.copyWith(clearError: true, clearInfo: true);
 
     try {
       _listenToSocketEvents();
-
-      await _roomSocketService.connect(
-        roomCode: roomCode,
-        playerId: playerId,
-        onConnected: _handleRoomConnected,
-      );
     } catch (error, stackTrace) {
       if (_disposed) {
         return;
@@ -172,15 +128,9 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
 
       setError(error.toString());
 
-      state = state.copyWith(isLoading: false);
-
       LoggerUtils.error('OnlineGameNotifier._initialize', error, stackTrace);
     }
   }
-
-  // ===========================================================================
-  // SOCKET EVENTS
-  // ===========================================================================
 
   void _listenToSocketEvents() {
     _roomSocketService.onPlayerJoined(_handlePlayerJoined);
@@ -195,71 +145,44 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
     _roomSocketService.onRoomError(_handleRoomError);
   }
 
-  void _handleRoomConnected(RoomConnectedResponse response) {
-    if (_disposed) {
+  void _handlePlayerJoined(PlayerModel response) {
+    final room = state.room;
+    state = state.copyWith(room: room.copyWith(guest: response));
+  }
+
+  void _handlePlayerLeft(String playerId) {
+    if (state.room.guest?.id != playerId) {
       return;
     }
 
     state = state.copyWith(
-      room: response.room,
-      playerOnePoints: response.playerOnePoints,
-      playerTwoPoints: response.playerTwoPoints,
-      playerOneReady: response.playerOneReady,
-      playerTwoReady: response.playerTwoReady,
-      turnPlayerId: response.turnPlayerId,
-      turnIndex: response.turnIndex,
-      isLoading: false,
-      clearError: true,
-      clearInfo: true,
+      room: state.room.copyWith(clearGuest: true),
+      playerTwoPoints: 0,
+      playerTwoReady: false,
     );
   }
 
-  void _handlePlayerJoined(PlayerJoinedResponse response) {
-    _setPlayer(response.player);
-    _setPlayerPoints(response.player.id, response.points);
-    _setPlayerReady(response.player.id, response.isReady);
-  }
-
-  void _handlePlayerLeft(String playerId) {
-    final currentRoom = state.room;
-
-    if (currentRoom == null) {
-      return;
-    }
-
-    final isPlayerOne = currentRoom.playerOne.id == playerId;
-
-    _removePlayer(playerId);
-
-    if (isPlayerOne) {
-      state = state.copyWith(playerOnePoints: 0, playerOneReady: false);
-    } else {
-      state = state.copyWith(playerTwoPoints: 0, playerTwoReady: false);
-    }
-  }
-
   void _handleReadyUpdated(ReadyUpdatedResponse response) {
-    final first = state.room?.playerOne;
-    final second = state.room?.playerTwo;
-
-    if (first?.id == response.playerId) {
+    if (state.room.host.id == response.playerId) {
       state = state.copyWith(playerOneReady: response.isReady);
       return;
     }
 
-    if (second?.id == response.playerId) {
+    if (state.room.guest?.id == response.playerId) {
       state = state.copyWith(playerTwoReady: response.isReady);
     }
   }
 
   void _handleRoundStarted(RoundStartedResponse response) {
-    _setRoom(response.room);
-
     state = state.copyWith(
-      playerOneReady: response.playerOneReady,
-      playerTwoReady: response.playerTwoReady,
+      room: state.room.copyWith(
+        currentRound: response.currentRound,
+        status: response.status,
+        turnPlayerId: response.turnPlayerId,
+      ),
+      playerOneReady: false,
+      playerTwoReady: false,
       turnPlayerId: response.turnPlayerId,
-      turnIndex: response.turnIndex,
       movePending: false,
       roundResultSubmitted: false,
       clearRoundResult: true,
@@ -279,17 +202,14 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
   }
 
   void _handleGameDismissed(GameDismissedResponse response) {
-    final currentRoom = state.room;
     final currentPlayerTwo = playerTwo;
 
-    if (currentRoom == null || currentPlayerTwo == null) {
+    if (currentPlayerTwo == null) {
       setInfo('Unable to load game result.');
       return;
     }
 
-    final winner = currentRoom.players
-        .where((player) => player.id == response.winnerPlayerId)
-        .firstOrNull;
+    final winner = _findPlayer(response.winnerPlayerId);
 
     if (winner == null) {
       setInfo('Unable to determine game winner.');
@@ -301,31 +221,24 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
       playerTwo: currentPlayerTwo,
       playerOnePoints: state.playerOnePoints,
       playerTwoPoints: state.playerTwoPoints,
-      currentRound: currentRoom.currentRound,
-      maxRounds: currentRoom.maxRounds,
+      currentRound: state.room.currentRound,
+      maxRounds: state.room.maxRounds,
       isOnline: true,
       gameWinner: winner,
       dismissReason: response.reason,
-      theme: currentRoom.theme,
+      theme: state.room.theme,
     );
 
     _navigation.replaceResult(result);
   }
 
-  // ===========================================================================
-  // ROOM STATE
-  // ===========================================================================
-
-  void _setRoom(RoomModel value) {
-    final previousRoom = state.room;
-    final previousRound = previousRoom?.currentRound;
+  void _setRoom(Room value) {
+    final previousRound = state.room.currentRound;
 
     state = state.copyWith(room: value);
 
-    final roundChanged =
-        previousRound != null && previousRound != value.currentRound;
-
-    final roundStarted = value.roundStatus == RoundStatus.playing;
+    final roundChanged = previousRound != value.currentRound;
+    final roundStarted = value.status == RoomStatus.playing;
 
     if (roundChanged && roundStarted) {
       _showRoundAnimationFor(value);
@@ -335,81 +248,63 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
   void _setPlayer(PlayerModel player) {
     final currentRoom = state.room;
 
-    if (currentRoom == null) {
+    if (currentRoom.host.id == player.id) {
+      state = state.copyWith(room: currentRoom.copyWith(host: player));
       return;
     }
 
-    final players = [...currentRoom.players];
-
-    final index = players.indexWhere((item) => item.id == player.id);
-
-    if (index == -1) {
-      players.add(player);
-    } else {
-      players[index] = player;
+    if (currentRoom.guest?.id == player.id) {
+      state = state.copyWith(room: currentRoom.copyWith(guest: player));
+      return;
     }
 
-    state = state.copyWith(room: currentRoom.copyWith(players: players));
+    if (currentRoom.guest == null) {
+      state = state.copyWith(room: currentRoom.copyWith(guest: player));
+    }
   }
 
   void _removePlayer(String playerId) {
     final currentRoom = state.room;
 
-    if (currentRoom == null) {
+    if (currentRoom.host.id == playerId) {
+      state = state.copyWith(room: currentRoom.copyWith(guest: null));
       return;
     }
 
-    state = state.copyWith(
-      room: currentRoom.copyWith(
-        players: currentRoom.players
-            .where((player) => player.id != playerId)
-            .toList(),
-      ),
-    );
+    if (currentRoom.guest?.id == playerId) {
+      state = state.copyWith(room: currentRoom.copyWith(guest: null));
+    }
   }
 
-  // ===========================================================================
-  // PLAYER STATE
-  // ===========================================================================
-
   void _setPlayerPoints(String id, int points) {
-    final first = state.room?.playerOne;
-    final second = state.room?.playerTwo;
-
-    if (id == first?.id) {
+    if (id == state.room.host.id) {
       state = state.copyWith(playerOnePoints: points);
       return;
     }
 
-    if (id == second?.id) {
+    if (id == state.room.guest?.id) {
       state = state.copyWith(playerTwoPoints: points);
     }
   }
 
   void _setPlayerReady(String id, bool isReady) {
-    final first = state.room?.playerOne;
-    final second = state.room?.playerTwo;
-
-    if (id == first?.id) {
+    if (id == state.room.host.id) {
       state = state.copyWith(playerOneReady: isReady);
       return;
     }
 
-    if (id == second?.id) {
+    if (id == state.room.guest?.id) {
       state = state.copyWith(playerTwoReady: isReady);
     }
   }
 
   void _incrementWinnerPoints(String winnerId) {
-    final first = state.room?.playerOne;
-    final second = state.room?.playerTwo;
-
-    if (winnerId == first?.id) {
+    if (winnerId == state.room.host.id) {
       state = state.copyWith(playerOnePoints: state.playerOnePoints + 1);
       return;
     }
 
-    if (winnerId == second?.id) {
+    if (winnerId == state.room.guest?.id) {
       state = state.copyWith(playerTwoPoints: state.playerTwoPoints + 1);
     }
   }
@@ -418,51 +313,20 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
     state = state.copyWith(playerOneReady: false, playerTwoReady: false);
   }
 
-  // ===========================================================================
-  // TURN
-  // ===========================================================================
-
   void _setTurn({required String? playerId, required int turnIndex}) {
     state = state.copyWith(turnPlayerId: playerId, turnIndex: turnIndex);
   }
 
-  // ===========================================================================
-  // GAME
-  // ===========================================================================
-
   void startGame() {
-    final currentRoom = state.room;
-
-    if (currentRoom == null) {
-      return;
-    }
-
-    _roomSocketService.startGame(roomCode: currentRoom.roomCode);
+    _roomSocketService.startGame(roomCode: state.room.roomCode);
   }
-
-  // ===========================================================================
-  // READY
-  // ===========================================================================
 
   void setReady() {
-    final currentRoom = state.room;
-
-    if (currentRoom == null) {
-      return;
-    }
-
-    _roomSocketService.setReady(roomCode: currentRoom.roomCode);
+    _roomSocketService.setReady(roomCode: state.room.roomCode);
   }
 
-  // ===========================================================================
-  // MOVES
-  // ===========================================================================
-
   void makeMove(int index) {
-    final currentRoom = state.room;
-
-    if (currentRoom == null ||
-        !isGamePlaying ||
+    if (!isGamePlaying ||
         isRoundAnimationPlaying ||
         state.roundResultSubmitted ||
         state.movePending ||
@@ -477,24 +341,16 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
 
     _audioNotifier.playTouch();
 
-    _roomSocketService.makeMove(
-      roomCode: currentRoom.roomCode,
-      index: index,
-      playerId: playerId,
-    );
+    _roomSocketService.makeMove(roomCode: state.room.roomCode, index: index);
   }
 
-  // ===========================================================================
-  // ROUND
-  // ===========================================================================
-
-  void _showRoundAnimationFor(RoomModel currentRoom) {
+  void _showRoundAnimationFor(Room value) {
     _roundAnimationTimer?.cancel();
 
     _audioNotifier.playRoundStart();
 
     state = state.copyWith(
-      animatedRound: currentRoom.currentRound,
+      animatedRound: value.currentRound,
       showRoundAnimation: true,
     );
 
@@ -509,10 +365,6 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
     });
   }
 
-  // ===========================================================================
-  // ROUND RESULT
-  // ===========================================================================
-
   void _handleRoundResult(RoundResultResponse response) {
     if (_disposed || state.roundResult != null) {
       return;
@@ -526,15 +378,9 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
 
     _resetPlayersReady();
 
-    final currentRoom = state.room;
-
-    if (currentRoom == null) {
-      return;
-    }
-
-    if (response.roundStatus != null) {
+    if (response.status != null) {
       state = state.copyWith(
-        room: currentRoom.copyWith(roundStatus: response.roundStatus),
+        room: state.room.copyWith(status: response.status),
       );
     }
 
@@ -566,9 +412,11 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
       return;
     }
 
-    final winner = currentRoom.players.firstWhere(
-      (player) => player.id == winnerId,
-    );
+    final winner = _findPlayer(winnerId);
+
+    if (winner == null) {
+      return;
+    }
 
     final result = winner.symbol == PlayerSymbol.x
         ? GameResult.xWins
@@ -600,31 +448,23 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
   }
 
   void _submitRoundResult({required List<int> winningIndexes}) {
-    final currentRoom = state.room;
-
-    if (currentRoom == null || state.roundResultSubmitted) {
+    if (state.roundResultSubmitted) {
       return;
     }
 
     state = state.copyWith(roundResultSubmitted: true);
 
     _roomSocketService.submitGameResult(
-      roomCode: currentRoom.roomCode,
-      playerId: playerId,
+      roomCode: state.room.roomCode,
       winningIndexes: winningIndexes,
     );
   }
 
-  // ===========================================================================
-  // FINAL RESULT
-  // ===========================================================================
-
   void _showFinalResult() {
     try {
-      final currentRoom = state.room;
       final currentPlayerTwo = playerTwo;
 
-      if (currentRoom == null || currentPlayerTwo == null) {
+      if (currentPlayerTwo == null) {
         setInfo('Unable to load game result.');
         return;
       }
@@ -642,14 +482,14 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
         playerTwo: currentPlayerTwo,
         playerOnePoints: state.playerOnePoints,
         playerTwoPoints: state.playerTwoPoints,
-        currentRound: currentRoom.currentRound,
-        maxRounds: currentRoom.maxRounds,
+        currentRound: state.room.currentRound,
+        maxRounds: state.room.maxRounds,
         gameWinner: winner,
         hasWon: winner?.id == playerId,
         isDraw: isDraw,
         showConfetti: winner?.id == playerId,
         isOnline: true,
-        theme: currentRoom.theme,
+        theme: state.room.theme,
       );
 
       _navigation.replaceResult(result);
@@ -663,10 +503,6 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
       setInfo('Unable to load game result.');
     }
   }
-
-  // ===========================================================================
-  // MESSAGES
-  // ===========================================================================
 
   void clearError() {
     state = state.copyWith(clearError: true);
@@ -689,10 +525,6 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
   void setInfo(String message) {
     state = state.copyWith(infoMessage: message);
   }
-
-  // ===========================================================================
-  // BOARD
-  // ===========================================================================
 
   void updateBoardValue(int index, PlayerSymbol symbol) {
     if (index < 0 ||
@@ -721,10 +553,6 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
       winningIndexes: const {},
     );
   }
-
-  // ===========================================================================
-  // MOVE RESPONSE
-  // ===========================================================================
 
   void _handleMoveMade(MoveResultResponse response) {
     state = state.copyWith(
@@ -767,26 +595,13 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
     }
   }
 
-  // ===========================================================================
-  // REACTIONS
-  // ===========================================================================
-
   void sendReaction(GameReaction reaction) {
-    final currentRoom = state.room;
-    final currentPlayerTwo = playerTwo;
-
-    if (currentRoom == null || currentPlayerTwo == null) {
+    if (playerTwo == null) {
       return;
     }
 
-    final targetPlayerId = playerId == playerOne.id
-        ? currentPlayerTwo.id
-        : playerOne.id;
-
     _roomSocketService.sendReaction(
-      roomCode: currentRoom.roomCode,
-      senderId: playerId,
-      targetPlayerId: targetPlayerId,
+      roomCode: state.room.roomCode,
       reaction: reaction,
     );
   }
@@ -809,30 +624,43 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
     });
   }
 
-  // ===========================================================================
-  // QUIT GAME
-  // ===========================================================================
-
   void quitGame() {
     try {
-      final currentRoom = state.room;
-
-      if (currentRoom == null) {
-        return;
-      }
-
-      _roomSocketService.quitGame(
-        roomCode: currentRoom.roomCode,
-        playerId: playerId,
-      );
+      _roomSocketService.quitGame(roomCode: state.room.roomCode);
     } catch (error, stackTrace) {
       LoggerUtils.error('OnlineGameNotifier.quitGame', error, stackTrace);
     }
   }
 
-  // ===========================================================================
-  // DISPOSE
-  // ===========================================================================
+  PlayerModel? _findPlayer(String id) {
+    if (state.room.host.id == id) {
+      return state.room.host;
+    }
+
+    if (state.room.guest?.id == id) {
+      return state.room.guest;
+    }
+
+    return null;
+  }
+
+  int _getTurnIndex(Room value) {
+    final turnPlayerId = value.turnPlayerId;
+
+    if (turnPlayerId == null) {
+      return 0;
+    }
+
+    if (value.host.id == turnPlayerId) {
+      return 0;
+    }
+
+    if (value.guest?.id == turnPlayerId) {
+      return 1;
+    }
+
+    return 0;
+  }
 
   void _dispose() {
     _disposed = true;
@@ -853,7 +681,6 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
     _roomSocketService.offGameDismissed();
     _roomSocketService.offMoveMade();
     _roomSocketService.offRoundResult();
-    _roomSocketService.offSendReaction();
     _roomSocketService.offReactionReceived();
     _roomSocketService.offRoomError();
 

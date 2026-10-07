@@ -26,7 +26,7 @@ class LocalGameBoardScreen extends ConsumerWidget {
       child: TicTacToeGameTemplateWidget(
         currentRound: state.currentRound,
         maxRounds: game.maxRounds,
-        player: state.currentPlayer,
+        turnPlayerId: state.currentPlayer.id,
         isMe: (id) => id == notifier.playerId,
         theme: game.theme,
         isOnline: false,

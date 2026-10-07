@@ -2,7 +2,7 @@ import 'package:tictac_duel/lib.dart';
 
 class OnlineGameState extends Equatable {
   const OnlineGameState({
-    this.room,
+    required this.room,
     this.board = const [],
     this.winningIndexes = const {},
     this.errorMessage,
@@ -16,13 +16,12 @@ class OnlineGameState extends Equatable {
     this.movePending = false,
     this.turnIndex = 0,
     this.turnPlayerId,
-    this.isLoading = false,
     this.showRoundAnimation = false,
     this.animatedRound = 0,
     this.reactionEvent,
   });
 
-  final RoomModel? room;
+  final Room room;
 
   final List<PlayerSymbol?> board;
   final Set<int> winningIndexes;
@@ -44,15 +43,13 @@ class OnlineGameState extends Equatable {
   final int turnIndex;
   final String? turnPlayerId;
 
-  final bool isLoading;
-
   final bool showRoundAnimation;
   final int animatedRound;
 
   final GameReactionEvent? reactionEvent;
 
   OnlineGameState copyWith({
-    RoomModel? room,
+    Room? room,
     List<PlayerSymbol?>? board,
     Set<int>? winningIndexes,
     String? errorMessage,
@@ -66,11 +63,9 @@ class OnlineGameState extends Equatable {
     bool? movePending,
     int? turnIndex,
     String? turnPlayerId,
-    bool? isLoading,
     bool? showRoundAnimation,
     int? animatedRound,
     GameReactionEvent? reactionEvent,
-    bool clearRoom = false,
     bool clearError = false,
     bool clearInfo = false,
     bool clearRoundResult = false,
@@ -78,32 +73,23 @@ class OnlineGameState extends Equatable {
     bool clearReactionEvent = false,
   }) {
     return OnlineGameState(
-      room: clearRoom ? null : room ?? this.room,
+      room: room ?? this.room,
       board: board ?? this.board,
       winningIndexes: winningIndexes ?? this.winningIndexes,
-      errorMessage: clearError
-          ? null
-          : errorMessage ?? this.errorMessage,
-      infoMessage: clearInfo
-          ? null
-          : infoMessage ?? this.infoMessage,
-      roundResult: clearRoundResult
-          ? null
-          : roundResult ?? this.roundResult,
+      errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
+      infoMessage: clearInfo ? null : infoMessage ?? this.infoMessage,
+      roundResult: clearRoundResult ? null : roundResult ?? this.roundResult,
       playerOnePoints: playerOnePoints ?? this.playerOnePoints,
       playerTwoPoints: playerTwoPoints ?? this.playerTwoPoints,
       playerOneReady: playerOneReady ?? this.playerOneReady,
       playerTwoReady: playerTwoReady ?? this.playerTwoReady,
-      roundResultSubmitted:
-      roundResultSubmitted ?? this.roundResultSubmitted,
+      roundResultSubmitted: roundResultSubmitted ?? this.roundResultSubmitted,
       movePending: movePending ?? this.movePending,
       turnIndex: turnIndex ?? this.turnIndex,
       turnPlayerId: clearTurnPlayerId
           ? null
           : turnPlayerId ?? this.turnPlayerId,
-      isLoading: isLoading ?? this.isLoading,
-      showRoundAnimation:
-      showRoundAnimation ?? this.showRoundAnimation,
+      showRoundAnimation: showRoundAnimation ?? this.showRoundAnimation,
       animatedRound: animatedRound ?? this.animatedRound,
       reactionEvent: clearReactionEvent
           ? null
@@ -127,7 +113,6 @@ class OnlineGameState extends Equatable {
     movePending,
     turnIndex,
     turnPlayerId,
-    isLoading,
     showRoundAnimation,
     animatedRound,
     reactionEvent,
