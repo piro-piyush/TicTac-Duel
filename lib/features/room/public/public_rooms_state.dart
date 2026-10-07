@@ -8,13 +8,13 @@ class PublicRoomsState extends Equatable {
     this.errorMessage,
   });
 
-  final List<RoomModel> rooms;
+  final List<Room> rooms;
   final bool isFetchingRooms;
   final bool isJoining;
   final String? errorMessage;
 
   PublicRoomsState copyWith({
-    List<RoomModel>? rooms,
+    List<Room>? rooms,
     bool? isFetchingRooms,
     bool? isJoining,
     String? errorMessage,

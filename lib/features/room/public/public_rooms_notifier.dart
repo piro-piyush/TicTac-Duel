@@ -7,7 +7,7 @@ final publicRoomsProvider =
 
 class PublicRoomsNotifier extends Notifier<PublicRoomsState> {
   late final RoomApiService _roomApiService;
-  late final PlayerNotifier _playerNotifier;
+  late final RoomSocketService _roomSocketService;
   late final AppNavigation _navigation;
   late final GameDialogUtils _gameDialog;
 
@@ -17,7 +17,7 @@ class PublicRoomsNotifier extends Notifier<PublicRoomsState> {
   @override
   PublicRoomsState build() {
     _roomApiService = ref.read(roomApiServiceProvider);
-    _playerNotifier = ref.read(playerProvider.notifier);
+    _roomSocketService = ref.read(roomSocketServiceProvider);
     _navigation = ref.read(appNavigationProvider);
     _gameDialog = ref.read(gameDialogProvider);
 
@@ -34,10 +34,6 @@ class PublicRoomsNotifier extends Notifier<PublicRoomsState> {
     return const PublicRoomsState();
   }
 
-  // ===========================================================================
-  // PLAYER
-  // ===========================================================================
-
   void generateRandomName() {
     final name = GameNameUtils.random();
 
@@ -47,10 +43,6 @@ class PublicRoomsNotifier extends Notifier<PublicRoomsState> {
 
     playerNameFocusNode.requestFocus();
   }
-
-  // ===========================================================================
-  // PUBLIC ROOMS
-  // ===========================================================================
 
   Future<void> fetchPublicRooms() async {
     if (state.isFetchingRooms) {
@@ -74,11 +66,7 @@ class PublicRoomsNotifier extends Notifier<PublicRoomsState> {
     return fetchPublicRooms();
   }
 
-  // ===========================================================================
-  // JOIN PUBLIC ROOM
-  // ===========================================================================
-
-  void showJoinDialog(RoomModel room) {
+  void showJoinDialog(Room room) {
     _gameDialog.show<void>(
       barrierDismissible: false,
       child: JoinPublicRoomDialogWidget(
@@ -94,7 +82,7 @@ class PublicRoomsNotifier extends Notifier<PublicRoomsState> {
     );
   }
 
-  Future<void> joinPublicRoom(RoomModel room) async {
+  Future<void> joinPublicRoom(Room room) async {
     if (state.isJoining || state.isFetchingRooms) {
       return;
     }
@@ -109,33 +97,38 @@ class PublicRoomsNotifier extends Notifier<PublicRoomsState> {
     state = state.copyWith(isJoining: true, clearError: true);
 
     try {
-      final joinedRoom = await _roomApiService.joinRoom(
-        playerId: _playerNotifier.playerId,
-        playerName: playerName,
+      await _roomSocketService.connect();
+
+      _roomSocketService.joinRoom(
         roomCode: room.roomCode,
+        name: playerName,
+        onJoined: _handleRoomJoined,
+        onError: _handleSocketError,
       );
-
-      _clearForm();
-
-      _navigation.pushGame(joinedRoom.roomCode);
     } catch (error, stackTrace) {
       _handleError(error, 'Failed to join room.', stackTrace);
-    } finally {
-      state = state.copyWith(isJoining: false);
     }
   }
 
-  // ===========================================================================
-  // CLEAR FORM
-  // ===========================================================================
+  void _handleRoomJoined(RoomJoinedResponse response) {
+    state = state.copyWith(isJoining: false);
+
+    _clearForm();
+    _navigation.pushGame(response.room);
+  }
+
+  void _handleSocketError(String message) {
+    state = state.copyWith(isJoining: false, errorMessage: message);
+
+    PopupUtils.showError(message);
+  }
 
   void _clearForm() {
     playerNameController.clear();
-  }
+    playerNameFocusNode.unfocus();
 
-  // ===========================================================================
-  // ERROR
-  // ===========================================================================
+    state = state.copyWith(clearError: true);
+  }
 
   void _handleError(
     Object error,
@@ -148,7 +141,11 @@ class PublicRoomsNotifier extends Notifier<PublicRoomsState> {
       LoggerUtils.error('PublicRoomsNotifier', error, stackTrace);
     }
 
-    state = state.copyWith(errorMessage: message);
+    state = state.copyWith(
+      isJoining: false,
+      isFetchingRooms: false,
+      errorMessage: message,
+    );
 
     PopupUtils.showError(message);
 
@@ -158,6 +155,10 @@ class PublicRoomsNotifier extends Notifier<PublicRoomsState> {
   }
 
   void clearError() {
+    if (state.errorMessage == null) {
+      return;
+    }
+
     state = state.copyWith(clearError: true);
   }
 }

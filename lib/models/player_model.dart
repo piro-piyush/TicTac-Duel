@@ -31,4 +31,17 @@ class PlayerModel {
       rethrow;
     }
   }
+
+  factory PlayerModel.fromSocket(dynamic data) {
+    final json = Map<String, dynamic>.from(data as Map);
+    try {
+      return PlayerModel(
+        id: json['id'],
+        name: json['name'],
+        symbol: PlayerSymbol.values.byName(json['symbol']),
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

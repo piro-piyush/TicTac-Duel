@@ -7,7 +7,7 @@ class PublicRoomCardWidget extends StatelessWidget {
     required this.onJoin,
   });
 
-  final RoomModel room;
+  final Room room;
   final VoidCallback onJoin;
 
   @override
@@ -47,7 +47,7 @@ class PublicRoomCardWidget extends StatelessWidget {
               ),
             ),
             title: Text(
-              room.players.first.name,
+              room.host.name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: textTheme.labelLarge,
