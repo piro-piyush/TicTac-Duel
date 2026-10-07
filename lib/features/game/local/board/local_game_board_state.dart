@@ -5,13 +5,13 @@ class LocalGameBoardState extends Equatable {
     required this.game,
     this.board = const [],
     this.winningIndexes = const {},
-    this.turnIndex = 0,
+    this.turnPlayerId,
     this.currentRound = 0,
     this.isRoundFinished = false,
     this.showRoundAnimation = false,
     this.animatedRound = 1,
-    this.playerOnePoints = 0,
-    this.playerTwoPoints = 0,
+    this.hostPoints = 0,
+    this.guestPoints = 0,
     this.reactionEvent,
   });
 
@@ -20,15 +20,15 @@ class LocalGameBoardState extends Equatable {
   final List<PlayerSymbol?> board;
   final Set<int> winningIndexes;
 
-  final int turnIndex;
+  final String? turnPlayerId;
   final int currentRound;
   final bool isRoundFinished;
 
   final bool showRoundAnimation;
   final int animatedRound;
 
-  final int playerOnePoints;
-  final int playerTwoPoints;
+  final int hostPoints;
+  final int guestPoints;
 
   final GameReactionEvent? reactionEvent;
 
@@ -36,13 +36,13 @@ class LocalGameBoardState extends Equatable {
     LocalGameModel? game,
     List<PlayerSymbol?>? board,
     Set<int>? winningIndexes,
-    int? turnIndex,
+    String? turnPlayerId,
     int? currentRound,
     bool? isRoundFinished,
     bool? showRoundAnimation,
     int? animatedRound,
-    int? playerOnePoints,
-    int? playerTwoPoints,
+    int? hostPoints,
+    int? guestPoints,
     GameReactionEvent? reactionEvent,
     bool clearReactionEvent = false,
   }) {
@@ -50,33 +50,31 @@ class LocalGameBoardState extends Equatable {
       game: game ?? this.game,
       board: board ?? this.board,
       winningIndexes: winningIndexes ?? this.winningIndexes,
-      turnIndex: turnIndex ?? this.turnIndex,
+      turnPlayerId: turnPlayerId ?? this.turnPlayerId,
       currentRound: currentRound ?? this.currentRound,
       isRoundFinished: isRoundFinished ?? this.isRoundFinished,
       showRoundAnimation: showRoundAnimation ?? this.showRoundAnimation,
       animatedRound: animatedRound ?? this.animatedRound,
-      playerOnePoints: playerOnePoints ?? this.playerOnePoints,
-      playerTwoPoints: playerTwoPoints ?? this.playerTwoPoints,
+      hostPoints: hostPoints ?? this.hostPoints,
+      guestPoints: guestPoints ?? this.guestPoints,
       reactionEvent: clearReactionEvent
           ? null
           : reactionEvent ?? this.reactionEvent,
     );
   }
 
-  PlayerModel get currentPlayer {
-    return turnIndex == 0 ? game.playerOne : game.playerTwo;
-  }
+  PlayerModel get currentPlayer =>
+      turnPlayerId == game.host.id ? game.host : game.guest;
 
-  PlayerModel get opponentPlayer {
-    return turnIndex == 0 ? game.playerTwo : game.playerOne;
-  }
+  PlayerModel get opponentPlayer =>
+      turnPlayerId == game.host.id ? game.guest : game.host;
 
   PlayerSymbol get currentSymbol => currentPlayer.symbol;
 
   bool get isBoardFull => !board.contains(null);
 
   bool get isCpuTurn {
-    return game.isComputerGame && currentPlayer.id == game.playerTwo.id;
+    return game.isComputerGame && currentPlayer.id == game.guest.id;
   }
 
   bool get canMakeMove {
@@ -90,12 +88,12 @@ class LocalGameBoardState extends Equatable {
       return null;
     }
 
-    if (playerOnePoints > playerTwoPoints) {
-      return game.playerOne;
+    if (hostPoints > guestPoints) {
+      return game.host;
     }
 
-    if (playerTwoPoints > playerOnePoints) {
-      return game.playerTwo;
+    if (guestPoints > hostPoints) {
+      return game.guest;
     }
 
     return null;
@@ -106,13 +104,13 @@ class LocalGameBoardState extends Equatable {
     game,
     board,
     winningIndexes,
-    turnIndex,
+    turnPlayerId,
     currentRound,
     isRoundFinished,
     showRoundAnimation,
     animatedRound,
-    playerOnePoints,
-    playerTwoPoints,
+    hostPoints,
+    guestPoints,
     reactionEvent,
   ];
 }

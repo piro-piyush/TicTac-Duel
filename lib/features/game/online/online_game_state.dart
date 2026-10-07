@@ -8,20 +8,13 @@ class OnlineGameState extends Equatable {
     this.errorMessage,
     this.infoMessage,
     this.roundResult,
-    this.playerOnePoints = 0,
-    this.playerTwoPoints = 0,
-    this.playerOneReady = false,
-    this.playerTwoReady = false,
     this.roundResultSubmitted = false,
     this.movePending = false,
-    this.turnIndex = 0,
-    this.turnPlayerId,
     this.showRoundAnimation = false,
-    this.animatedRound = 0,
     this.reactionEvent,
   });
 
-  final Room room;
+  final RoomModel room;
 
   final List<PlayerSymbol?> board;
   final Set<int> winningIndexes;
@@ -31,45 +24,28 @@ class OnlineGameState extends Equatable {
 
   final RoundResultResponse? roundResult;
 
-  final int playerOnePoints;
-  final int playerTwoPoints;
-
-  final bool playerOneReady;
-  final bool playerTwoReady;
-
   final bool roundResultSubmitted;
   final bool movePending;
 
-  final int turnIndex;
-  final String? turnPlayerId;
-
   final bool showRoundAnimation;
-  final int animatedRound;
 
   final GameReactionEvent? reactionEvent;
 
   OnlineGameState copyWith({
-    Room? room,
+    RoomModel? room,
     List<PlayerSymbol?>? board,
     Set<int>? winningIndexes,
     String? errorMessage,
     String? infoMessage,
     RoundResultResponse? roundResult,
-    int? playerOnePoints,
-    int? playerTwoPoints,
-    bool? playerOneReady,
-    bool? playerTwoReady,
     bool? roundResultSubmitted,
     bool? movePending,
-    int? turnIndex,
-    String? turnPlayerId,
     bool? showRoundAnimation,
-    int? animatedRound,
     GameReactionEvent? reactionEvent,
     bool clearError = false,
     bool clearInfo = false,
+    bool clearAnimatedRound = false,
     bool clearRoundResult = false,
-    bool clearTurnPlayerId = false,
     bool clearReactionEvent = false,
   }) {
     return OnlineGameState(
@@ -79,21 +55,23 @@ class OnlineGameState extends Equatable {
       errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
       infoMessage: clearInfo ? null : infoMessage ?? this.infoMessage,
       roundResult: clearRoundResult ? null : roundResult ?? this.roundResult,
-      playerOnePoints: playerOnePoints ?? this.playerOnePoints,
-      playerTwoPoints: playerTwoPoints ?? this.playerTwoPoints,
-      playerOneReady: playerOneReady ?? this.playerOneReady,
-      playerTwoReady: playerTwoReady ?? this.playerTwoReady,
       roundResultSubmitted: roundResultSubmitted ?? this.roundResultSubmitted,
       movePending: movePending ?? this.movePending,
-      turnIndex: turnIndex ?? this.turnIndex,
-      turnPlayerId: clearTurnPlayerId
-          ? null
-          : turnPlayerId ?? this.turnPlayerId,
       showRoundAnimation: showRoundAnimation ?? this.showRoundAnimation,
-      animatedRound: animatedRound ?? this.animatedRound,
+
       reactionEvent: clearReactionEvent
           ? null
           : reactionEvent ?? this.reactionEvent,
+    );
+  }
+
+  factory OnlineGameState.initial(RoomModel room) {
+    return OnlineGameState(
+      room: room,
+      board: List<PlayerSymbol?>.filled(
+        GameConstants.totalCells,
+        null,
+      ),
     );
   }
 
@@ -105,16 +83,10 @@ class OnlineGameState extends Equatable {
     errorMessage,
     infoMessage,
     roundResult,
-    playerOnePoints,
-    playerTwoPoints,
-    playerOneReady,
-    playerTwoReady,
     roundResultSubmitted,
     movePending,
-    turnIndex,
-    turnPlayerId,
     showRoundAnimation,
-    animatedRound,
+
     reactionEvent,
   ];
 }

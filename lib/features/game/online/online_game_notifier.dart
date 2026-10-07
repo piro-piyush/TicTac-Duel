@@ -1,14 +1,14 @@
 import 'package:tictac_duel/lib.dart';
 
 final onlineGameProvider =
-    NotifierProvider.family<OnlineGameNotifier, OnlineGameState, Room>(
+    NotifierProvider.family<OnlineGameNotifier, OnlineGameState, RoomModel>(
       OnlineGameNotifier.new,
     );
 
 class OnlineGameNotifier extends Notifier<OnlineGameState> {
   OnlineGameNotifier(this.room);
 
-  final Room room;
+  final RoomModel room;
 
   late final RoomSocketService _roomSocketService;
   late final AudioNotifier _audioNotifier;
@@ -32,19 +32,14 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
 
     Future.microtask(_initialize);
 
-    return OnlineGameState(
-      room: room,
-      turnPlayerId: room.turnPlayerId,
-      turnIndex: _getTurnIndex(room),
-      board: List<PlayerSymbol?>.filled(GameConstants.totalCells, null),
-    );
+    return OnlineGameState.initial(room);
   }
 
   String get playerId => _roomSocketService.socketId;
 
-  PlayerModel get playerOne => state.room.host;
+  PlayerModel get host => state.room.host;
 
-  PlayerModel? get playerTwo => state.room.guest;
+  PlayerModel? get guest => state.room.guest;
 
   PlayerModel get myPlayer {
     final currentRoom = state.room;
@@ -53,58 +48,41 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
       return currentRoom.host;
     }
 
-    final guest = currentRoom.guest;
+    final currentGuest = currentRoom.guest;
 
-    if (guest != null && guest.id == playerId) {
-      return guest;
+    if (currentGuest?.id == playerId) {
+      return currentGuest!;
     }
 
     throw StateError('Current player not found in room');
   }
 
-  // PlayerModel? get currentPlayer {
-  //   final turnPlayerId = state.turnPlayerId;
-  //
-  //   if (turnPlayerId == state.room.host.id) {
-  //     return state.room.host;
-  //   }
-  //
-  //   final guest = state.room.guest;
-  //
-  //   if (guest?.id == turnPlayerId) {
-  //     return guest!;
-  //   }
-  //
-  //  return null;
-  // }
+  String? get turnPlayerId => state.room.turnPlayerId;
 
-  String? get turnPlayerId => state.turnPlayerId;
-
-  bool get amIReady {
-    final current = myPlayer;
-
-    if (current.id == playerOne.id) {
-      return state.playerOneReady;
-    }
-
-    return current.id == playerTwo?.id && state.playerTwoReady;
-  }
-
-  bool get isMyTurn =>
-      state.turnPlayerId != null && state.turnPlayerId == playerId;
+  bool get isMyTurn => state.room.turnPlayerId == playerId;
 
   bool get isGamePlaying => state.room.status == RoomStatus.playing;
 
   bool get isRoundAnimationPlaying => state.showRoundAnimation;
 
-  bool get showGame {
-    final currentRoom = state.room;
+  bool get amIReady {
+    final currentPlayer = myPlayer;
 
-    if (currentRoom.status == RoomStatus.playing) {
+    if (currentPlayer.id == state.room.host.id) {
+      return state.room.hostReady;
+    }
+
+    return currentPlayer.id == state.room.guest?.id && state.room.guestReady;
+  }
+
+  bool get showGame {
+    final status = state.room.status;
+
+    if (status == RoomStatus.playing) {
       return true;
     }
 
-    if (currentRoom.status == RoomStatus.result) {
+    if (status == RoomStatus.result) {
       return !amIReady;
     }
 
@@ -145,50 +123,64 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
     _roomSocketService.onRoomError(_handleRoomError);
   }
 
-  void _handlePlayerJoined(PlayerModel response) {
-    final room = state.room;
-    state = state.copyWith(room: room.copyWith(guest: response));
+  void _handlePlayerJoined(PlayerJoinedResponse response) {
+    state = state.copyWith(
+      room: state.room.copyWith(
+        guest: response.player,
+        guestPoints: response.points,
+        guestReady: response.isReady,
+      ),
+    );
   }
 
   void _handlePlayerLeft(String playerId) {
     if (state.room.guest?.id != playerId) {
       return;
     }
-
     state = state.copyWith(
-      room: state.room.copyWith(clearGuest: true),
-      playerTwoPoints: 0,
-      playerTwoReady: false,
+      room: state.room.copyWith(
+        clearGuest: true,
+        guestPoints: 0,
+        guestReady: false,
+      ),
     );
   }
 
   void _handleReadyUpdated(ReadyUpdatedResponse response) {
-    if (state.room.host.id == response.playerId) {
-      state = state.copyWith(playerOneReady: response.isReady);
+    if (response.playerId == state.room.host.id) {
+      state = state.copyWith(
+        room: state.room.copyWith(hostReady: response.isReady),
+      );
       return;
     }
 
-    if (state.room.guest?.id == response.playerId) {
-      state = state.copyWith(playerTwoReady: response.isReady);
+    if (response.playerId == state.room.guest?.id) {
+      state = state.copyWith(
+        room: state.room.copyWith(guestReady: response.isReady),
+      );
     }
   }
 
   void _handleRoundStarted(RoundStartedResponse response) {
-    state = state.copyWith(
-      room: state.room.copyWith(
-        currentRound: response.currentRound,
-        status: response.status,
-        turnPlayerId: response.turnPlayerId,
-      ),
-      playerOneReady: false,
-      playerTwoReady: false,
+    final room = state.room.copyWith(
+      currentRound: response.currentRound,
+      status: response.status,
+      hostReady: response.hostReady,
+      guestReady: response.guestReady,
       turnPlayerId: response.turnPlayerId,
+      clearNextTurnPlayerId: true,
+    );
+
+    state = state.copyWith(
+      room: room,
       movePending: false,
       roundResultSubmitted: false,
       clearRoundResult: true,
       board: List<PlayerSymbol?>.filled(GameConstants.totalCells, null),
       winningIndexes: const {},
     );
+
+    _showRoundAnimationFor(room);
   }
 
   void _handleRoomError(String message) {
@@ -197,19 +189,15 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
     setError(message);
   }
 
-  void _handleRoomClosed(String reason) {
+  void _handleRoomClosed(GameDismissReason reason) {
     _gameDialog.showRoomClosed(reason: reason);
   }
 
   void _handleGameDismissed(GameDismissedResponse response) {
-    final currentPlayerTwo = playerTwo;
-
-    if (currentPlayerTwo == null) {
-      setInfo('Unable to load game result.');
-      return;
-    }
-
-    final winner = _findPlayer(response.winnerPlayerId);
+    final currentRoom = state.room;
+    final winner = response.winnerPlayerId == currentRoom.host.id
+        ? currentRoom.host
+        : currentRoom.guest;
 
     if (winner == null) {
       setInfo('Unable to determine game winner.');
@@ -217,113 +205,51 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
     }
 
     final result = ResultModel.dismissed(
-      playerOne: playerOne,
-      playerTwo: currentPlayerTwo,
-      playerOnePoints: state.playerOnePoints,
-      playerTwoPoints: state.playerTwoPoints,
-      currentRound: state.room.currentRound,
-      maxRounds: state.room.maxRounds,
+      host: currentRoom.host,
+      guest: currentRoom.guest!,
+      hostPoints: currentRoom.hostPoints,
+      guestPoints: currentRoom.guestPoints,
+      currentRound: currentRoom.currentRound,
+      maxRounds: currentRoom.maxRounds,
       isOnline: true,
       gameWinner: winner,
       dismissReason: response.reason,
-      theme: state.room.theme,
+      theme: currentRoom.theme,
     );
 
     _navigation.replaceResult(result);
   }
 
-  void _setRoom(Room value) {
-    final previousRound = state.room.currentRound;
-
-    state = state.copyWith(room: value);
-
-    final roundChanged = previousRound != value.currentRound;
-    final roundStarted = value.status == RoomStatus.playing;
-
-    if (roundChanged && roundStarted) {
-      _showRoundAnimationFor(value);
-    }
-  }
-
-  void _setPlayer(PlayerModel player) {
-    final currentRoom = state.room;
-
-    if (currentRoom.host.id == player.id) {
-      state = state.copyWith(room: currentRoom.copyWith(host: player));
-      return;
-    }
-
-    if (currentRoom.guest?.id == player.id) {
-      state = state.copyWith(room: currentRoom.copyWith(guest: player));
-      return;
-    }
-
-    if (currentRoom.guest == null) {
-      state = state.copyWith(room: currentRoom.copyWith(guest: player));
-    }
-  }
-
-  void _removePlayer(String playerId) {
-    final currentRoom = state.room;
-
-    if (currentRoom.host.id == playerId) {
-      state = state.copyWith(room: currentRoom.copyWith(guest: null));
-      return;
-    }
-
-    if (currentRoom.guest?.id == playerId) {
-      state = state.copyWith(room: currentRoom.copyWith(guest: null));
-    }
-  }
-
-  void _setPlayerPoints(String id, int points) {
-    if (id == state.room.host.id) {
-      state = state.copyWith(playerOnePoints: points);
-      return;
-    }
-
-    if (id == state.room.guest?.id) {
-      state = state.copyWith(playerTwoPoints: points);
-    }
-  }
-
-  void _setPlayerReady(String id, bool isReady) {
-    if (id == state.room.host.id) {
-      state = state.copyWith(playerOneReady: isReady);
-      return;
-    }
-
-    if (id == state.room.guest?.id) {
-      state = state.copyWith(playerTwoReady: isReady);
-    }
-  }
-
   void _incrementWinnerPoints(String winnerId) {
-    if (winnerId == state.room.host.id) {
-      state = state.copyWith(playerOnePoints: state.playerOnePoints + 1);
+    final currentRoom = state.room;
+
+    if (winnerId == currentRoom.host.id) {
+      state = state.copyWith(
+        room: currentRoom.copyWith(hostPoints: currentRoom.hostPoints + 1),
+      );
       return;
     }
 
-    if (winnerId == state.room.guest?.id) {
-      state = state.copyWith(playerTwoPoints: state.playerTwoPoints + 1);
+    if (winnerId == currentRoom.guest?.id) {
+      state = state.copyWith(
+        room: currentRoom.copyWith(guestPoints: currentRoom.guestPoints + 1),
+      );
     }
   }
 
   void _resetPlayersReady() {
-    state = state.copyWith(playerOneReady: false, playerTwoReady: false);
+    state = state.copyWith(
+      room: state.room.copyWith(hostReady: false, guestReady: false),
+    );
   }
 
-  void _setTurn({required String? playerId, required int turnIndex}) {
-    state = state.copyWith(turnPlayerId: playerId, turnIndex: turnIndex);
+  void _setTurn(String? playerId) {
+    state = state.copyWith(room: state.room.copyWith(turnPlayerId: playerId));
   }
 
-  void startGame() {
-    _roomSocketService.startGame(roomCode: state.room.roomCode);
-  }
+  void startGame() => _roomSocketService.startGame();
 
-  void setReady() {
-    _roomSocketService.setReady(roomCode: state.room.roomCode);
-  }
+  void setReady() => _roomSocketService.setReady();
 
   void makeMove(int index) {
     if (!isGamePlaying ||
@@ -341,26 +267,18 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
 
     _audioNotifier.playTouch();
 
-    _roomSocketService.makeMove(roomCode: state.room.roomCode, index: index);
+    _roomSocketService.makeMove(index);
   }
 
-  void _showRoundAnimationFor(Room value) {
+  void _showRoundAnimationFor(RoomModel value) {
     _roundAnimationTimer?.cancel();
-
     _audioNotifier.playRoundStart();
-
-    state = state.copyWith(
-      animatedRound: value.currentRound,
-      showRoundAnimation: true,
-    );
-
-    _roundAnimationTimer = Timer(const Duration(milliseconds: 900), () {
+    state = state.copyWith(showRoundAnimation: true);
+    _roundAnimationTimer = Timer(GameConstants.roundAnimationDuration, () {
       if (_disposed) {
         return;
       }
-
       state = state.copyWith(showRoundAnimation: false);
-
       _roundAnimationTimer = null;
     });
   }
@@ -384,7 +302,7 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
       );
     }
 
-    _setTurn(playerId: response.turnPlayerId, turnIndex: response.turnIndex);
+    _setTurn(response.turnPlayerId);
 
     final winnerId = response.winnerId;
 
@@ -447,41 +365,41 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
     });
   }
 
-  void _submitRoundResult({required List<int> winningIndexes}) {
+  void _submitRoundResult(List<int>? winningIndexes) {
     if (state.roundResultSubmitted) {
       return;
     }
 
     state = state.copyWith(roundResultSubmitted: true);
 
-    _roomSocketService.submitGameResult(
-      roomCode: state.room.roomCode,
-      winningIndexes: winningIndexes,
-    );
+    _roomSocketService.submitGameResult(winningIndexes);
   }
 
   void _showFinalResult() {
     try {
-      final currentPlayerTwo = playerTwo;
+      final currentGuest = guest;
 
-      if (currentPlayerTwo == null) {
+      if (currentGuest == null) {
         setInfo('Unable to load game result.');
         return;
       }
 
-      final isDraw = state.playerOnePoints == state.playerTwoPoints;
+      final hostPoints = state.room.hostPoints;
+      final guestPoints = state.room.guestPoints;
+
+      final isDraw = hostPoints == guestPoints;
 
       final winner = isDraw
           ? null
-          : state.playerOnePoints > state.playerTwoPoints
-          ? playerOne
-          : currentPlayerTwo;
+          : hostPoints > guestPoints
+          ? host
+          : currentGuest;
 
       final result = ResultModel.completed(
-        playerOne: playerOne,
-        playerTwo: currentPlayerTwo,
-        playerOnePoints: state.playerOnePoints,
-        playerTwoPoints: state.playerTwoPoints,
+        host: host,
+        guest: currentGuest,
+        hostPoints: hostPoints,
+        guestPoints: guestPoints,
         currentRound: state.room.currentRound,
         maxRounds: state.room.maxRounds,
         gameWinner: winner,
@@ -557,8 +475,7 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
   void _handleMoveMade(MoveResultResponse response) {
     state = state.copyWith(
       movePending: false,
-      turnPlayerId: response.turnPlayerId,
-      turnIndex: response.turnIndex,
+      room: state.room.copyWith(turnPlayerId: response.turnPlayerId),
     );
 
     updateBoardValue(response.index, response.symbol);
@@ -579,7 +496,7 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
 
     if (result == GameResult.draw) {
       if (response.playerId == playerId) {
-        _submitRoundResult(winningIndexes: const []);
+        _submitRoundResult(null);
       }
 
       return;
@@ -591,20 +508,12 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
     setWinningIndexes(winningIndexes.toSet());
 
     if (response.playerId == playerId) {
-      _submitRoundResult(winningIndexes: winningIndexes);
+      _submitRoundResult(winningIndexes);
     }
   }
 
-  void sendReaction(GameReaction reaction) {
-    if (playerTwo == null) {
-      return;
-    }
-
-    _roomSocketService.sendReaction(
-      roomCode: state.room.roomCode,
-      reaction: reaction,
-    );
-  }
+  void sendReaction(GameReaction reaction) =>
+      _roomSocketService.sendReaction(reaction);
 
   void _handleReactionReceived(GameReactionEvent event) {
     _reactionTimer?.cancel();
@@ -626,7 +535,7 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
 
   void quitGame() {
     try {
-      _roomSocketService.quitGame(roomCode: state.room.roomCode);
+      _roomSocketService.quitGame();
     } catch (error, stackTrace) {
       LoggerUtils.error('OnlineGameNotifier.quitGame', error, stackTrace);
     }
@@ -642,24 +551,6 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
     }
 
     return null;
-  }
-
-  int _getTurnIndex(Room value) {
-    final turnPlayerId = value.turnPlayerId;
-
-    if (turnPlayerId == null) {
-      return 0;
-    }
-
-    if (value.host.id == turnPlayerId) {
-      return 0;
-    }
-
-    if (value.guest?.id == turnPlayerId) {
-      return 1;
-    }
-
-    return 0;
   }
 
   void _dispose() {

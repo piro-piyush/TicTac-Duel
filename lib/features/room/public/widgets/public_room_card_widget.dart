@@ -7,7 +7,7 @@ class PublicRoomCardWidget extends StatelessWidget {
     required this.onJoin,
   });
 
-  final Room room;
+  final RoomModel room;
   final VoidCallback onJoin;
 
   @override

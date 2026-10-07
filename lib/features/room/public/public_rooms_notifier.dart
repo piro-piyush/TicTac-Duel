@@ -66,7 +66,7 @@ class PublicRoomsNotifier extends Notifier<PublicRoomsState> {
     return fetchPublicRooms();
   }
 
-  void showJoinDialog(Room room) {
+  void showJoinDialog(RoomModel room) {
     _gameDialog.show<void>(
       barrierDismissible: false,
       child: JoinPublicRoomDialogWidget(
@@ -82,7 +82,7 @@ class PublicRoomsNotifier extends Notifier<PublicRoomsState> {
     );
   }
 
-  Future<void> joinPublicRoom(Room room) async {
+  Future<void> joinPublicRoom(RoomModel room) async {
     if (state.isJoining || state.isFetchingRooms) {
       return;
     }

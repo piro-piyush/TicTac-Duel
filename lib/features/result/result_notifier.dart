@@ -104,7 +104,7 @@ class ResultNotifier extends Notifier<ResultModel> {
   // PLAYER
   // ===========================================================================
 
-  bool isMe(PlayerModel player) => _socketService.socketId == player.id;
+  bool isMe(PlayerModel player) => _socketService.id == player.id;
 
   bool isWinner(PlayerModel player) {
     return state.gameWinner?.id == player.id;
