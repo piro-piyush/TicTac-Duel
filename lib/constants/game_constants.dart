@@ -44,6 +44,7 @@ class GameConstants {
   // LOCAL GAME
   // ===========================================================================
 
+  static const String defaultPlayerId = 'local_player';
   static const String localPlayerOneId = 'local_player_1';
   static const String localPlayerTwoId = 'local_player_2';
   static const String localCpuId = 'local_cpu';
@@ -67,9 +68,9 @@ class GameConstants {
     milliseconds: 550,
   );
 
-  static  Duration roundAnimationDuration = Duration(
+  static Duration roundAnimationDuration = Duration(
     milliseconds:
-    roundAnimationTransitionDuration.inMilliseconds +
+        roundAnimationTransitionDuration.inMilliseconds +
         roundAnimationDisplayDuration.inMilliseconds,
   );
 

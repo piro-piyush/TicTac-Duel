@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/services.dart';
 import 'package:tictac_duel/lib.dart';
 
@@ -11,8 +13,7 @@ class JoinRoomNotifier extends Notifier<JoinRoomState> {
 
   final String? roomCode;
 
-  late final RoomApiService _roomApiService;
-  late final PlayerNotifier _playerNotifier;
+  late final RoomSocketService _roomSocketService;
   late final AppNavigation _navigation;
 
   late final GlobalKey<FormState> joinFormKey;
@@ -25,8 +26,7 @@ class JoinRoomNotifier extends Notifier<JoinRoomState> {
 
   @override
   JoinRoomState build() {
-    _roomApiService = ref.read(roomApiServiceProvider);
-    _playerNotifier = ref.read(playerProvider.notifier);
+    _roomSocketService = ref.read(roomSocketServiceProvider);
     _navigation = ref.read(appNavigationProvider);
 
     joinFormKey = GlobalKey<FormState>();
@@ -42,17 +42,12 @@ class JoinRoomNotifier extends Notifier<JoinRoomState> {
     ref.onDispose(() {
       playerNameController.dispose();
       playerNameFocusNode.dispose();
-
       roomCodeController.dispose();
       roomCodeFocusNode.dispose();
     });
 
     return const JoinRoomState();
   }
-
-  // ===========================================================================
-  // PLAYER
-  // ===========================================================================
 
   void generateRandomName() {
     final name = GameNameUtils.random();
@@ -65,13 +60,8 @@ class JoinRoomNotifier extends Notifier<JoinRoomState> {
     joinFormKey.currentState?.validate();
   }
 
-  // ===========================================================================
-  // ROOM CODE
-  // ===========================================================================
-
   Future<void> pasteRoomCode() async {
     final clipboard = await Clipboard.getData(Clipboard.kTextPlain);
-
     final code = clipboard?.text?.trim().toUpperCase();
 
     if (code == null || code.isEmpty) {
@@ -90,10 +80,6 @@ class JoinRoomNotifier extends Notifier<JoinRoomState> {
     joinFormKey.currentState?.validate();
   }
 
-  // ===========================================================================
-  // JOIN ROOM
-  // ===========================================================================
-
   Future<void> joinRoom() async {
     if (state.isJoining) {
       return;
@@ -103,28 +89,51 @@ class JoinRoomNotifier extends Notifier<JoinRoomState> {
       return;
     }
 
+    final code = roomCodeController.text.trim().toUpperCase();
+    final name = playerNameController.text.trim();
+
     state = state.copyWith(isJoining: true, clearError: true);
 
     try {
-      final room = await _roomApiService.joinRoom(
-        playerId: _playerNotifier.playerId,
-        playerName: playerNameController.text.trim(),
-        roomCode: roomCodeController.text.trim().toUpperCase(),
+      await _roomSocketService.connect();
+
+      _roomSocketService.joinRoom(
+        roomCode: code,
+        name: name,
+        onJoined: _handleRoomJoined,
+        onError: _handleSocketError,
       );
-
-      _clearForm();
-
-      _navigation.pushGame(room.roomCode);
     } catch (error, stackTrace) {
-      _handleError(error, 'Failed to join room.', stackTrace);
-    } finally {
-      state = state.copyWith(isJoining: false);
+      _handleJoinError(error, stackTrace);
     }
   }
 
-  // ===========================================================================
-  // CLEAR FORM
-  // ===========================================================================
+  void _handleRoomJoined(RoomJoinedResponse response) {
+    state = state.copyWith(isJoining: false);
+
+    _clearForm();
+    _navigation.pushGame(response.room);
+  }
+
+  void _handleSocketError(String message) {
+    state = state.copyWith(isJoining: false, errorMessage: message);
+
+    PopupUtils.showError(message);
+  }
+
+  void _handleJoinError(Object error, StackTrace stackTrace) {
+    final message = error is SocketException
+        ? error.message
+        : 'Failed to connect to the server.';
+
+    if (error is! SocketException) {
+      LoggerUtils.error('JoinRoomNotifier.joinRoom', error, stackTrace);
+    }
+
+    state = state.copyWith(isJoining: false, errorMessage: message);
+
+    PopupUtils.showError(message);
+  }
 
   void _clearForm() {
     playerNameController.clear();
@@ -132,31 +141,11 @@ class JoinRoomNotifier extends Notifier<JoinRoomState> {
     joinFormKey.currentState?.reset();
   }
 
-  // ===========================================================================
-  // ERROR
-  // ===========================================================================
-
-  void _handleError(
-    Object error,
-    String fallbackMessage,
-    StackTrace stackTrace,
-  ) {
-    final message = error is ApiException ? error.message : fallbackMessage;
-
-    if (error is! ApiException) {
-      LoggerUtils.error('JoinRoomNotifier.joinRoom', error, stackTrace);
+  void clearError() {
+    if (state.errorMessage == null) {
+      return;
     }
 
-    state = state.copyWith(errorMessage: message);
-
-    PopupUtils.showError(message);
-
-    LoggerUtils.error('Join room error: $message');
-
-    clearError();
-  }
-
-  void clearError() {
     state = state.copyWith(clearError: true);
   }
 }

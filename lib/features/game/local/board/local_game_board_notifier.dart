@@ -149,6 +149,7 @@ class LocalGameBoardNotifier extends Notifier<LocalGameBoardState> {
         state = state.copyWith(
           winningIndexes: GameLogicUtils.getWinningIndexes(state.board),
         );
+        _audioNotifier.playDraw();
       }
     }
 

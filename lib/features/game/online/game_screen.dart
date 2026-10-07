@@ -2,15 +2,15 @@ import 'package:share_plus/share_plus.dart';
 import 'package:tictac_duel/lib.dart';
 
 class GameScreen extends ConsumerWidget {
-  const GameScreen({super.key, required this.roomCode});
+  const GameScreen({super.key, required this.room});
 
-  final String roomCode;
+  final Room room;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(onlineGameProvider(roomCode));
+    final state = ref.watch(onlineGameProvider(room));
 
-    final notifier = ref.read(onlineGameProvider(roomCode).notifier);
+    final notifier = ref.read(onlineGameProvider(room).notifier);
 
     final navigation = ref.read(appNavigationProvider);
     final gameDialog = ref.read(gameDialogProvider);
@@ -42,19 +42,19 @@ class GameScreen extends ConsumerWidget {
   ) {
     final room = state.room;
 
-    if (state.isLoading && room == null) {
-      return const NeonBackgroundWidget(
-        needScroll: false,
-        child: RoomStateWidget.connecting(),
-      );
-    }
-
-    if (room == null) {
-      return const NeonBackgroundWidget(
-        needScroll: false,
-        child: RoomStateWidget.notFound(),
-      );
-    }
+    // if (state.isLoading && room == null) {
+    //   return const NeonBackgroundWidget(
+    //     needScroll: false,
+    //     child: RoomStateWidget.connecting(),
+    //   );
+    // }
+    //
+    // if (room == null) {
+    //   return const NeonBackgroundWidget(
+    //     needScroll: false,
+    //     child: RoomStateWidget.notFound(),
+    //   );
+    // }
 
     final child = AnimatedSwitcher(
       duration: const Duration(milliseconds: 300),
@@ -95,7 +95,7 @@ class GameScreen extends ConsumerWidget {
               playerTwo: notifier.playerTwo,
               playerId: notifier.playerId,
               roomCode: room.roomCode,
-              roomStatus: room.roundStatus,
+              status: room.status,
               playerOneReady: state.playerOneReady,
               playerTwoReady: state.playerTwoReady,
               onStartGame: notifier.startGame,
@@ -105,7 +105,7 @@ class GameScreen extends ConsumerWidget {
     return TicTacToeGameTemplateWidget(
       currentRound: room.currentRound,
       maxRounds: room.maxRounds,
-      floatingActionButton: room.roundStatus == RoundStatus.playing
+      floatingActionButton: room.status == RoomStatus.playing
           ? _buildReactionButton(context, notifier)
           : null,
       actions: notifier.isWaitingForPlayers
@@ -117,7 +117,7 @@ class GameScreen extends ConsumerWidget {
               ),
             ]
           : null,
-      player: notifier.currentPlayer!,
+      turnPlayerId: notifier.turnPlayerId,
       isOnline: true,
       showGameStatus: notifier.showGame,
       theme: room.theme,

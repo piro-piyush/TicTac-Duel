@@ -53,10 +53,10 @@ class AppNavigation {
   // ONLINE GAME
   // ===========================================================================
 
-  void pushGame(String roomCode) {
+  void pushGame(Room room) {
     _router.pushNamed(
       AppRoutes.game.name,
-      pathParameters: {'roomCode': roomCode},
+      extra:  room,
     );
   }
 

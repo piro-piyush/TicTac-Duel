@@ -56,7 +56,7 @@ abstract final class AppRoutes {
   // ONLINE GAME
   // ===========================================================================
 
-  static const game = AppRouteModel(name: 'game', path: '/game/:roomCode');
+  static const game = AppRouteModel(name: 'game', path: '/game');
 
   // ===========================================================================
   // RESULT

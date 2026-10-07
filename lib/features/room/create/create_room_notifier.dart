@@ -1,28 +1,26 @@
+import 'dart:io';
+
 import 'package:tictac_duel/lib.dart';
 
 final createRoomProvider =
-NotifierProvider<CreateRoomNotifier, CreateRoomState>(
-  CreateRoomNotifier.new,
-);
+    NotifierProvider<CreateRoomNotifier, CreateRoomState>(
+      CreateRoomNotifier.new,
+    );
 
 class CreateRoomNotifier extends Notifier<CreateRoomState> {
-  late final RoomApiService _roomApiService;
-  late final PlayerState _playerState;
+  late final RoomSocketService _roomSocketService;
   late final AppNavigation _navigation;
 
   late final GlobalKey<FormState> createFormKey;
-
   late final TextEditingController playerNameController;
   late final FocusNode playerNameFocusNode;
 
   @override
   CreateRoomState build() {
-    _roomApiService = ref.read(roomApiServiceProvider);
-    _playerState = ref.read(playerProvider);
+    _roomSocketService = ref.read(roomSocketServiceProvider);
     _navigation = ref.read(appNavigationProvider);
 
     createFormKey = GlobalKey<FormState>();
-
     playerNameController = TextEditingController();
     playerNameFocusNode = FocusNode();
 
@@ -35,7 +33,7 @@ class CreateRoomNotifier extends Notifier<CreateRoomState> {
   }
 
   // ===========================================================================
-  // PLAYER
+  // FORM
   // ===========================================================================
 
   void generateRandomName() {
@@ -43,12 +41,9 @@ class CreateRoomNotifier extends Notifier<CreateRoomState> {
 
     playerNameController
       ..text = name
-      ..selection = TextSelection.collapsed(
-        offset: name.length,
-      );
+      ..selection = TextSelection.collapsed(offset: name.length);
 
     playerNameFocusNode.requestFocus();
-
     createFormKey.currentState?.validate();
   }
 
@@ -57,27 +52,19 @@ class CreateRoomNotifier extends Notifier<CreateRoomState> {
   // ===========================================================================
 
   void setSelectedSymbol(PlayerSymbol symbol) {
-    state = state.copyWith(
-      selectedSymbol: symbol,
-    );
+    state = state.copyWith(selectedSymbol: symbol);
   }
 
   void setSelectedTheme(RoomTheme theme) {
-    state = state.copyWith(
-      selectedTheme: theme,
-    );
+    state = state.copyWith(selectedTheme: theme);
   }
 
   void setSelectedMaxRounds(int rounds) {
-    state = state.copyWith(
-      selectedMaxRounds: rounds,
-    );
+    state = state.copyWith(selectedMaxRounds: rounds);
   }
 
   void setIsPrivateRoom(bool isPrivate) {
-    state = state.copyWith(
-      isRoomPrivate: isPrivate,
-    );
+    state = state.copyWith(isRoomPrivate: isPrivate);
   }
 
   // ===========================================================================
@@ -94,39 +81,60 @@ class CreateRoomNotifier extends Notifier<CreateRoomState> {
       return;
     }
 
-    state = state.copyWith(
-      isCreating: true,
-      clearError: true,
-    );
+    final name = playerNameController.text.trim();
+
+    state = state.copyWith(isCreating: true, clearError: true);
 
     try {
-      final room = await _roomApiService.createRoom(
-        playerId: _playerState.playerId!,
-        playerName: playerNameController.text.trim(),
+      await _roomSocketService.connect();
+
+      _roomSocketService.createRoom(
+        name: name,
         symbol: state.selectedSymbol,
-        theme: state.selectedTheme,
         maxRounds: state.selectedMaxRounds,
+        theme: state.selectedTheme,
         isPrivate: state.isRoomPrivate,
+        onCreated: _handleRoomCreated,
+        onError: _handleSocketError,
       );
-
-      _clearForm();
-
-      _navigation.pushGame(room.roomCode);
     } catch (error, stackTrace) {
-      _handleError(
-        error,
-        'Failed to create room.',
-        stackTrace,
-      );
-    } finally {
-      state = state.copyWith(
-        isCreating: false,
-      );
+      _handleCreateError(error, stackTrace);
     }
   }
 
+  void _handleRoomCreated(RoomCreatedResponse response) {
+    state = state.copyWith(isCreating: false);
+
+    _clearForm();
+    _navigation.pushGame(response.room);
+  }
+
   // ===========================================================================
-  // CLEAR FORM
+  // ERROR HANDLING
+  // ===========================================================================
+
+  void _handleSocketError(String message) {
+    state = state.copyWith(isCreating: false, errorMessage: message);
+
+    PopupUtils.showError(message);
+  }
+
+  void _handleCreateError(Object error, StackTrace stackTrace) {
+    final message = error is SocketException
+        ? error.message
+        : 'Failed to connect to the server.';
+
+    if (error is! SocketException) {
+      LoggerUtils.error('CreateRoomNotifier.createRoom', error, stackTrace);
+    }
+
+    state = state.copyWith(isCreating: false, errorMessage: message);
+
+    PopupUtils.showError(message);
+  }
+
+  // ===========================================================================
+  // HELPERS
   // ===========================================================================
 
   void _clearForm() {
@@ -134,43 +142,11 @@ class CreateRoomNotifier extends Notifier<CreateRoomState> {
     createFormKey.currentState?.reset();
   }
 
-  // ===========================================================================
-  // ERROR
-  // ===========================================================================
-
-  void _handleError(
-      Object error,
-      String fallbackMessage,
-      StackTrace stackTrace,
-      ) {
-    final message = error is ApiException
-        ? error.message
-        : fallbackMessage;
-
-    if (error is! ApiException) {
-      LoggerUtils.error(
-        'CreateRoomNotifier.createRoom',
-        error,
-        stackTrace,
-      );
+  void clearError() {
+    if (state.errorMessage == null) {
+      return;
     }
 
-    state = state.copyWith(
-      errorMessage: message,
-    );
-
-    PopupUtils.showError(message);
-
-    LoggerUtils.error(
-      'Create room error: $message',
-    );
-
-    clearError();
-  }
-
-  void clearError() {
-    state = state.copyWith(
-      clearError: true,
-    );
+    state = state.copyWith(clearError: true);
   }
 }

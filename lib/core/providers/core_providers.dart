@@ -118,9 +118,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: AppRoutes.game.name,
         path: AppRoutes.game.path,
         builder: (context, state) {
-          final roomCode = state.pathParameters['roomCode']!;
+          final room = state.extra as Room;
 
-          return GameScreen(roomCode: roomCode);
+          return GameScreen(room: room);
         },
       ),
 

@@ -13,7 +13,6 @@ class AudioNotifier extends Notifier<AudioState> {
     AudioPlayer(),
     AudioPlayer(),
     AudioPlayer(),
-    AudioPlayer(),
   ];
 
   static const String _musicEnabledKey = 'background_music_enabled';
@@ -261,6 +260,14 @@ class AudioNotifier extends Notifier<AudioState> {
     }
 
     unawaited(_playEffect(AudioConstants.comedySound));
+  }
+
+  void playDraw() {
+    if (_disposed || !state.isInitialized) {
+      return;
+    }
+
+    unawaited(_playEffect(AudioConstants.swordSound));
   }
 
   void playRoundStart() {
