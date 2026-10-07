@@ -10,7 +10,6 @@ class RoomSocketEvents {
 
   static const startGame = 'start_game';
   static const quitGame = 'quit_game';
-  static const connectRoom = 'connect_room';
 
   // Move
   static const makeMove = 'make_move';
@@ -46,12 +45,6 @@ class SocketEvents {
   static const disconnect = 'disconnect';
   static const connectError = 'connect_error';
   static const error = 'error';
-
-  // // Reconnection
-  // static const reconnect = 'reconnect';
-  // static const reconnectAttempt = 'reconnect_attempt';
-  // static const reconnectError = 'reconnect_error';
-  // static const reconnectFailed = 'reconnect_failed';
 }
 
 class SocketConstants {

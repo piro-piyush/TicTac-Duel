@@ -3,7 +3,7 @@ import 'package:tictac_duel/lib.dart';
 class RoomJoinedResponse {
   const RoomJoinedResponse({required this.room});
 
-  final Room room;
+  final RoomModel room;
 
   factory RoomJoinedResponse.fromJson(dynamic json) {
     try {
@@ -13,7 +13,7 @@ class RoomJoinedResponse {
 
       final data = Map<String, dynamic>.from(json);
 
-      return RoomJoinedResponse(room: Room.fromJson(data));
+      return RoomJoinedResponse(room: RoomModel.fromJson(data));
     } catch (e) {
       rethrow;
     }

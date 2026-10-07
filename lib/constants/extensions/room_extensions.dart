@@ -71,12 +71,12 @@ extension RoundStatusExtension on RoomStatus {
 }
 
 extension GameDismissReasonX on GameDismissReason {
-  String get displayName => switch (this) {
+  String get title => switch (this) {
     GameDismissReason.opponentDisconnected => 'Opponent Disconnected',
     GameDismissReason.opponentQuit => 'Opponent Quit',
   };
 
-  String get message => switch (this) {
+  String get subtitle => switch (this) {
     GameDismissReason.opponentDisconnected =>
       'Your opponent disconnected from the game.',
     GameDismissReason.opponentQuit => 'Your opponent quit the game.',

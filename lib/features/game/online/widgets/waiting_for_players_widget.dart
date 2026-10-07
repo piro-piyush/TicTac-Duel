@@ -4,26 +4,26 @@ import 'package:tictac_duel/lib.dart';
 class WaitingForPlayersWidget extends StatefulWidget {
   const WaitingForPlayersWidget({
     super.key,
-    required this.playerOne,
-    required this.playerTwo,
+    required this.host,
+    required this.guest,
     required this.playerId,
     required this.roomCode,
     required this.status,
-    required this.playerOneReady,
-    required this.playerTwoReady,
+    required this.hostReady,
+    required this.guestReady,
     required this.onStartGame,
   });
 
-  final PlayerModel playerOne;
-  final PlayerModel? playerTwo;
+  final PlayerModel host;
+  final PlayerModel? guest;
 
   final String playerId;
   final String roomCode;
 
   final RoomStatus status;
 
-  final bool playerOneReady;
-  final bool playerTwoReady;
+  final bool hostReady;
+  final bool guestReady;
 
   final VoidCallback onStartGame;
 
@@ -44,28 +44,28 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
   late final Animation<double> _opponentFade;
   late final Animation<Offset> _opponentSlide;
 
-  bool get _isHost => widget.playerOne.id == widget.playerId;
+  bool get _isHost => widget.host.id == widget.playerId;
 
-  bool get _hasOpponent => widget.playerTwo != null;
+  bool get _hasOpponent => widget.guest != null;
 
   bool get _isWaiting => widget.status == RoomStatus.waiting;
 
   bool get _isResult => widget.status == RoomStatus.result;
 
   bool get _isMyReady {
-    if (widget.playerOne.id == widget.playerId) {
-      return widget.playerOneReady;
+    if (widget.host.id == widget.playerId) {
+      return widget.hostReady;
     }
 
-    if (widget.playerTwo?.id == widget.playerId) {
-      return widget.playerTwoReady;
+    if (widget.guest?.id == widget.playerId) {
+      return widget.guestReady;
     }
 
     return false;
   }
 
   bool get _bothPlayersReady =>
-      _hasOpponent && widget.playerOneReady && widget.playerTwoReady;
+      _hasOpponent && widget.hostReady && widget.guestReady;
 
   @override
   void initState() {
@@ -108,7 +108,7 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
   void didUpdateWidget(covariant WaitingForPlayersWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    final hadOpponent = oldWidget.playerTwo != null;
+    final hadOpponent = oldWidget.guest != null;
 
     if (!hadOpponent && _hasOpponent) {
       _opponentAnimationController.forward(from: 0);
@@ -157,18 +157,16 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
       mainAxisSize: MainAxisSize.min,
       children: [
         _buildPlayerColumn(
-          player: widget.playerOne,
-          isMe: widget.playerOne.id == widget.playerId,
-          isReady: widget.playerOneReady,
+          player: widget.host,
+          isMe: widget.host.id == widget.playerId,
+          isReady: widget.hostReady,
         ),
       ],
     );
   }
 
   Widget _buildConnectedPlayers() {
-    final playerTwo = widget.playerTwo;
-
-    if (playerTwo == null) {
+    if (widget.guest == null) {
       return _buildWaitingPlayer();
     }
 
@@ -177,12 +175,12 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _buildPlayerColumn(
-          player: widget.playerOne,
-          isMe: widget.playerOne.id == widget.playerId,
-          isReady: widget.playerOneReady,
+          player: widget.host,
+          isMe: widget.host.id == widget.playerId,
+          isReady: widget.hostReady,
         ),
         const SizedBox(width: Dimens.spaceBtwSections),
-        _buildOpponentColumn(playerTwo),
+        _buildOpponentColumn(widget.guest!),
       ],
     );
   }
@@ -216,7 +214,7 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
           child: _buildPlayerColumn(
             player: player,
             isMe: false,
-            isReady: widget.playerTwoReady,
+            isReady: widget.guestReady,
           ),
         ),
       ),

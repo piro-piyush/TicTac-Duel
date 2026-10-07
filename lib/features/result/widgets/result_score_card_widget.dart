@@ -38,13 +38,13 @@ class ResultScoreCardWidget extends StatelessWidget {
   List<({PlayerModel player, int points, bool isMe})> _buildPlayers() {
     final players = [
       (
-      player: state.playerOne,
-      points: state.playerOnePoints,
+      player: state.host,
+      points: state.hostPoints,
       isMe: isPlayerOneMe,
       ),
       (
-      player: state.playerTwo,
-      points: state.playerTwoPoints,
+      player: state.guest,
+      points: state.guestPoints,
       isMe: isPlayerTwoMe,
       ),
     ];

@@ -9,12 +9,12 @@ class RoomApiService {
   // GET PUBLIC ROOMS
   // ===========================================================================
 
-  Future<List<Room>> getRooms() async {
+  Future<List<RoomModel>> getRooms() async {
     final rooms = await _httpService.get<List<dynamic>>('/rooms/public');
 
     return rooms
         .map(
-          (room) => Room.fromJson(Map<String, dynamic>.from(room as Map)),
+          (room) => RoomModel.fromJson(Map<String, dynamic>.from(room as Map)),
         )
         .toList();
   }

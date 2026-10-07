@@ -27,14 +27,10 @@ class RoomSocketService {
 
     _socket.on(
       RoomSocketEvents.roomCreated,
-      (json) => onCreated(RoomCreatedResponse.fromJson(json)),
+      (data) => onCreated(RoomCreatedResponse.fromJson(data)),
     );
 
-    _socket.on(
-      RoomSocketEvents.roomError,
-      (response) =>
-          _handleErrorResponse(RoomSocketEvents.roomError, response, onError),
-    );
+    _onMessageEvent(RoomSocketEvents.roomError, onError);
 
     _socket.emit(RoomSocketEvents.createRoom, {
       'name': name,
@@ -56,14 +52,10 @@ class RoomSocketService {
 
     _socket.on(
       RoomSocketEvents.roomJoined,
-      (json) => onJoined(RoomJoinedResponse.fromJson(json)),
+      (data) => onJoined(RoomJoinedResponse.fromJson(data)),
     );
 
-    _socket.on(
-      RoomSocketEvents.roomError,
-      (response) =>
-          _handleErrorResponse(RoomSocketEvents.roomError, response, onError),
-    );
+    _onMessageEvent(RoomSocketEvents.roomError, onError);
 
     _socket.emit(RoomSocketEvents.joinRoom, {
       'roomCode': roomCode,
@@ -71,113 +63,82 @@ class RoomSocketService {
     });
   }
 
-  void startGame({required String roomCode}) {
-    _socket.emit(RoomSocketEvents.startGame, {'roomCode': roomCode});
-  }
+  void startGame() => _socket.emit(RoomSocketEvents.startGame);
 
-  void quitGame({required String roomCode}) {
-    _socket.emit(RoomSocketEvents.quitGame, {'roomCode': roomCode});
-  }
+  void quitGame() => _socket.emit(RoomSocketEvents.quitGame);
 
-  void setReady({required String roomCode}) {
-    _socket.emit(RoomSocketEvents.setReady, {'roomCode': roomCode});
-  }
+  void setReady() => _socket.emit(RoomSocketEvents.setReady);
 
-  void sendReaction({
-    required String roomCode,
-    required GameReaction reaction,
-  }) {
-    _socket.emit(RoomSocketEvents.sendReaction, {
-      'roomCode': roomCode,
-      'reaction': reaction.name,
-    });
-  }
+  void sendReaction(GameReaction reaction) =>
+      _socket.emit(RoomSocketEvents.sendReaction, {'reaction': reaction.name});
 
-  void makeMove({required String roomCode, required int index}) {
-    _socket.emit(RoomSocketEvents.makeMove, {
-      'roomCode': roomCode,
-      'index': index,
-    });
-  }
+  void makeMove(int index) =>
+      _socket.emit(RoomSocketEvents.makeMove, {'index': index});
 
-  void submitGameResult({
-    required String roomCode,
-    List<int> winningIndexes = const [],
-  }) {
-    _socket.emit(RoomSocketEvents.submitGameResult, {
-      'roomCode': roomCode,
-      'winningIndexes': winningIndexes,
-    });
-  }
+  void submitGameResult(List<int>? winningIndexes) => _socket.emit(
+    RoomSocketEvents.submitGameResult,
+    {'winningIndexes': ?winningIndexes},
+  );
 
-  void onPlayerJoined(void Function(PlayerModel player) callback) {
-    _socket.on(RoomSocketEvents.playerJoined, (data) {
-      callback(PlayerModel.fromSocket(data));
-    });
-  }
+  void onPlayerJoined(void Function(PlayerJoinedResponse response) callback) =>
+      _socket.on(
+        RoomSocketEvents.playerJoined,
+        (data) => callback(PlayerJoinedResponse.fromSocket(data)),
+      );
 
-  void onPlayerLeft(void Function(String playerId) callback) {
-    _socket.on(RoomSocketEvents.playerLeft, (data) => callback(data as String));
-  }
+  void onPlayerLeft(void Function(String playerId) callback) => _socket.on(
+    RoomSocketEvents.playerLeft,
+    (data) => callback(data as String),
+  );
 
-  void onRoomClosed(void Function(String reason) callback) {
-    _onMessageEvent(RoomSocketEvents.roomClosed, callback, field: 'reason');
-  }
+  void onRoomClosed(void Function(GameDismissReason reason) callback) =>
+      _onMessageEvent(
+        RoomSocketEvents.roomClosed,
+        (response) => callback(GameDismissReason.values.byName(response)),
+      );
 
-  void onReadyUpdated(void Function(ReadyUpdatedResponse response) callback) {
-    _onResponseEvent(
-      RoomSocketEvents.readyUpdated,
-      ReadyUpdatedResponse.fromJson,
-      callback,
-    );
-  }
+  void onRoomError(void Function(String message) callback) =>
+      _onMessageEvent(RoomSocketEvents.roomError, callback);
 
-  void onRoundStarted(void Function(RoundStartedResponse response) callback) {
-    _socket.on(
-      RoomSocketEvents.roundStarted,
-      (data) => callback(RoundStartedResponse.fromJson(data)),
-    );
-  }
+  void onReadyUpdated(void Function(ReadyUpdatedResponse response) callback) =>
+      _socket.on(
+        RoomSocketEvents.readyUpdated,
+        (data) => callback(ReadyUpdatedResponse.fromJson(data)),
+      );
 
-  void onGameDismissed(void Function(GameDismissedResponse response) callback) {
-    _onResponseEvent(
-      RoomSocketEvents.gameDismissed,
-      GameDismissedResponse.fromJson,
-      callback,
-    );
-  }
+  void onRoundStarted(void Function(RoundStartedResponse response) callback) =>
+      _socket.on(
+        RoomSocketEvents.roundStarted,
+        (data) => callback(RoundStartedResponse.fromJson(data)),
+      );
 
-  void onMoveMade(void Function(MoveResultResponse response) callback) {
-    _onResponseEvent(
-      RoomSocketEvents.moveMade,
-      MoveResultResponse.fromJson,
-      callback,
-    );
-  }
+  void onGameDismissed(
+    void Function(GameDismissedResponse response) callback,
+  ) => _socket.on(
+    RoomSocketEvents.gameDismissed,
+    (data) => callback(GameDismissedResponse.fromJson(data)),
+  );
 
-  void onRoundResult(void Function(RoundResultResponse response) callback) {
-    _onResponseEvent(
-      RoomSocketEvents.roundResult,
-      RoundResultResponse.fromJson,
-      callback,
-    );
-  }
+  void onMoveMade(void Function(MoveResultResponse response) callback) =>
+      _socket.on(
+        RoomSocketEvents.moveMade,
+        (data) => callback(MoveResultResponse.fromJson(data)),
+      );
 
-  void onRoomError(void Function(String message) callback) {
-    _onError(RoomSocketEvents.roomError, callback);
-  }
+  void onRoundResult(void Function(RoundResultResponse response) callback) =>
+      _socket.on(
+        RoomSocketEvents.roundResult,
+        (data) => callback(RoundResultResponse.fromJson(data)),
+      );
 
-  void onGameError(void Function(String message) callback) {
-    _onError(RoomSocketEvents.gameError, callback);
-  }
+  void onGameError(void Function(String message) callback) =>
+      _onMessageEvent(RoomSocketEvents.gameError, callback);
 
-  void onReactionReceived(void Function(GameReactionEvent event) callback) {
-    _onResponseEvent(
-      RoomSocketEvents.reactionReceived,
-      GameReactionEvent.fromJson,
-      callback,
-    );
-  }
+  void onReactionReceived(void Function(GameReactionEvent event) callback) =>
+      _socket.on(
+        RoomSocketEvents.reactionReceived,
+        (data) => callback(GameReactionEvent.fromJson(data)),
+      );
 
   void off(String event) => _socket.off(event);
 
@@ -205,240 +166,6 @@ class RoomSocketService {
 
   void offGameError() => off(RoomSocketEvents.gameError);
 
-  void _handlePlayerLeft(
-    dynamic response,
-    void Function(String playerId) callback,
-  ) {
-    final data = _tryExtractData(
-      event: RoomSocketEvents.playerLeft,
-      response: response,
-    );
-
-    if (data == null) {
-      return;
-    }
-
-    try {
-      final playerId = data['playerId'];
-
-      if (playerId is! String || playerId.isEmpty) {
-        throw const FormatException('Invalid player ID');
-      }
-
-      _invokeCallback(
-        event: RoomSocketEvents.playerLeft,
-        callback: () => callback(playerId),
-      );
-    } catch (error, stackTrace) {
-      _logParseError(
-        event: RoomSocketEvents.playerLeft,
-        error: error,
-        stackTrace: stackTrace,
-      );
-    }
-  }
-
-  // void _onPlayerEvent(
-  //   String event,
-  //   void Function(PlayerModel response) callback,
-  // ) {
-  //   _socket.on(
-  //     event,
-  //     (response) => _handlePlayerResponse(event, response, callback),
-  //   );
-  // }
-
-  void _handlePlayerResponse(
-    String event,
-    dynamic response,
-    void Function(PlayerJoinedResponse response) callback,
-  ) {
-    final data = _tryExtractData(event: event, response: response);
-
-    if (data == null) {
-      return;
-    }
-
-    try {
-      final playerResponse = PlayerJoinedResponse.fromJson(data);
-
-      _invokeCallback(event: event, callback: () => callback(playerResponse));
-    } catch (error, stackTrace) {
-      _logParseError(event: event, error: error, stackTrace: stackTrace);
-    }
-  }
-
-  void _onResponseEvent<T>(
-    String event,
-    T Function(dynamic json) parser,
-    void Function(T response) callback,
-  ) {
-    _socket.on(
-      event,
-      (response) => _handleResponse(event, response, parser, callback),
-    );
-  }
-
-  void _handleResponse<T>(
-    String event,
-    dynamic response,
-    T Function(dynamic json) parser,
-    void Function(T response) callback,
-  ) {
-    final data = _tryExtractData(event: event, response: response);
-
-    if (data == null) {
-      return;
-    }
-
-    try {
-      final parsedResponse = parser(data);
-
-      _invokeCallback(event: event, callback: () => callback(parsedResponse));
-    } catch (error, stackTrace) {
-      _logParseError(event: event, error: error, stackTrace: stackTrace);
-    }
-  }
-
-  void _onMessageEvent(
-    String event,
-    void Function(String message) callback, {
-    String field = 'message',
-  }) {
-    _socket.on(
-      event,
-      (response) => _handleMessageResponse(event, response, callback, field),
-    );
-  }
-
-  void _handleMessageResponse(
-    String event,
-    dynamic response,
-    void Function(String message) callback,
-    String field,
-  ) {
-    final data = _tryExtractData(event: event, response: response);
-
-    if (data == null) {
-      return;
-    }
-
-    try {
-      final message = data[field];
-
-      final resolvedMessage = message is String && message.trim().isNotEmpty
-          ? message
-          : SocketConstants.genericErrorMessage;
-
-      _invokeCallback(event: event, callback: () => callback(resolvedMessage));
-    } catch (error, stackTrace) {
-      _logParseError(event: event, error: error, stackTrace: stackTrace);
-    }
-  }
-
-  void _onError(String event, void Function(String message) callback) {
-    _socket.on(
-      event,
-      (response) => _handleErrorResponse(event, response, callback),
-    );
-  }
-
-  void _handleErrorResponse(
-    String event,
-    dynamic response,
-    void Function(String message) callback,
-  ) {
-    try {
-      final data = _unwrapErrorData(response);
-      final message = data['message'];
-
-      if (message is! String || message.trim().isEmpty) {
-        throw const FormatException('Invalid socket error message');
-      }
-
-      _invokeCallback(event: event, callback: () => callback(message));
-    } catch (error, stackTrace) {
-      _logParseError(event: event, error: error, stackTrace: stackTrace);
-    }
-  }
-
-  void _invokeCallback({
-    required String event,
-    required void Function() callback,
-  }) {
-    try {
-      callback();
-    } catch (error, stackTrace) {
-      LoggerUtils.error('Socket callback failed for $event: $error');
-
-      LoggerUtils.debug(stackTrace.toString());
-    }
-  }
-
-  void _logParseError({
-    required String event,
-    required Object error,
-    required StackTrace stackTrace,
-  }) {
-    LoggerUtils.error('Failed to parse $event response: $error');
-
-    LoggerUtils.debug(stackTrace.toString());
-  }
-
-  Map<String, dynamic>? _tryExtractData({
-    required String event,
-    required dynamic response,
-  }) {
-    try {
-      final data = _data(response);
-
-      if (data == null) {
-        LoggerUtils.error('Invalid socket response for $event | $response');
-
-        return null;
-      }
-
-      return data;
-    } catch (error, stackTrace) {
-      _logParseError(event: event, error: error, stackTrace: stackTrace);
-
-      return null;
-    }
-  }
-
-  Map<String, dynamic>? _data(dynamic response) {
-    if (response is! Map) {
-      return null;
-    }
-
-    if (response['success'] != true) {
-      return null;
-    }
-
-    final data = response['data'];
-
-    if (data is! Map) {
-      return null;
-    }
-
-    return Map<String, dynamic>.from(data);
-  }
-
-  Map<String, dynamic> _unwrapErrorData(dynamic response) {
-    dynamic data = response;
-
-    if (data is List) {
-      if (data.isEmpty) {
-        throw const FormatException('Invalid socket error response');
-      }
-
-      data = data.first;
-    }
-
-    if (data is! Map) {
-      throw const FormatException('Invalid socket error response');
-    }
-
-    return Map<String, dynamic>.from(data);
-  }
+  void _onMessageEvent(String event, void Function(String message) callback) =>
+      _socket.on(event, (response) => callback(response as String));
 }

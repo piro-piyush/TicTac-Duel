@@ -1,171 +1,204 @@
 import 'package:tictac_duel/lib.dart';
 
-class RoomModel {
+class RoomModel extends GameModel {
   const RoomModel({
-    required this.id,
     required this.roomCode,
-    required this.isPrivate,
-    required this.hostPlayerId,
-    required this.maxRounds,
+    required super.host,
+    required this.guest,
+    required this.hostPoints,
+    required this.guestPoints,
+    required this.hostReady,
+    required this.guestReady,
+    required this.turnPlayerId,
+    required this.nextTurnPlayerId,
     required this.currentRound,
+    required super.maxRounds,
     required this.status,
-    required this.theme,
-    required this.players,
-    // required this.turnPlayerId,
-    // required this.turnIndex,
+    required super.theme,
+    required this.isPrivate,
+    super.boardSize = GameConstants.boardSize,
   });
 
-  final String id;
   final String roomCode;
-  final bool isPrivate;
-  final String hostPlayerId;
 
-  final int maxRounds;
+  final PlayerModel? guest;
+
+  final int hostPoints;
+  final int guestPoints;
+
+  final bool hostReady;
+  final bool guestReady;
+
+  final String? turnPlayerId;
+  final String? nextTurnPlayerId;
+
   final int currentRound;
+
   final RoomStatus status;
+  final bool isPrivate;
 
-  final RoomTheme theme;
-  final List<PlayerModel> players;
-
-  // final String? turnPlayerId;
-  // final int turnIndex;
-
-  int get occupancy => players.length;
-
-  // OnlinePlayerModel? get turn {
-  //   final playerId = turnPlayerId;
-  //
-  //   if (playerId == null) {
-  //     return null;
-  //   }
-  //
-  //   for (final player in players) {
-  //     if (player.id == playerId) {
-  //       return player;
-  //     }
-  //   }
-  //
-  //   return null;
-  // }
-
-  // ===========================================================================
-  // PLAYERS
-  // ===========================================================================
-
-  PlayerModel get playerOne {
-    if (players.isEmpty) {
-      throw StateError('Room does not have player one');
-    }
-
-    return players[0];
+  RoomModel copyWith({
+    String? roomCode,
+    PlayerModel? host,
+    PlayerModel? guest,
+    int? hostPoints,
+    int? guestPoints,
+    bool? hostReady,
+    bool? guestReady,
+    String? turnPlayerId,
+    String? nextTurnPlayerId,
+    int? currentRound,
+    int? maxRounds,
+    RoomStatus? status,
+    RoomTheme? theme,
+    bool? isPrivate,
+    bool clearGuest = false,
+    bool clearTurnPlayerId = false,
+    bool clearNextTurnPlayerId = false,
+  }) {
+    return RoomModel(
+      roomCode: roomCode ?? this.roomCode,
+      host: host ?? this.host,
+      guest: clearGuest ? null : guest ?? this.guest,
+      hostPoints: hostPoints ?? this.hostPoints,
+      guestPoints: guestPoints ?? this.guestPoints,
+      hostReady: hostReady ?? this.hostReady,
+      guestReady: guestReady ?? this.guestReady,
+      turnPlayerId: clearTurnPlayerId
+          ? null
+          : turnPlayerId ?? this.turnPlayerId,
+      nextTurnPlayerId: clearNextTurnPlayerId
+          ? null
+          : nextTurnPlayerId ?? this.nextTurnPlayerId,
+      currentRound: currentRound ?? this.currentRound,
+      maxRounds: maxRounds ?? this.maxRounds,
+      status: status ?? this.status,
+      theme: theme ?? this.theme,
+      isPrivate: isPrivate ?? this.isPrivate,
+      boardSize: boardSize,
+    );
   }
 
-  PlayerModel? get playerTwo {
-    if (players.length < 2) {
-      throw StateError('Room does not have player two');
-    }
-
-    return players[1];
-  }
-
-  factory RoomModel.fromJson(dynamic json) {
+  factory RoomModel.fromSocket(dynamic json) {
     if (json is! Map) {
-      throw const FormatException('Invalid room response');
+      throw const FormatException('Invalid online game response');
     }
 
     final data = Map<String, dynamic>.from(json);
 
-    try {
-      final players = data['players'];
+    final roomCode = data['roomCode'];
+    final host = data['host'];
+    final guest = data['guest'];
+    final hostPoints = data['hostPoints'];
+    final guestPoints = data['guestPoints'];
+    final hostReady = data['hostReady'];
+    final guestReady = data['guestReady'];
+    final turnPlayerId = data['turnPlayerId'];
+    final nextTurnPlayerId = data['nextTurnPlayerId'];
+    final currentRound = data['currentRound'];
+    final maxRounds = data['maxRounds'];
+    final status = data['status'];
+    final theme = data['theme'];
+    final isPrivate = data['isPrivate'];
 
-      if (players is! List) {
-        throw const FormatException('Invalid players data');
-      }
-
-      return RoomModel(
-        id: _requiredString(data, 'id'),
-        roomCode: _requiredString(data, 'roomCode'),
-        isPrivate: _requiredBool(data, 'isPrivate'),
-        hostPlayerId: _requiredString(data, 'hostPlayerId'),
-        maxRounds: _requiredInt(data, 'maxRounds'),
-        currentRound: _requiredInt(data, 'currentRound'),
-        status: RoomStatus.values.byName(
-          _requiredString(data, 'status'),
-        ),
-        theme: RoomTheme.values.byName(_requiredString(data, 'theme')),
-        players: players
-            .map((player) => PlayerModel.fromJson(player))
-            .toList(),
-        // turnPlayerId: _optionalString(data, 'turnPlayerId'),
-        // turnIndex: _requiredInt(data, 'turnIndex'),
-      );
-    } on FormatException {
-      rethrow;
-    } catch (_) {
-      throw const FormatException('Invalid room response');
-    }
-  }
-
-  static String _requiredString(Map<String, dynamic> json, String key) {
-    final value = json[key];
-
-    if (value is! String || value.isEmpty) {
-      throw FormatException('Invalid $key');
+    if (roomCode is! String || roomCode.trim().isEmpty) {
+      throw const FormatException('Invalid room code');
     }
 
-    return value;
-  }
-
-
-
-  static bool _requiredBool(Map<String, dynamic> json, String key) {
-    final value = json[key];
-
-    if (value is! bool) {
-      throw FormatException('Invalid $key');
+    if (host is! Map) {
+      throw const FormatException('Invalid room host');
     }
 
-    return value;
-  }
-
-  static int _requiredInt(Map<String, dynamic> json, String key) {
-    final value = json[key];
-
-    if (value is! num) {
-      throw FormatException('Invalid $key');
+    if (guest != null && guest is! Map) {
+      throw const FormatException('Invalid room guest');
     }
 
-    return value.toInt();
-  }
+    if (hostPoints is! int) {
+      throw const FormatException('Invalid host points');
+    }
 
+    if (guestPoints is! int) {
+      throw const FormatException('Invalid guest points');
+    }
 
-  RoomModel copyWith({
-    String? id,
-    String? roomCode,
-    bool? isPrivate,
-    String? hostPlayerId,
-    int? maxPlayers,
-    int? maxRounds,
-    int? currentRound,
-    RoomStatus? status,
-    RoomTheme? theme,
-    List<PlayerModel>? players,
-    String? turnPlayerId,
-    // int? turnIndex,
-    // int? boardSize,
-  }) {
+    if (hostReady is! bool) {
+      throw const FormatException('Invalid host ready state');
+    }
+
+    if (guestReady is! bool) {
+      throw const FormatException('Invalid guest ready state');
+    }
+
+    if (turnPlayerId != null && turnPlayerId is! String) {
+      throw const FormatException('Invalid turn player ID');
+    }
+
+    if (nextTurnPlayerId != null && nextTurnPlayerId is! String) {
+      throw const FormatException('Invalid next turn player ID');
+    }
+
+    if (currentRound is! int) {
+      throw const FormatException('Invalid current round');
+    }
+
+    if (maxRounds is! int) {
+      throw const FormatException('Invalid max rounds');
+    }
+
+    if (status is! String) {
+      throw const FormatException('Invalid room status');
+    }
+
+    if (theme is! String) {
+      throw const FormatException('Invalid room theme');
+    }
+
+    if (isPrivate is! bool) {
+      throw const FormatException('Invalid private room status');
+    }
+
     return RoomModel(
-      id: id ?? this.id,
-      roomCode: roomCode ?? this.roomCode,
-      isPrivate: isPrivate ?? this.isPrivate,
-      hostPlayerId: hostPlayerId ?? this.hostPlayerId,
-      maxRounds: maxRounds ?? this.maxRounds,
-      currentRound: currentRound ?? this.currentRound,
-      status: status ?? this.status,
-      theme: theme ?? this.theme,
-      players: players ?? this.players,
-      // turnPlayerId: turnPlayerId ?? this.turnPlayerId,
-      // turnIndex: turnIndex ?? this.turnIndex,
+      roomCode: roomCode,
+      host: PlayerModel.fromJson(Map<String, dynamic>.from(host)),
+      guest: guest == null
+          ? null
+          : PlayerModel.fromJson(Map<String, dynamic>.from(guest)),
+      hostPoints: hostPoints,
+      guestPoints: guestPoints,
+      hostReady: hostReady,
+      guestReady: guestReady,
+      turnPlayerId: turnPlayerId,
+      nextTurnPlayerId: nextTurnPlayerId,
+      currentRound: currentRound,
+      maxRounds: maxRounds,
+      status: RoomStatus.values.byName(status),
+      theme: RoomTheme.values.byName(theme),
+      isPrivate: isPrivate,
     );
+  }
+
+  factory RoomModel.fromJson(Map<String, dynamic> json) {
+    try {
+      return RoomModel(
+        roomCode: json['roomCode'] as String,
+        host: PlayerModel.fromJson(Map<String, dynamic>.from(json['host'])),
+        guest: json['guest'] == null
+            ? null
+            : PlayerModel.fromJson(Map<String, dynamic>.from(json['guest'])),
+        hostPoints: json['hostPoints'],
+        guestPoints: json['guestPoints'],
+        hostReady: json['hostReady'],
+        guestReady: json['guestReady'],
+        turnPlayerId: json['turnPlayerId'],
+        nextTurnPlayerId: json['nextTurnPlayerId'],
+        currentRound: json['currentRound'],
+        maxRounds: json['maxRounds'],
+        status: RoomStatus.values.byName(json['status']),
+        theme: RoomTheme.values.byName(json['theme']),
+        isPrivate: json['isPrivate'],
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
 }

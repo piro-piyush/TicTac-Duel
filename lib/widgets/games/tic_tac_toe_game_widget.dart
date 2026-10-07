@@ -9,16 +9,15 @@ class TicTacToeGameWidget extends StatelessWidget {
     required this.playerId,
     required this.board,
     required this.winningIndexes,
-    required this.turnIndex,
+    required this.turnPlayerId,
     required this.isMyTurn,
     required this.onCellTap,
-    required this.playerOne,
-    required this.playerTwo,
-    required this.playerOnePoints,
-    required this.playerTwoPoints,
+    required this.guest,
+    required this.host,
+    required this.hostPoints,
+    required this.guestPoints,
     required this.showRoundAnimation,
-    this.playerOneReady,
-    this.playerTwoReady,
+
     this.reactionEvent,
     required this.isOnline,
   });
@@ -32,14 +31,12 @@ class TicTacToeGameWidget extends StatelessWidget {
 
   final String playerId;
 
-  final PlayerModel playerOne;
-  final PlayerModel playerTwo;
+  final PlayerModel host;
+  final PlayerModel guest;
 
-  final int playerOnePoints;
-  final int playerTwoPoints;
+  final int hostPoints;
+  final int guestPoints;
 
-  final bool? playerOneReady;
-  final bool? playerTwoReady;
   final bool showRoundAnimation;
 
   // ===========================================================================
@@ -53,7 +50,7 @@ class TicTacToeGameWidget extends StatelessWidget {
   // TURN
   // ===========================================================================
 
-  final int turnIndex;
+  final String? turnPlayerId;
   final bool isMyTurn;
   final bool isOnline;
 
@@ -94,18 +91,16 @@ class TicTacToeGameWidget extends StatelessWidget {
             ? 10.0
             : 16.0;
 
-        final meIsPlayerOne = playerOne.id == playerId;
+        final meIsPlayerOne = host.id == playerId;
 
-        final me = meIsPlayerOne ? playerOne : playerTwo;
-        final opponent = meIsPlayerOne ? playerTwo : playerOne;
+        final me = meIsPlayerOne ? host : guest;
+        final opponent = meIsPlayerOne ? guest : host;
 
-        final mePoints = meIsPlayerOne ? playerOnePoints : playerTwoPoints;
+        final mePoints = meIsPlayerOne ? hostPoints : guestPoints;
 
-        final opponentPoints = meIsPlayerOne
-            ? playerTwoPoints
-            : playerOnePoints;
+        final opponentPoints = meIsPlayerOne ? guestPoints : hostPoints;
 
-        final meIsTurn = meIsPlayerOne ? turnIndex == 0 : turnIndex == 1;
+        final meIsTurn = turnPlayerId == playerId;
 
         final opponentIsTurn = !meIsTurn;
 

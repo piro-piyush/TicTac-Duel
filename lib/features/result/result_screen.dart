@@ -51,8 +51,8 @@ class ResultScreen extends ConsumerWidget {
         ),
         ResultScoreCardWidget(
           state: state,
-          isPlayerOneMe: notifier.isMe(state.playerOne),
-          isPlayerTwoMe: notifier.isMe(state.playerTwo),
+          isPlayerOneMe: notifier.isMe(state.host),
+          isPlayerTwoMe: notifier.isMe(state.guest),
           isOnline: state.isOnline,
         ),
         _buildRoundLabel(context, state),
@@ -102,7 +102,7 @@ class ResultScreen extends ConsumerWidget {
       message = 'No winner this time. Great game!';
     } else if (state.isDismissed) {
       title = state.hasWon ? 'YOU WON!' : 'YOU LOSE';
-      message = state.dismissReason?.message ?? 'The game has ended.';
+      message = state.dismissReason?.subtitle ?? 'The game has ended.';
     } else if (state.isLocal) {
       title = '${winner!.name.toUpperCase()} WINS!';
       message = 'Congratulations, ${winner.name}! Great game.';
