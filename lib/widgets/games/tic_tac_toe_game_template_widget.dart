@@ -6,7 +6,7 @@ class TicTacToeGameTemplateWidget extends StatelessWidget {
     this.title,
     required this.currentRound,
     required this.maxRounds,
-    required this.player,
+     this.turnPlayerId,
     required this.theme,
     required this.child,
     required this.isOnline,
@@ -19,7 +19,7 @@ class TicTacToeGameTemplateWidget extends StatelessWidget {
   final String? title;
   final int currentRound;
   final int maxRounds;
-  final PlayerModel player;
+  final String? turnPlayerId;
   final RoomTheme theme;
   final Widget child;
   final bool isOnline;

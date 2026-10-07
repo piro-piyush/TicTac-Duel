@@ -1,19 +1,17 @@
 import 'package:tictac_duel/constants/animation_constants.dart';
 import 'package:tictac_duel/lib.dart';
 
-final resultProvider = NotifierProvider.family<
-    ResultNotifier,
-    ResultModel,
-    ResultModel>(
-  ResultNotifier.new,
-);
+final resultProvider =
+    NotifierProvider.family<ResultNotifier, ResultModel, ResultModel>(
+      ResultNotifier.new,
+    );
 
 class ResultNotifier extends Notifier<ResultModel> {
   ResultNotifier(this._initialState);
 
   final ResultModel _initialState;
 
-  late final PlayerState _playerState;
+  late final SocketService _socketService;
   late final AudioNotifier _audioNotifier;
   late final AppNavigation _navigation;
 
@@ -23,7 +21,7 @@ class ResultNotifier extends Notifier<ResultModel> {
 
   @override
   ResultModel build() {
-    _playerState = ref.read(playerProvider);
+    _socketService = ref.read(socketServiceProvider);
     _audioNotifier = ref.read(audioProvider.notifier);
     _navigation = ref.read(appNavigationProvider);
 
@@ -106,13 +104,7 @@ class ResultNotifier extends Notifier<ResultModel> {
   // PLAYER
   // ===========================================================================
 
-  bool isMe(PlayerModel player) {
-    if (!_playerState.isInitialized) {
-      return false;
-    }
-
-    return player.id == _playerState.playerId;
-  }
+  bool isMe(PlayerModel player) => _socketService.socketId == player.id;
 
   bool isWinner(PlayerModel player) {
     return state.gameWinner?.id == player.id;

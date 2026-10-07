@@ -3,7 +3,7 @@ import 'package:tictac_duel/lib.dart';
 class RoundResultResponse {
   const RoundResultResponse({
     required this.winnerId,
-    required this.roundStatus,
+    required this.status,
     required this.winningIndexes,
     required this.gameFinished,
     required this.turnPlayerId,
@@ -11,7 +11,7 @@ class RoundResultResponse {
   });
 
   final String? winnerId;
-  final RoundStatus? roundStatus;
+  final RoomStatus? status;
   final List<int> winningIndexes;
   final bool gameFinished;
   final String turnPlayerId;
@@ -23,7 +23,7 @@ class RoundResultResponse {
     }
 
     final winnerId = json['winnerId'];
-    final roundStatus = json['roundStatus'];
+    final status = json['status'];
     final winningIndexesData = json['winningIndexes'];
     final gameFinished = json['gameFinished'];
     final turnPlayerId = json['turnPlayerId'];
@@ -33,8 +33,8 @@ class RoundResultResponse {
       throw const FormatException('Invalid winner ID');
     }
 
-    if (roundStatus != null && roundStatus is! String) {
-      throw const FormatException('Invalid round status');
+    if (status != null && status is! String) {
+      throw const FormatException('Invalid status');
     }
 
     if (winningIndexesData is! List) {
@@ -59,8 +59,8 @@ class RoundResultResponse {
 
     return RoundResultResponse(
       winnerId: winnerId as String?,
-      roundStatus: roundStatus != null
-          ? RoundStatus.values.byName(roundStatus as String)
+      status: status != null
+          ? RoomStatus.values.byName(status)
           : null,
       winningIndexes: List<int>.from(winningIndexesData),
       gameFinished: gameFinished,

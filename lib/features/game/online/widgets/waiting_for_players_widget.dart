@@ -8,7 +8,7 @@ class WaitingForPlayersWidget extends StatefulWidget {
     required this.playerTwo,
     required this.playerId,
     required this.roomCode,
-    required this.roomStatus,
+    required this.status,
     required this.playerOneReady,
     required this.playerTwoReady,
     required this.onStartGame,
@@ -20,7 +20,7 @@ class WaitingForPlayersWidget extends StatefulWidget {
   final String playerId;
   final String roomCode;
 
-  final RoundStatus roomStatus;
+  final RoomStatus status;
 
   final bool playerOneReady;
   final bool playerTwoReady;
@@ -48,9 +48,9 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
 
   bool get _hasOpponent => widget.playerTwo != null;
 
-  bool get _isWaiting => widget.roomStatus == RoundStatus.waiting;
+  bool get _isWaiting => widget.status == RoomStatus.waiting;
 
-  bool get _isResult => widget.roomStatus == RoundStatus.result;
+  bool get _isResult => widget.status == RoomStatus.result;
 
   bool get _isMyReady {
     if (widget.playerOne.id == widget.playerId) {

@@ -8,7 +8,7 @@ class RoomModel {
     required this.hostPlayerId,
     required this.maxRounds,
     required this.currentRound,
-    required this.roundStatus,
+    required this.status,
     required this.theme,
     required this.players,
     // required this.turnPlayerId,
@@ -22,7 +22,7 @@ class RoomModel {
 
   final int maxRounds;
   final int currentRound;
-  final RoundStatus roundStatus;
+  final RoomStatus status;
 
   final RoomTheme theme;
   final List<PlayerModel> players;
@@ -89,8 +89,8 @@ class RoomModel {
         hostPlayerId: _requiredString(data, 'hostPlayerId'),
         maxRounds: _requiredInt(data, 'maxRounds'),
         currentRound: _requiredInt(data, 'currentRound'),
-        roundStatus: RoundStatus.values.byName(
-          _requiredString(data, 'roundStatus'),
+        status: RoomStatus.values.byName(
+          _requiredString(data, 'status'),
         ),
         theme: RoomTheme.values.byName(_requiredString(data, 'theme')),
         players: players
@@ -147,7 +147,7 @@ class RoomModel {
     int? maxPlayers,
     int? maxRounds,
     int? currentRound,
-    RoundStatus? roundStatus,
+    RoomStatus? status,
     RoomTheme? theme,
     List<PlayerModel>? players,
     String? turnPlayerId,
@@ -161,7 +161,7 @@ class RoomModel {
       hostPlayerId: hostPlayerId ?? this.hostPlayerId,
       maxRounds: maxRounds ?? this.maxRounds,
       currentRound: currentRound ?? this.currentRound,
-      roundStatus: roundStatus ?? this.roundStatus,
+      status: status ?? this.status,
       theme: theme ?? this.theme,
       players: players ?? this.players,
       // turnPlayerId: turnPlayerId ?? this.turnPlayerId,

@@ -2,10 +2,15 @@ class RoomSocketEvents {
   RoomSocketEvents._();
 
   // Room connection
+  static const createRoom = 'create_room';
+  static const roomCreated = 'room_created';
+
+  static const joinRoom = 'join_room';
+  static const roomJoined = 'room_joined';
+
   static const startGame = 'start_game';
   static const quitGame = 'quit_game';
   static const connectRoom = 'connect_room';
-  static const roomConnected = 'room_connected';
 
   // Move
   static const makeMove = 'make_move';
@@ -30,6 +35,7 @@ class RoomSocketEvents {
 
   // Errors
   static const roomError = 'room_error';
+  static const gameError = 'game_error';
 }
 
 class SocketEvents {
