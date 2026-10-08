@@ -71,78 +71,32 @@ class CreateRoomNotifier extends Notifier<CreateRoomState> {
     if (state.isCreating) {
       return;
     }
-
     if (!(createFormKey.currentState?.validate() ?? false)) {
       playerNameFocusNode.requestFocus();
       return;
     }
-
-    final name = playerNameController.text.trim();
-
-    state = state.copyWith(isCreating: true, clearError: true);
-
+    state = state.copyWith(isCreating: true);
     try {
-      await _roomSocketService.connect();
-
       _roomSocketService.createRoom(
-        name: name,
+        name: playerNameController.text.trim(),
         symbol: state.selectedSymbol,
         maxRounds: state.selectedMaxRounds,
         theme: state.selectedTheme,
         isPrivate: state.isRoomPrivate,
-        onCreated: _handleRoomCreated,
-        onError: _handleCreateError,
+        onCreated: (response) {
+          _roomSocketService.offCreateRoomListeners();
+          state = state.copyWith(isCreating: false);
+          _navigation.pushGame(response.room);
+        },
+        onError: (error) {
+          _roomSocketService.offCreateRoomListeners();
+          state = state.copyWith(isCreating: false);
+          PopupUtils.showToast(error);
+        },
       );
-    } catch (error, stackTrace) {
-      _handleSocketError(error, stackTrace);
+    } catch (error) {
+      state = state.copyWith(isCreating: false);
+      PopupUtils.showError(error.toString());
     }
-  }
-
-  void _handleRoomCreated(RoomCreatedResponse response) {
-    state = state.copyWith(isCreating: false);
-
-    _clearForm();
-    _navigation.pushGame(response.room);
-  }
-
-  // ===========================================================================
-  // ERROR HANDLING
-  // ===========================================================================
-
-  void _handleSocketError(Object error, StackTrace stackTrace) {
-    final message = error is SocketException
-        ? error.message
-        : 'Failed to connect to the server.';
-
-    if (error is! SocketException) {
-      LoggerUtils.error('CreateRoomNotifier.createRoom', error, stackTrace);
-    }
-
-    state = state.copyWith(isCreating: false, errorMessage: message);
-
-    PopupUtils.showError(message);
-  }
-
-  void _handleCreateError(String message) {
-    state = state.copyWith(isCreating: false, errorMessage: message);
-
-    PopupUtils.showError(message);
-  }
-
-  // ===========================================================================
-  // HELPERS
-  // ===========================================================================
-
-  void _clearForm() {
-    playerNameController.clear();
-    createFormKey.currentState?.reset();
-  }
-
-  void clearError() {
-    if (state.errorMessage == null) {
-      return;
-    }
-
-    state = state.copyWith(clearError: true);
   }
 }
