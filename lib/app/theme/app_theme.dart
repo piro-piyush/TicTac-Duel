@@ -4,33 +4,34 @@ class AppTheme {
   AppTheme._();
 
   static ThemeData get darkTheme {
+    const colorScheme = ColorScheme.dark(
+      primary: AppColors.neonPurple,
+      onPrimary: AppColors.textPrimary,
+
+      secondary: AppColors.neonCyan,
+      onSecondary: AppColors.background,
+
+      tertiary: AppColors.neonPink,
+      onTertiary: AppColors.textPrimary,
+
+      surface: AppColors.surface,
+      onSurface: AppColors.textPrimary,
+
+      error: AppColors.neonPink,
+      onError: AppColors.textPrimary,
+
+      outline: AppColors.border,
+      outlineVariant: AppColors.border,
+
+      surfaceContainerHighest: AppColors.card,
+    );
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
       scaffoldBackgroundColor: AppColors.background,
       fontFamily: 'Poppins',
 
-      colorScheme: const ColorScheme.dark(
-        primary: AppColors.neonPurple,
-        onPrimary: AppColors.textPrimary,
-
-        secondary: AppColors.neonCyan,
-        onSecondary: AppColors.background,
-
-        tertiary: AppColors.neonPink,
-        onTertiary: AppColors.textPrimary,
-
-        surface: AppColors.surface,
-        onSurface: AppColors.textPrimary,
-
-        error: AppColors.neonPink,
-        onError: AppColors.textPrimary,
-
-        outline: AppColors.border,
-        outlineVariant: AppColors.border,
-
-        surfaceContainerHighest: AppColors.card,
-      ),
+      colorScheme: colorScheme,
 
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.transparent,
@@ -376,6 +377,28 @@ class AppTheme {
           side: const BorderSide(color: AppColors.neonCyan, width: 1.2),
         ),
         iconSize: Dimens.twentyFour,
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: AppColors.surface,
+        insetPadding: const EdgeInsets.symmetric(
+          horizontal: Dimens.twentyFour,
+          vertical: Dimens.twentyFour,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: Dimens.radius16,
+          side: BorderSide(color: colorScheme.primary.withValues(alpha: 0.4)),
+        ),
+        titleTextStyle: TextStyle(
+          color: colorScheme.primary,
+          fontSize: Dimens.twenty,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.5,
+        ),
+        contentTextStyle: TextStyle(
+          color: colorScheme.onSurface,
+          fontSize: Dimens.sixteen,
+          height: 1.5,
+        ),
       ),
     );
   }
