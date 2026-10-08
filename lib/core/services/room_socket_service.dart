@@ -75,9 +75,9 @@ class RoomSocketService {
   void makeMove(int index) =>
       _socket.emit(RoomSocketEvents.makeMove, {'index': index});
 
-  void submitGameResult(List<int>? winningIndexes) => _socket.emit(
+  void submitGameResult([List<int> winningIndexes = const []]) => _socket.emit(
     RoomSocketEvents.submitGameResult,
-    {'winningIndexes': ?winningIndexes},
+    {'winningIndexes': winningIndexes},
   );
 
   void onPlayerJoined(void Function(PlayerJoinedResponse response) callback) =>

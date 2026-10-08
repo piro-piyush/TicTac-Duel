@@ -17,6 +17,9 @@ class GameDialogUtils {
 
   bool _isDialogOpen = false;
 
+  bool get isDialogOpen => _isDialogOpen;
+
+
   void _markDialogOpen() => _isDialogOpen = true;
 
   void _markDialogClosed() => _isDialogOpen = false;

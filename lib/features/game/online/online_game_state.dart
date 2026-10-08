@@ -7,9 +7,9 @@ class OnlineGameState extends Equatable {
     this.winningIndexes = const {},
     this.errorMessage,
     this.infoMessage,
-    this.roundResult,
-    this.roundResultSubmitted = false,
-    this.movePending = false,
+    // this.roundResult,
+    // this.roundResultSubmitted = false,
+    // this.movePending = false,
     this.showRoundAnimation = false,
     this.reactionEvent,
   });
@@ -22,10 +22,10 @@ class OnlineGameState extends Equatable {
   final String? errorMessage;
   final String? infoMessage;
 
-  final RoundResultResponse? roundResult;
+  // final RoundResultResponse? roundResult;
 
-  final bool roundResultSubmitted;
-  final bool movePending;
+  // final bool roundResultSubmitted;
+  // final bool movePending;
 
   final bool showRoundAnimation;
 
@@ -38,8 +38,8 @@ class OnlineGameState extends Equatable {
     String? errorMessage,
     String? infoMessage,
     RoundResultResponse? roundResult,
-    bool? roundResultSubmitted,
-    bool? movePending,
+    // bool? roundResultSubmitted,
+    // bool? movePending,
     bool? showRoundAnimation,
     GameReactionEvent? reactionEvent,
     bool clearError = false,
@@ -54,9 +54,9 @@ class OnlineGameState extends Equatable {
       winningIndexes: winningIndexes ?? this.winningIndexes,
       errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
       infoMessage: clearInfo ? null : infoMessage ?? this.infoMessage,
-      roundResult: clearRoundResult ? null : roundResult ?? this.roundResult,
-      roundResultSubmitted: roundResultSubmitted ?? this.roundResultSubmitted,
-      movePending: movePending ?? this.movePending,
+      // roundResult: clearRoundResult ? null : roundResult ?? this.roundResult,
+      // roundResultSubmitted: roundResultSubmitted ?? this.roundResultSubmitted,
+      // movePending: movePending ?? this.movePending,
       showRoundAnimation: showRoundAnimation ?? this.showRoundAnimation,
 
       reactionEvent: clearReactionEvent
@@ -82,9 +82,9 @@ class OnlineGameState extends Equatable {
     winningIndexes,
     errorMessage,
     infoMessage,
-    roundResult,
-    roundResultSubmitted,
-    movePending,
+    // roundResult,
+    // roundResultSubmitted,
+    // movePending,
     showRoundAnimation,
 
     reactionEvent,

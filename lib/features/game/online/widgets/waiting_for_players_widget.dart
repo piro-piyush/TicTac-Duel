@@ -151,22 +151,10 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
     );
   }
 
-  Widget _buildWaitingPlayer() {
-    return Column(
-      key: const ValueKey('waiting-player'),
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _buildPlayerColumn(
-          player: widget.host,
-          isMe: widget.host.id == widget.playerId,
-          isReady: widget.hostReady,
-        ),
-      ],
-    );
-  }
-
   Widget _buildConnectedPlayers() {
-    if (widget.guest == null) {
+    final guest = widget.guest;
+
+    if (guest == null) {
       return _buildWaitingPlayer();
     }
 
@@ -174,26 +162,36 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
       key: const ValueKey('connected-players'),
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _buildPlayerColumn(
-          player: widget.host,
-          isMe: widget.host.id == widget.playerId,
-          isReady: widget.hostReady,
-        ),
+        _buildPlayerColumn(widget.host),
         const SizedBox(width: Dimens.spaceBtwSections),
-        _buildOpponentColumn(widget.guest!),
+        _buildGuestColumn(guest),
       ],
     );
   }
 
-  Widget _buildPlayerColumn({
-    required PlayerModel player,
-    required bool isMe,
-    required bool isReady,
-  }) {
+  Widget _buildWaitingPlayer() {
+    return Column(
+      key: const ValueKey('waiting-player'),
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildPlayerColumn(widget.host),
+      ],
+    );
+  }
+
+  Widget _buildPlayerColumn(PlayerModel player) {
+    final isMe = player.id == widget.playerId;
+    final isReady = player.id == widget.host.id
+        ? widget.hostReady
+        : widget.guestReady;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        PlayerAvatarWidget(player: player, isMe: isMe),
+        PlayerAvatarWidget(
+          player: player,
+          isMe: isMe,
+        ),
         const SizedBox(height: Dimens.spaceBtwItems),
         _buildPlayerName(player),
         if (_isResult) ...[
@@ -204,18 +202,14 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
     );
   }
 
-  Widget _buildOpponentColumn(PlayerModel player) {
+  Widget _buildGuestColumn(PlayerModel player) {
     return FadeTransition(
       opacity: _opponentFade,
       child: SlideTransition(
         position: _opponentSlide,
         child: ScaleTransition(
           scale: _opponentScale,
-          child: _buildPlayerColumn(
-            player: player,
-            isMe: false,
-            isReady: widget.guestReady,
-          ),
+          child: _buildPlayerColumn(player),
         ),
       ),
     );

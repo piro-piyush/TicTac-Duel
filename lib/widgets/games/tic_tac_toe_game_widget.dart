@@ -97,12 +97,10 @@ class TicTacToeGameWidget extends StatelessWidget {
         final opponent = meIsPlayerOne ? guest : host;
 
         final mePoints = meIsPlayerOne ? hostPoints : guestPoints;
-
         final opponentPoints = meIsPlayerOne ? guestPoints : hostPoints;
 
         final meIsTurn = turnPlayerId == playerId;
-
-        final opponentIsTurn = !meIsTurn;
+        final opponentIsTurn = turnPlayerId != null && turnPlayerId != playerId;
 
         return Padding(
           padding: EdgeInsets.fromLTRB(
