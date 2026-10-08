@@ -155,4 +155,15 @@ See you in the arena! ⚡
         reactionDisplayDuration.inMilliseconds +
         reactionFadeDuration.inMilliseconds,
   );
+
+  static const String privacyPolicyText =
+      'Tic Tac Duel does not collect, store, or share any personal information.\n\n'
+      'No account or login is required to play. The app does not use a database '
+      'to store player information, game history, scores, or other personal data.\n\n'
+      'You may enter a game name to identify yourself during a game. This name '
+      'is used only for gameplay and is not stored as personal information.\n\n'
+      'Tic Tac Duel does not track your activity and does not use analytics, '
+      'advertising, or tracking services.\n\n'
+      'No personal information is required to play, and the game is designed '
+      'to be accessible to players of any age.';
 }

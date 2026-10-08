@@ -50,7 +50,7 @@ class JoinRoomContentWidget extends StatelessWidget {
         ),
         const JoinRoomHintWidget(),
         const OrDividerWidget(),
-        NeonOutlinedButtonWidget(
+        NeonOutlinedButtonWidget.icon(
           label: 'CREATE YOUR OWN ROOM',
           icon: Icons.add_rounded,
           color: AppColors.neonPurple,

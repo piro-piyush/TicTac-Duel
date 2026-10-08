@@ -10,7 +10,7 @@ class CreateRoomScreen extends ConsumerWidget {
 
     return NeonBackgroundWidget(
       title: 'Create Room',
-      bottomNavigationBar: NeonElevatedButton(
+      bottomNavigationBar: NeonElevatedButton.icon(
         label: 'CREATE ROOM',
         icon: Icons.rocket_launch_rounded,
         isLoading: state.isCreating,

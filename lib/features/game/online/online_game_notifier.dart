@@ -1,7 +1,7 @@
 import 'package:tictac_duel/lib.dart';
 
-final onlineGameProvider =
-    NotifierProvider.family<OnlineGameNotifier, OnlineGameState, RoomModel>(
+final onlineGameProvider = NotifierProvider.autoDispose
+    .family<OnlineGameNotifier, OnlineGameState, RoomModel>(
       OnlineGameNotifier.new,
     );
 
@@ -546,14 +546,6 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
     });
   }
 
-  void quitGame() {
-    try {
-      _roomSocketService.quitGame();
-    } catch (error, stackTrace) {
-      LoggerUtils.error('OnlineGameNotifier.quitGame', error, stackTrace);
-    }
-  }
-
   PlayerModel? _findPlayer(String id) {
     if (state.room.host.id == id) {
       return state.room.host;
@@ -589,5 +581,13 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
     _roomSocketService.offRoomError();
 
     _roomSocketService.disconnect();
+  }
+
+  void quitGame() {
+    try {
+      _roomSocketService.quitGame();
+    } catch (error, stackTrace) {
+      LoggerUtils.error('OnlineGameNotifier.quitGame', error, stackTrace);
+    }
   }
 }
