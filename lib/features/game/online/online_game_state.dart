@@ -27,9 +27,7 @@ class OnlineGameState extends Equatable {
     bool? showRoundAnimation,
     ReactionReceivedResponse? reactionEvent,
     bool clearError = false,
-    bool clearInfo = false,
-    bool clearAnimatedRound = false,
-    bool clearRoundResult = false,
+       bool clearAnimatedRound = false,
     bool clearReactionEvent = false,
   }) {
     return OnlineGameState(

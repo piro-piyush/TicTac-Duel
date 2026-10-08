@@ -1,3 +1,4 @@
+import 'package:share_plus/share_plus.dart';
 import 'package:tictac_duel/lib.dart';
 
 final onlineGameProvider = NotifierProvider.autoDispose
@@ -95,7 +96,7 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
   bool get waitingForNextRound => state.room.currentRound > 0;
 
   Future<void> _initialize() async {
-    state = state.copyWith(clearError: true, clearInfo: true);
+    state = state.copyWith(clearError: true);
 
     try {
       _listenToSocketEvents();
@@ -147,18 +148,17 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
   }
 
   void _handleReadyUpdated(ReadyUpdatedResponse response) {
-    if (response.playerId == state.room.host.id) {
-      state = state.copyWith(
-        room: state.room.copyWith(hostReady: response.isReady),
-      );
-      return;
-    }
-
-    if (response.playerId == state.room.guest?.id) {
-      state = state.copyWith(
-        room: state.room.copyWith(guestReady: response.isReady),
-      );
-    }
+    final room = state.room;
+    state = state.copyWith(
+      room: room.copyWith(
+        hostReady: response.playerId == room.host.id
+            ? response.isReady
+            : room.hostReady,
+        guestReady: response.playerId == room.guest?.id
+            ? response.isReady
+            : room.guestReady,
+      ),
+    );
   }
 
   void _handleRoundStarted(RoundStartedResponse response) {
@@ -170,9 +170,6 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
         guestReady: response.guestReady,
         turnPlayerId: response.turnPlayerId,
       ),
-      // movePending: false,
-      // roundResultSubmitted: false,
-      clearRoundResult: true,
       board: List<PlayerSymbol?>.filled(GameConstants.totalCells, null),
       winningIndexes: const {},
     );
@@ -184,9 +181,8 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
     setError(message);
   }
 
-  void _handleRoomClosed(GameDismissReason reason) {
-    _gameDialog.showRoomClosed(reason: reason);
-  }
+  void _handleRoomClosed(GameDismissReason reason) =>
+      _gameDialog.showRoomClosed(reason: reason);
 
   void _handleGameDismissed(GameDismissedResponse response) {
     final currentRoom = state.room;
@@ -383,10 +379,6 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
     state = state.copyWith(clearError: true);
   }
 
-  void clearInfo() {
-    state = state.copyWith(clearInfo: true);
-  }
-
   void setError(String message) {
     state = state.copyWith(errorMessage: message);
 
@@ -535,4 +527,11 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
       LoggerUtils.error('OnlineGameNotifier.quitGame', error, stackTrace);
     }
   }
+
+  Future<void> share(String roomCode) async => await SharePlus.instance.share(
+    ShareParams(
+      text: GameConstants.getRoomShareText(roomCode),
+      subject: GameConstants.appName,
+    ),
+  );
 }
