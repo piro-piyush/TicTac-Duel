@@ -18,7 +18,13 @@ class GameDialogUtils {
   bool _isDialogOpen = false;
 
   bool get isDialogOpen => _isDialogOpen;
+  bool _isModalOpen = false;
 
+  bool get isModalOpen => _isModalOpen;
+
+  void _markModalOpen() => _isModalOpen = true;
+
+  void _markModalClosed() => _isModalOpen = false;
 
   void _markDialogOpen() => _isDialogOpen = true;
 
@@ -103,5 +109,26 @@ class GameDialogUtils {
       barrierColor: barrierColor,
       builder: builder,
     ).whenComplete(_markDialogClosed);
+  }
+
+  Future<T?> showBottomSheet<T>({
+    required WidgetBuilder builder,
+    bool isDismissible = true,
+    bool enableDrag = true,
+    bool useSafeArea = true,
+    Color? backgroundColor,
+    ShapeBorder? shape,
+  }) {
+    _markModalOpen();
+
+    return showModalBottomSheet<T>(
+      context: _context,
+      builder: builder,
+      isDismissible: isDismissible,
+      enableDrag: enableDrag,
+      useSafeArea: useSafeArea,
+      backgroundColor: backgroundColor,
+      shape: shape,
+    ).whenComplete(_markModalClosed);
   }
 }
