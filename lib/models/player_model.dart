@@ -11,7 +11,9 @@ class PlayerModel {
   final String name;
   final PlayerSymbol symbol;
 
-  String get imageUrl => 'https://api.dicebear.com/10.x/pixelbot/svg?seed=$id';
+  // String get imageUrl => 'https://api.dicebear.com/10.x/pixelbot/svg?seed=$id';
+  String get imageUrl =>
+      'https://api.dicebear.com/10.x/pixelbot/svg?seed=$id&animationVariant=fastest,fast';
 
   PlayerModel copyWith({String? id, String? name, PlayerSymbol? symbol}) =>
       PlayerModel(
