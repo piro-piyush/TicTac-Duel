@@ -15,17 +15,47 @@ class RoundStartedResponse {
   final bool guestReady;
   final String turnPlayerId;
 
-  factory RoundStartedResponse.fromJson(dynamic json) {
-    if (json is! Map<String, dynamic>) {
-      throw const FormatException('Invalid round started response');
-    }
+  factory RoundStartedResponse.fromSocket(dynamic json) {
+    try {
+      if (json is! Map) {
+        throw const FormatException('Invalid round started response');
+      }
 
-    return RoundStartedResponse(
-      currentRound: json['currentRound'] as int,
-      status: RoomStatus.values.byName(json['status'] as String),
-      hostReady: json['hostReady'] as bool,
-      guestReady: json['guestReady'] as bool,
-      turnPlayerId: json['turnPlayerId'] as String,
-    );
+      final currentRound = json['currentRound'];
+      final status = json['status'];
+      final hostReady = json['hostReady'];
+      final guestReady = json['guestReady'];
+      final turnPlayerId = json['turnPlayerId'];
+
+      if (currentRound is! int || currentRound < 1) {
+        throw const FormatException('Invalid current round');
+      }
+
+      if (status is! String || status.isEmpty) {
+        throw const FormatException('Invalid room status');
+      }
+
+      if (hostReady is! bool) {
+        throw const FormatException('Invalid host ready state');
+      }
+
+      if (guestReady is! bool) {
+        throw const FormatException('Invalid guest ready state');
+      }
+
+      if (turnPlayerId is! String || turnPlayerId.isEmpty) {
+        throw const FormatException('Invalid turn player ID');
+      }
+
+      return RoundStartedResponse(
+        currentRound: currentRound,
+        status: RoomStatus.values.byName(status),
+        hostReady: hostReady,
+        guestReady: guestReady,
+        turnPlayerId: turnPlayerId,
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
 }

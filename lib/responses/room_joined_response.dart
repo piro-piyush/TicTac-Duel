@@ -5,7 +5,7 @@ class RoomJoinedResponse {
 
   final RoomModel room;
 
-  factory RoomJoinedResponse.fromJson(dynamic json) {
+  factory RoomJoinedResponse.fromSocket(dynamic json) {
     try {
       if (json is! Map) {
         throw const FormatException('Invalid room joined response');

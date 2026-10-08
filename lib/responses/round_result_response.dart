@@ -13,7 +13,7 @@ class RoundResultResponse {
   final List<int> winningIndexes;
   final bool gameFinished;
 
-  factory RoundResultResponse.fromJson(dynamic json) {
+  factory RoundResultResponse.fromSocket(dynamic json) {
     try {
       if (json is! Map) {
         throw const FormatException('Invalid round result response');

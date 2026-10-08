@@ -22,7 +22,7 @@ class TicTacToeGameWidget extends StatelessWidget {
     required this.isOnline,
   });
 
-  final GameReactionEvent? reactionEvent;
+  final ReactionReceivedResponse? reactionEvent;
   final RoomTheme theme;
 
   // ===========================================================================
@@ -171,7 +171,7 @@ class TicTacToeGameWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildReaction(GameReactionEvent event) {
+  Widget _buildReaction(ReactionReceivedResponse event) {
     final isMeSender = event.senderId == playerId;
 
     const begin = Alignment(-0.75, 0.75);

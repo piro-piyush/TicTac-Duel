@@ -27,7 +27,7 @@ class RoomSocketService {
 
     _socket.on(
       RoomSocketEvents.roomCreated,
-      (data) => onCreated(RoomCreatedResponse.fromJson(data)),
+      (data) => onCreated(RoomCreatedResponse.fromSocket(data)),
     );
 
     _onMessageEvent(RoomSocketEvents.roomError, onError);
@@ -52,7 +52,7 @@ class RoomSocketService {
 
     _socket.on(
       RoomSocketEvents.roomJoined,
-      (data) => onJoined(RoomJoinedResponse.fromJson(data)),
+      (data) => onJoined(RoomJoinedResponse.fromSocket(data)),
     );
 
     _onMessageEvent(RoomSocketEvents.roomError, onError);
@@ -103,20 +103,20 @@ class RoomSocketService {
   void onReadyUpdated(void Function(ReadyUpdatedResponse response) callback) =>
       _socket.on(
         RoomSocketEvents.readyUpdated,
-        (data) => callback(ReadyUpdatedResponse.fromJson(data)),
+        (data) => callback(ReadyUpdatedResponse.fromSocket(data)),
       );
 
   void onRoundStarted(void Function(RoundStartedResponse response) callback) =>
       _socket.on(
         RoomSocketEvents.roundStarted,
-        (data) => callback(RoundStartedResponse.fromJson(data)),
+        (data) => callback(RoundStartedResponse.fromSocket(data)),
       );
 
   void onGameDismissed(
     void Function(GameDismissedResponse response) callback,
   ) => _socket.on(
     RoomSocketEvents.gameDismissed,
-    (data) => callback(GameDismissedResponse.fromJson(data)),
+    (data) => callback(GameDismissedResponse.fromSocket(data)),
   );
 
   void onMoveMade(void Function(MoveResultResponse response) callback) =>
@@ -128,16 +128,16 @@ class RoomSocketService {
   void onRoundResult(void Function(RoundResultResponse response) callback) =>
       _socket.on(
         RoomSocketEvents.roundResult,
-        (data) => callback(RoundResultResponse.fromJson(data)),
+        (data) => callback(RoundResultResponse.fromSocket(data)),
       );
 
   void onGameError(void Function(String message) callback) =>
       _onMessageEvent(RoomSocketEvents.gameError, callback);
 
-  void onReactionReceived(void Function(GameReactionEvent event) callback) =>
+  void onReactionReceived(void Function(ReactionReceivedResponse event) callback) =>
       _socket.on(
         RoomSocketEvents.reactionReceived,
-        (data) => callback(GameReactionEvent.fromJson(data)),
+        (data) => callback(ReactionReceivedResponse.fromSocket(data)),
       );
 
   void off(String event) => _socket.off(event);
