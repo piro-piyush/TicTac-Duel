@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:tictac_duel/lib.dart';
 
 final createRoomProvider =
@@ -24,12 +22,14 @@ class CreateRoomNotifier extends Notifier<CreateRoomState> {
     playerNameController = TextEditingController();
     playerNameFocusNode = FocusNode();
 
-    ref.onDispose(() {
-      playerNameController.dispose();
-      playerNameFocusNode.dispose();
-    });
+    ref.onDispose(_dispose);
 
     return const CreateRoomState();
+  }
+
+  void _dispose() {
+    playerNameController.dispose();
+    playerNameFocusNode.dispose();
   }
 
   // ===========================================================================
@@ -51,21 +51,17 @@ class CreateRoomNotifier extends Notifier<CreateRoomState> {
   // ROOM OPTIONS
   // ===========================================================================
 
-  void setSelectedSymbol(PlayerSymbol symbol) {
-    state = state.copyWith(selectedSymbol: symbol);
-  }
+  void setSelectedSymbol(PlayerSymbol symbol) =>
+      state = state.copyWith(selectedSymbol: symbol);
 
-  void setSelectedTheme(RoomTheme theme) {
-    state = state.copyWith(selectedTheme: theme);
-  }
+  void setSelectedTheme(RoomTheme theme) =>
+      state = state.copyWith(selectedTheme: theme);
 
-  void setSelectedMaxRounds(int rounds) {
-    state = state.copyWith(selectedMaxRounds: rounds);
-  }
+  void setSelectedMaxRounds(int rounds) =>
+      state = state.copyWith(selectedMaxRounds: rounds);
 
-  void setIsPrivateRoom(bool isPrivate) {
-    state = state.copyWith(isRoomPrivate: isPrivate);
-  }
+  void setIsPrivateRoom(bool isPrivate) =>
+      state = state.copyWith(isRoomPrivate: isPrivate);
 
   // ===========================================================================
   // CREATE ROOM
@@ -95,10 +91,10 @@ class CreateRoomNotifier extends Notifier<CreateRoomState> {
         theme: state.selectedTheme,
         isPrivate: state.isRoomPrivate,
         onCreated: _handleRoomCreated,
-        onError: _handleSocketError,
+        onError: _handleCreateError,
       );
     } catch (error, stackTrace) {
-      _handleCreateError(error, stackTrace);
+      _handleSocketError(error, stackTrace);
     }
   }
 
@@ -113,13 +109,7 @@ class CreateRoomNotifier extends Notifier<CreateRoomState> {
   // ERROR HANDLING
   // ===========================================================================
 
-  void _handleSocketError(String message) {
-    state = state.copyWith(isCreating: false, errorMessage: message);
-
-    PopupUtils.showError(message);
-  }
-
-  void _handleCreateError(Object error, StackTrace stackTrace) {
+  void _handleSocketError(Object error, StackTrace stackTrace) {
     final message = error is SocketException
         ? error.message
         : 'Failed to connect to the server.';
@@ -128,6 +118,12 @@ class CreateRoomNotifier extends Notifier<CreateRoomState> {
       LoggerUtils.error('CreateRoomNotifier.createRoom', error, stackTrace);
     }
 
+    state = state.copyWith(isCreating: false, errorMessage: message);
+
+    PopupUtils.showError(message);
+  }
+
+  void _handleCreateError(String message) {
     state = state.copyWith(isCreating: false, errorMessage: message);
 
     PopupUtils.showError(message);

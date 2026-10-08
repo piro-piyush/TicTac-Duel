@@ -14,11 +14,6 @@ class AudioNotifier extends Notifier<AudioState> {
     AudioPlayer(),
     AudioPlayer(),
   ];
-
-  static const String _musicEnabledKey = 'background_music_enabled';
-  static const String _effectsEnabledKey = 'sound_effects_enabled';
-  static const String _vibrationEnabledKey = 'vibration_enabled';
-
   static const String _logName = 'AudioNotifier';
 
   int _musicOperation = 0;
@@ -45,12 +40,14 @@ class AudioNotifier extends Notifier<AudioState> {
     final storage = ref.read(localStorageServiceProvider);
 
     try {
-      final isEnabled = await storage.getBool(_musicEnabledKey) ?? true;
+      final isEnabled =
+          await storage.getBool(AudioConstants.musicEnabledKey) ?? true;
 
-      final effectsEnabled = await storage.getBool(_effectsEnabledKey) ?? true;
+      final effectsEnabled =
+          await storage.getBool(AudioConstants.effectsEnabledKey) ?? true;
 
       final vibrationEnabled =
-          await storage.getBool(_vibrationEnabledKey) ?? true;
+          await storage.getBool(AudioConstants.vibrationEnabledKey) ?? true;
 
       if (_disposed) {
         return;
@@ -60,14 +57,14 @@ class AudioNotifier extends Notifier<AudioState> {
 
       await _backgroundPlayer.setLoopMode(LoopMode.one);
 
-      await _backgroundPlayer.setVolume(0.3);
+      await _backgroundPlayer.setVolume(AudioConstants.defaultBackgroundVolume);
 
       await _touchPlayer.setAsset(AudioConstants.touchSound);
 
-      await _touchPlayer.setVolume(1.0);
+      await _touchPlayer.setVolume(AudioConstants.defaultTouchVolume);
 
       for (final player in _effectPlayers) {
-        await player.setVolume(1.0);
+        await player.setVolume(AudioConstants.defaultEffectVolume);
       }
 
       if (_disposed) {
@@ -359,7 +356,7 @@ class AudioNotifier extends Notifier<AudioState> {
 
       _musicOperation++;
 
-      await storage.setBool(_musicEnabledKey, enabled);
+      await storage.setBool(AudioConstants.musicEnabledKey, enabled);
 
       if (_disposed) {
         return;
@@ -400,7 +397,7 @@ class AudioNotifier extends Notifier<AudioState> {
     try {
       state = state.copyWith(effectsEnabled: enabled);
 
-      await storage.setBool(_effectsEnabledKey, enabled);
+      await storage.setBool(AudioConstants.effectsEnabledKey, enabled);
 
       if (_disposed) {
         return;
@@ -438,7 +435,7 @@ class AudioNotifier extends Notifier<AudioState> {
     try {
       state = state.copyWith(vibrationEnabled: enabled);
 
-      await storage.setBool(_vibrationEnabledKey, enabled);
+      await storage.setBool(AudioConstants.vibrationEnabledKey, enabled);
     } catch (error, stackTrace) {
       dev.log(
         'Failed to update vibration setting: $enabled',

@@ -12,7 +12,7 @@ class JoinRoomScreen extends ConsumerWidget {
 
     return NeonBackgroundWidget(
       title: 'JOIN ROOM',
-      bottomNavigationBar: NeonElevatedButton(
+      bottomNavigationBar: NeonElevatedButton.icon(
         label: 'JOIN DUEL',
         icon: Icons.sports_esports_rounded,
         isLoading: state.isJoining,

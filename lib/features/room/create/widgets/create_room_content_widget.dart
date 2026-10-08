@@ -84,7 +84,7 @@ class CreateRoomContentWidget extends StatelessWidget {
         const CreateRoomInfoWidget(),
         const OrDividerWidget(),
 
-        NeonOutlinedButtonWidget(
+        NeonOutlinedButtonWidget.icon(
           label: 'BROWSE PUBLIC ROOMS',
           icon: Icons.public_rounded,
           onPressed: onBrowsePublicRooms,

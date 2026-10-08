@@ -1,5 +1,6 @@
 export 'dart:async' hide AsyncError;
 export 'dart:convert';
+export 'dart:io';
 
 export 'package:connectivity_plus/connectivity_plus.dart';
 export 'package:equatable/equatable.dart';

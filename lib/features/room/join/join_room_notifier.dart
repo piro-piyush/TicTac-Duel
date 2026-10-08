@@ -111,7 +111,7 @@ class JoinRoomNotifier extends Notifier<JoinRoomState> {
   void _handleRoomJoined(RoomJoinedResponse response) {
     state = state.copyWith(isJoining: false);
 
-    _clearForm();
+    // _clearForm();
     _navigation.pushGame(response.room);
   }
 
@@ -135,11 +135,11 @@ class JoinRoomNotifier extends Notifier<JoinRoomState> {
     PopupUtils.showError(message);
   }
 
-  void _clearForm() {
-    playerNameController.clear();
-    roomCodeController.clear();
-    joinFormKey.currentState?.reset();
-  }
+  // void _clearForm() {
+  //   playerNameController.clear();
+  //   roomCodeController.clear();
+  //   joinFormKey.currentState?.reset();
+  // }
 
   void clearError() {
     if (state.errorMessage == null) {
