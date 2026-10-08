@@ -134,11 +134,12 @@ class RoomSocketService {
   void onGameError(void Function(String message) callback) =>
       _onMessageEvent(RoomSocketEvents.gameError, callback);
 
-  void onReactionReceived(void Function(ReactionReceivedResponse event) callback) =>
-      _socket.on(
-        RoomSocketEvents.reactionReceived,
-        (data) => callback(ReactionReceivedResponse.fromSocket(data)),
-      );
+  void onReactionReceived(
+    void Function(ReactionReceivedResponse event) callback,
+  ) => _socket.on(
+    RoomSocketEvents.reactionReceived,
+    (data) => callback(ReactionReceivedResponse.fromSocket(data)),
+  );
 
   void off(String event) => _socket.off(event);
 
@@ -165,6 +166,16 @@ class RoomSocketService {
   void offRoomError() => off(RoomSocketEvents.roomError);
 
   void offGameError() => off(RoomSocketEvents.gameError);
+
+  void offCreateRoomListeners() {
+    _socket.off(RoomSocketEvents.roomCreated);
+    _socket.off(RoomSocketEvents.roomError);
+  }
+
+  void offJoinRoomListeners() {
+    _socket.off(RoomSocketEvents.roomJoined);
+    _socket.off(RoomSocketEvents.roomError);
+  }
 
   void _onMessageEvent(String event, void Function(String message) callback) =>
       _socket.on(event, (response) => callback(response as String));

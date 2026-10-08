@@ -64,71 +64,6 @@ class RoomModel extends GameModel {
     final newTheme = theme ?? this.theme;
     final newIsPrivate = isPrivate ?? this.isPrivate;
 
-    if (this.hostReady != newHostReady) {
-      LoggerUtils.info('RoomModel.copyWith: hostReady changed', {
-        'roomCode': roomCode ?? this.roomCode,
-        'old': this.hostReady,
-        'new': newHostReady,
-      });
-    }
-
-    if (this.guestReady != newGuestReady) {
-      LoggerUtils.info('RoomModel.copyWith: guestReady changed', {
-        'roomCode': roomCode ?? this.roomCode,
-        'old': this.guestReady,
-        'new': newGuestReady,
-      });
-    }
-
-    if (this.turnPlayerId != newTurnPlayerId) {
-      LoggerUtils.info('RoomModel.copyWith: turnPlayerId changed', {
-        'roomCode': this.roomCode,
-        'old': this.turnPlayerId,
-        'new': newTurnPlayerId,
-      });
-    }
-
-    if (this.currentRound != newCurrentRound) {
-      LoggerUtils.info('RoomModel.copyWith: currentRound changed', {
-        'roomCode': this.roomCode,
-        'old': this.currentRound,
-        'new': newCurrentRound,
-      });
-    }
-
-    if (this.status != newStatus) {
-      LoggerUtils.info('RoomModel.copyWith: status changed', {
-        'roomCode': this.roomCode,
-        'old': this.status.name,
-        'new': newStatus.name,
-      });
-    }
-
-    if (this.hostPoints != newHostPoints) {
-      LoggerUtils.info('RoomModel.copyWith: hostPoints changed', {
-        'roomCode': this.roomCode,
-        'old': this.hostPoints,
-        'new': newHostPoints,
-      });
-    }
-
-    if (this.guestPoints != newGuestPoints) {
-      LoggerUtils.info('RoomModel.copyWith: guestPoints changed', {
-        'roomCode': this.roomCode,
-        'old': this.guestPoints,
-        'new': newGuestPoints,
-      });
-    }
-
-    if (this.guest != newGuest) {
-      LoggerUtils.info('RoomModel.copyWith: guest changed', {
-        'roomCode': this.roomCode,
-        'oldGuestId': this.guest?.id,
-        'newGuestId': newGuest?.id,
-        'cleared': clearGuest,
-      });
-    }
-
     return RoomModel(
       roomCode: newRoomCode,
       host: newHost,
@@ -169,17 +104,6 @@ class RoomModel extends GameModel {
       final status = data['status'];
       final theme = data['theme'];
       final isPrivate = data['isPrivate'];
-
-      LoggerUtils.info('RoomModel.fromSocket', {
-        'roomCode': roomCode,
-        'hostId': host is Map ? host['id'] : null,
-        'guestId': guest is Map ? guest['id'] : null,
-        'hostReady': hostReady,
-        'guestReady': guestReady,
-        'turnPlayerId': turnPlayerId,
-        'currentRound': currentRound,
-        'status': status,
-      });
 
       if (roomCode is! String || roomCode.trim().isEmpty) {
         throw const FormatException('Invalid room code');

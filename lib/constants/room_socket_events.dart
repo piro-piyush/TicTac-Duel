@@ -61,45 +61,30 @@ class SocketConstants {
   // ===========================================================================
 
   static const maxReconnectionAttempts = 5;
-
   static const reconnectionDelay = 1000;
-
   static const maxReconnectionDelay = 5000;
 
   // ===========================================================================
-  // MESSAGES
+  // ERRORS
   // ===========================================================================
 
   static const notConnectedMessage = 'Socket is not connected.';
-
-  static const disposedMessage = 'SocketService has already been disposed.';
-
-  static const alreadyConnectedMessage = 'Socket is already connected.';
-
-  static const connectingMessage = 'Connecting to Socket.IO server...';
-
-  static const connectedMessage = 'Socket connected';
-
-  static const disconnectedMessage = 'Socket disconnected';
-
-  static const connectionErrorMessage = 'Socket connection error';
-
-  static const socketErrorMessage = 'Socket error';
-
-  static const reconnectedMessage = 'Socket reconnected';
-
-  static const reconnectAttemptMessage = 'Socket reconnect attempt';
-
-  static const reconnectionErrorMessage = 'Socket reconnection error';
-
-  static const reconnectionFailedMessage = 'Socket reconnection failed';
-
-  static const cannotEmitMessage = 'Cannot emit';
-
-  static const emitMessage = 'Emitting socket event';
-
-  static const disconnectingMessage = 'Disconnecting socket...';
-
-  static const disposingMessage = 'Disposing socket service...';
+  static const disposedMessage = 'Socket service has been disposed.';
   static const genericErrorMessage = 'Something went wrong.';
+
+  // ===========================================================================
+  // LOG MESSAGES
+  // ===========================================================================
+
+  static const connectingMessage = 'Connecting to socket server...';
+  static const connectedMessage = 'Socket connected.';
+  static const disconnectedMessage = 'Socket disconnected.';
+  static const connectionErrorMessage = 'Socket connection error.';
+  static const socketErrorMessage = 'Socket error.';
+  static const reconnectedMessage = 'Socket reconnected.';
+  static const reconnectAttemptMessage = 'Socket reconnect attempt.';
+  static const reconnectionErrorMessage = 'Socket reconnection error.';
+  static const reconnectionFailedMessage = 'Socket reconnection failed.';
+  static const disconnectingMessage = 'Disconnecting socket...';
+  static const disposingMessage = 'Disposing socket service...';
 }

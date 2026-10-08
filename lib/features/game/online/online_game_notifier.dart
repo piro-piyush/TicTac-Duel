@@ -267,7 +267,6 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
 
     state = state.copyWith(
       roundResult: response,
-
       winningIndexes: response.winningIndexes.toSet(),
       room: state.room.copyWith(
         status: response.status,
@@ -496,6 +495,10 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
   }
 
   void _dispose() {
+    if (_disposed) {
+      return;
+    }
+
     _disposed = true;
 
     _roundAnimationTimer?.cancel();

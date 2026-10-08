@@ -76,7 +76,6 @@ class SocketService {
 
     void cleanup() {
       _socket.off(SocketEvents.connect, onConnect);
-
       _socket.off(SocketEvents.connectError, onError);
     }
 
@@ -97,7 +96,6 @@ class SocketService {
     };
 
     _socket.once(SocketEvents.connect, onConnect);
-
     _socket.once(SocketEvents.connectError, onError);
 
     _socket.connect();
@@ -106,22 +104,16 @@ class SocketService {
   }
 
   // ===========================================================================
-  // LISTENERS
+  // LIFECYCLE LISTENERS
   // ===========================================================================
 
   void _registerListeners() {
     _socket.onConnect(_handleConnect);
-
     _socket.onDisconnect(_handleDisconnect);
-
     _socket.onConnectError(_handleConnectError);
-
     _socket.onError(_handleSocketError);
 
-    // Logs every event received from the server.
     _socket.onAny(_handleIncomingEvent);
-
-    // Logs every event emitted by the client.
     _socket.onAnyOutgoing(_handleOutgoingEvent);
   }
 
@@ -145,24 +137,20 @@ class SocketService {
   // SOCKET EVENT LOGGING
   // ===========================================================================
 
-  /// Logs every event received from the server.
   void _handleIncomingEvent(String event, dynamic data) {
     try {
       LoggerUtils.info('[SOCKET ←] $event', data);
     } catch (error, stackTrace) {
       LoggerUtils.error('[SOCKET] Failed to log incoming event $event: $error');
-
       LoggerUtils.debug(stackTrace.toString());
     }
   }
 
-  /// Logs every event emitted by the client.
   void _handleOutgoingEvent(String event, [dynamic data]) {
     try {
       LoggerUtils.info('[SOCKET →] $event', data);
     } catch (error, stackTrace) {
       LoggerUtils.error('[SOCKET] Failed to log outgoing event $event: $error');
-
       LoggerUtils.debug(stackTrace.toString());
     }
   }
@@ -211,17 +199,12 @@ class SocketService {
     _socket.off(event);
   }
 
-  // ===========================================================================
-  // CALLBACK ERROR HANDLING
-  // ===========================================================================
-
   void _handleCallbackError({
     required String event,
     required Object error,
     required StackTrace stackTrace,
   }) {
     LoggerUtils.error('[SOCKET] Callback failed for $event: $error');
-
     LoggerUtils.debug(stackTrace.toString());
   }
 
@@ -269,7 +252,6 @@ class SocketService {
     _connectionFuture = null;
 
     _removeListeners();
-
     _socket.dispose();
   }
 
@@ -279,10 +261,7 @@ class SocketService {
     _socket.off(SocketEvents.connectError);
     _socket.off(SocketEvents.error);
 
-    // Remove catch-all incoming listener.
     _socket.offAny(_handleIncomingEvent);
-
-    // Remove catch-all outgoing listener.
     _socket.offAnyOutgoing(_handleOutgoingEvent);
   }
 
