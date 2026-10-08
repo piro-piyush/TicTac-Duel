@@ -10,7 +10,6 @@ class RoomModel extends GameModel {
     required this.hostReady,
     required this.guestReady,
     required this.turnPlayerId,
-
     required this.currentRound,
     required super.maxRounds,
     required this.status,
@@ -22,17 +21,12 @@ class RoomModel extends GameModel {
   final String roomCode;
 
   final PlayerModel? guest;
-
   final int hostPoints;
   final int guestPoints;
-
   final bool hostReady;
   final bool guestReady;
-
   final String? turnPlayerId;
-
   final int currentRound;
-
   final RoomStatus status;
   final bool isPrivate;
 
@@ -53,7 +47,6 @@ class RoomModel extends GameModel {
     bool? isPrivate,
     bool clearGuest = false,
     bool clearTurnPlayerId = false,
-    // bool clearNextTurnPlayerId = false,
   }) {
     return RoomModel(
       roomCode: roomCode ?? this.roomCode,
@@ -66,7 +59,6 @@ class RoomModel extends GameModel {
       turnPlayerId: clearTurnPlayerId
           ? null
           : turnPlayerId ?? this.turnPlayerId,
-
       currentRound: currentRound ?? this.currentRound,
       maxRounds: maxRounds ?? this.maxRounds,
       status: status ?? this.status,
@@ -81,9 +73,7 @@ class RoomModel extends GameModel {
       if (json is! Map) {
         throw const FormatException('Invalid online game response');
       }
-
       final data = Map<String, dynamic>.from(json);
-
       final roomCode = data['roomCode'];
       final host = data['host'];
       final guest = data['guest'];
@@ -98,59 +88,45 @@ class RoomModel extends GameModel {
       final status = data['status'];
       final theme = data['theme'];
       final isPrivate = data['isPrivate'];
-
       if (roomCode is! String || roomCode.trim().isEmpty) {
         throw const FormatException('Invalid room code');
       }
-
       if (host is! Map) {
         throw const FormatException('Invalid room host');
       }
-
       if (guest != null && guest is! Map) {
         throw const FormatException('Invalid room guest');
       }
-
       if (hostPoints is! int) {
         throw const FormatException('Invalid host points');
       }
-
       if (guestPoints is! int) {
         throw const FormatException('Invalid guest points');
       }
-
       if (hostReady is! bool) {
         throw const FormatException('Invalid host ready state');
       }
-
       if (guestReady is! bool) {
         throw const FormatException('Invalid guest ready state');
       }
-
       if (turnPlayerId != null && turnPlayerId is! String) {
         throw const FormatException('Invalid turn player ID');
       }
-
       if (currentRound is! int) {
         throw const FormatException('Invalid current round');
       }
-
       if (maxRounds is! int) {
         throw const FormatException('Invalid max rounds');
       }
-
       if (status is! String) {
         throw const FormatException('Invalid room status');
       }
-
       if (theme is! String) {
         throw const FormatException('Invalid room theme');
       }
-
       if (isPrivate is! bool) {
         throw const FormatException('Invalid private room status');
       }
-
       return RoomModel(
         roomCode: roomCode,
         host: PlayerModel.fromJson(Map<String, dynamic>.from(host)),
@@ -186,7 +162,6 @@ class RoomModel extends GameModel {
         hostReady: json['hostReady'],
         guestReady: json['guestReady'],
         turnPlayerId: json['turnPlayerId'],
-
         currentRound: json['currentRound'],
         maxRounds: json['maxRounds'],
         status: RoomStatus.values.byName(json['status']),

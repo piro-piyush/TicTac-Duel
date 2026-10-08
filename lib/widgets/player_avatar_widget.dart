@@ -119,7 +119,16 @@ class _PlayerAvatarWidgetState extends State<PlayerAvatarWidget>
       widget.player.imageUrl,
       width: imageSize,
       height: imageSize,
-      colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+      placeholderBuilder: (context) => const Center(
+        child: SizedBox(
+          width: Dimens.iconSm,
+          height: Dimens.iconSm,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: AppColors.textSecondary,
+          ),
+        ),
+      ),
       errorBuilder: (context, error, stackTrace) => Container(
         decoration: const BoxDecoration(color: AppColors.surface),
         child: const Center(

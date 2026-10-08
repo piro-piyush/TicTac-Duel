@@ -6,29 +6,15 @@ class OnlineGameState extends Equatable {
     this.board = const [],
     this.winningIndexes = const {},
     this.errorMessage,
-    this.infoMessage,
-    // this.roundResult,
-    // this.roundResultSubmitted = false,
-    // this.movePending = false,
     this.showRoundAnimation = false,
     this.reactionEvent,
   });
 
   final RoomModel room;
-
   final List<PlayerSymbol?> board;
   final Set<int> winningIndexes;
-
   final String? errorMessage;
-  final String? infoMessage;
-
-  // final RoundResultResponse? roundResult;
-
-  // final bool roundResultSubmitted;
-  // final bool movePending;
-
   final bool showRoundAnimation;
-
   final GameReactionEvent? reactionEvent;
 
   OnlineGameState copyWith({
@@ -36,10 +22,8 @@ class OnlineGameState extends Equatable {
     List<PlayerSymbol?>? board,
     Set<int>? winningIndexes,
     String? errorMessage,
-    String? infoMessage,
     RoundResultResponse? roundResult,
-    // bool? roundResultSubmitted,
-    // bool? movePending,
+
     bool? showRoundAnimation,
     GameReactionEvent? reactionEvent,
     bool clearError = false,
@@ -53,27 +37,17 @@ class OnlineGameState extends Equatable {
       board: board ?? this.board,
       winningIndexes: winningIndexes ?? this.winningIndexes,
       errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
-      infoMessage: clearInfo ? null : infoMessage ?? this.infoMessage,
-      // roundResult: clearRoundResult ? null : roundResult ?? this.roundResult,
-      // roundResultSubmitted: roundResultSubmitted ?? this.roundResultSubmitted,
-      // movePending: movePending ?? this.movePending,
       showRoundAnimation: showRoundAnimation ?? this.showRoundAnimation,
-
       reactionEvent: clearReactionEvent
           ? null
           : reactionEvent ?? this.reactionEvent,
     );
   }
 
-  factory OnlineGameState.initial(RoomModel room) {
-    return OnlineGameState(
-      room: room,
-      board: List<PlayerSymbol?>.filled(
-        GameConstants.totalCells,
-        null,
-      ),
-    );
-  }
+  factory OnlineGameState.initial(RoomModel room) => OnlineGameState(
+    room: room,
+    board: List<PlayerSymbol?>.filled(GameConstants.totalCells, null),
+  );
 
   @override
   List<Object?> get props => [
@@ -81,12 +55,7 @@ class OnlineGameState extends Equatable {
     board,
     winningIndexes,
     errorMessage,
-    infoMessage,
-    // roundResult,
-    // roundResultSubmitted,
-    // movePending,
     showRoundAnimation,
-
     reactionEvent,
   ];
 }

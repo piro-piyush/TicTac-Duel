@@ -195,7 +195,6 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
         : currentRoom.guest;
 
     if (winner == null) {
-      setInfo('Unable to determine game winner.');
       return;
     }
 
@@ -240,7 +239,6 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
   void makeMove(int index) {
     if (!isGamePlaying ||
         isRoundAnimationPlaying ||
-
         !isMyTurn ||
         index < 0 ||
         index >= state.board.length ||
@@ -334,15 +332,11 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
     });
   }
 
-
-
-
   void _showFinalResult() {
     try {
       final currentGuest = guest;
 
       if (currentGuest == null) {
-        setInfo('Unable to load game result.');
         return;
       }
 
@@ -382,8 +376,6 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
         error,
         stackTrace,
       );
-
-      setInfo('Unable to load game result.');
     }
   }
 
@@ -405,9 +397,9 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
     clearError();
   }
 
-  void setInfo(String message) {
-    state = state.copyWith(infoMessage: message);
-  }
+  // void setInfo(String message) {
+  //   state = state.copyWith(infoMessage: message);
+  // }
 
   void updateBoardValue(int index, PlayerSymbol symbol) {
     if (index < 0 ||
@@ -447,12 +439,10 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
         : null;
 
     if (player == null) {
-      setInfo('Unable to identify the player who made the move.');
       return;
     }
 
     state = state.copyWith(
-
       room: room.copyWith(turnPlayerId: response.turnPlayerId),
     );
 
@@ -462,8 +452,6 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
   }
 
   void _handleMoveResult(MoveResultResponse response) {
-
-
     final result = GameLogicUtils.checkWinner(state.board);
 
     if (result == GameResult.inProgress) {
