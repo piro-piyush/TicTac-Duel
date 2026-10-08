@@ -5,7 +5,7 @@ class RoomSocketService {
 
   final SocketService _socket;
 
-  String get socketId => _socket.socketId;
+  String? get socketId => _socket.id;
 
   Future<void> connect() => _socket.connect();
 

@@ -3,7 +3,7 @@ import 'package:tictac_duel/lib.dart';
 class OnlineGameState extends Equatable {
   const OnlineGameState({
     required this.room,
-    this.board = const [],
+    required this.board,
     this.winningIndexes = const {},
     this.errorMessage,
     this.showRoundAnimation = false,
@@ -22,12 +22,10 @@ class OnlineGameState extends Equatable {
     List<PlayerSymbol?>? board,
     Set<int>? winningIndexes,
     String? errorMessage,
-    RoundResultResponse? roundResult,
-
     bool? showRoundAnimation,
     ReactionReceivedResponse? reactionEvent,
     bool clearError = false,
-       bool clearAnimatedRound = false,
+    bool clearRoundAnimation = false,
     bool clearReactionEvent = false,
   }) {
     return OnlineGameState(
@@ -35,17 +33,21 @@ class OnlineGameState extends Equatable {
       board: board ?? this.board,
       winningIndexes: winningIndexes ?? this.winningIndexes,
       errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
-      showRoundAnimation: showRoundAnimation ?? this.showRoundAnimation,
+      showRoundAnimation: clearRoundAnimation
+          ? false
+          : showRoundAnimation ?? this.showRoundAnimation,
       reactionEvent: clearReactionEvent
           ? null
           : reactionEvent ?? this.reactionEvent,
     );
   }
 
-  factory OnlineGameState.initial(RoomModel room) => OnlineGameState(
-    room: room,
-    board: List<PlayerSymbol?>.filled(GameConstants.totalCells, null),
-  );
+  factory OnlineGameState.initial(RoomModel room) {
+    return OnlineGameState(
+      room: room,
+      board: List<PlayerSymbol?>.filled(GameConstants.totalCells, null),
+    );
+  }
 
   @override
   List<Object?> get props => [

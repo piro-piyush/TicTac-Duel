@@ -6,7 +6,7 @@ class TicTacToeGameWidget extends StatelessWidget {
   const TicTacToeGameWidget({
     super.key,
     required this.theme,
-    required this.playerId,
+     this.playerId,
     required this.board,
     required this.winningIndexes,
     required this.turnPlayerId,
@@ -29,7 +29,7 @@ class TicTacToeGameWidget extends StatelessWidget {
   // PLAYERS
   // ===========================================================================
 
-  final String playerId;
+  final String? playerId;
 
   final PlayerModel host;
   final PlayerModel guest;

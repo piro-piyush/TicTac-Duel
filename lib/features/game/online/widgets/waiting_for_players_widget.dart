@@ -6,7 +6,7 @@ class WaitingForPlayersWidget extends StatefulWidget {
     super.key,
     required this.host,
     required this.guest,
-    required this.playerId,
+     this.playerId,
     required this.roomCode,
     required this.status,
     required this.hostReady,
@@ -17,7 +17,7 @@ class WaitingForPlayersWidget extends StatefulWidget {
   final PlayerModel host;
   final PlayerModel? guest;
 
-  final String playerId;
+  final String? playerId;
   final String roomCode;
 
   final RoomStatus status;

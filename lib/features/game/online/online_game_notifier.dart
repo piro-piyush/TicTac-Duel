@@ -36,7 +36,7 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
     return OnlineGameState.initial(room);
   }
 
-  String get playerId => _roomSocketService.socketId;
+  String? get playerId => _roomSocketService.socketId;
 
   PlayerModel get host => state.room.host;
 
@@ -186,14 +186,6 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
 
   void _handleGameDismissed(GameDismissedResponse response) {
     final currentRoom = state.room;
-    final winner = response.winnerPlayerId == currentRoom.host.id
-        ? currentRoom.host
-        : currentRoom.guest;
-
-    if (winner == null) {
-      return;
-    }
-
     final result = ResultModel.dismissed(
       host: currentRoom.host,
       guest: currentRoom.guest!,
@@ -202,30 +194,13 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
       currentRound: currentRoom.currentRound,
       maxRounds: currentRoom.maxRounds,
       isOnline: true,
-      gameWinner: winner,
+      gameWinner: response.winnerPlayerId == currentRoom.guest!.id
+          ? guest!
+          : host,
       dismissReason: response.reason,
       theme: currentRoom.theme,
     );
-
-    // if (_gameDialog.isDialogOpen) {
-    //   _gameDialog.closeOpenDialog();
-    // }
     _navigation.replaceResult(result);
-  }
-
-  void _incrementWinnerPoints(String winnerId) {
-    final room = state.room;
-
-    state = state.copyWith(
-      room: room.copyWith(
-        hostPoints: winnerId == room.host.id
-            ? room.hostPoints + 1
-            : room.hostPoints,
-        guestPoints: winnerId == room.guest?.id
-            ? room.guestPoints + 1
-            : room.guestPoints,
-      ),
-    );
   }
 
   void startGame() => _roomSocketService.startGame();
@@ -265,22 +240,24 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
       return;
     }
 
+    final room = state.room;
+    final winnerId = response.winnerId;
+
     state = state.copyWith(
-      roundResult: response,
       winningIndexes: response.winningIndexes.toSet(),
-      room: state.room.copyWith(
+      room: room.copyWith(
         status: response.status,
         clearTurnPlayerId: true,
         hostReady: false,
         guestReady: false,
+        hostPoints: winnerId == room.host.id
+            ? room.hostPoints + 1
+            : room.hostPoints,
+        guestPoints: winnerId == room.guest?.id
+            ? room.guestPoints + 1
+            : room.guestPoints,
       ),
     );
-
-    final winnerId = response.winnerId;
-
-    if (winnerId != null) {
-      _incrementWinnerPoints(winnerId);
-    }
 
     if (response.gameFinished) {
       _showRoundResultAfterDelay(_showFinalResult);
@@ -291,7 +268,9 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
       _showRoundResultAfterDelay(_showDrawResult);
       return;
     }
+
     final winner = _findPlayer(winnerId);
+
     _showRoundResultAfterDelay(
       () => _showGameResult(
         winner.symbol == PlayerSymbol.x ? GameResult.xWins : GameResult.oWins,
@@ -303,27 +282,20 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
     _showGameResult(GameResult.draw);
   }
 
-  void _showGameResult(GameResult result) {
-    _gameDialog.showGameResult(
-      result: result,
-      mySymbol: myPlayer.symbol,
-      onConfirm: () {
-        setReady();
-        clearBoard();
-      },
-    );
-  }
+  void _showGameResult(GameResult result) => _gameDialog.showGameResult(
+    result: result,
+    mySymbol: myPlayer.symbol,
+    onConfirm: setReady,
+  );
 
   void _showRoundResultAfterDelay(VoidCallback callback) {
     _resultTimer?.cancel();
-
     _resultTimer = Timer(GameConstants.resultDelay, () {
       if (_disposed) {
         return;
       }
-
-      callback();
       _resultTimer = null;
+      callback();
     });
   }
 
@@ -361,9 +333,6 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
         theme: state.room.theme,
       );
 
-      // if (_gameDialog.isDialogOpen) {
-      //   _gameDialog.closeOpenDialog();
-      // }
       _navigation.replaceResult(result);
     } catch (error, stackTrace) {
       LoggerUtils.error(
@@ -409,12 +378,12 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
     state = state.copyWith(winningIndexes: {...indexes});
   }
 
-  void clearBoard() {
-    state = state.copyWith(
-      board: List<PlayerSymbol?>.filled(GameConstants.totalCells, null),
-      winningIndexes: const {},
-    );
-  }
+  // void clearBoard() {
+  //   state = state.copyWith(
+  //     board: List<PlayerSymbol?>.filled(GameConstants.totalCells, null),
+  //     winningIndexes: const {},
+  //   );
+  // }
 
   void _handleMoveMade(MoveResultResponse response) {
     final room = state.room;
