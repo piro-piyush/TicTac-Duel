@@ -15,7 +15,7 @@ class OnlineGameState extends Equatable {
   final Set<int> winningIndexes;
   final String? errorMessage;
   final bool showRoundAnimation;
-  final GameReactionEvent? reactionEvent;
+  final ReactionReceivedResponse? reactionEvent;
 
   OnlineGameState copyWith({
     RoomModel? room,
@@ -25,7 +25,7 @@ class OnlineGameState extends Equatable {
     RoundResultResponse? roundResult,
 
     bool? showRoundAnimation,
-    GameReactionEvent? reactionEvent,
+    ReactionReceivedResponse? reactionEvent,
     bool clearError = false,
     bool clearInfo = false,
     bool clearAnimatedRound = false,

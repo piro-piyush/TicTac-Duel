@@ -30,7 +30,7 @@ class LocalGameBoardState extends Equatable {
   final int hostPoints;
   final int guestPoints;
 
-  final GameReactionEvent? reactionEvent;
+  final ReactionReceivedResponse? reactionEvent;
 
   LocalGameBoardState copyWith({
     LocalGameModel? game,
@@ -43,7 +43,7 @@ class LocalGameBoardState extends Equatable {
     int? animatedRound,
     int? hostPoints,
     int? guestPoints,
-    GameReactionEvent? reactionEvent,
+    ReactionReceivedResponse? reactionEvent,
     bool clearReactionEvent = false,
   }) {
     return LocalGameBoardState(

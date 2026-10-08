@@ -98,6 +98,7 @@ class GameScreen extends ConsumerWidget {
               host: state.room.host,
               guestReady: state.room.guestReady,
               onStartGame: notifier.startGame,
+
             ),
     );
 

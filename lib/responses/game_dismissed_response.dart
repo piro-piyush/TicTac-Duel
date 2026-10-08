@@ -11,7 +11,7 @@ class GameDismissedResponse {
   final String exitedPlayerId;
   final GameDismissReason reason;
 
-  factory GameDismissedResponse.fromJson(dynamic json) {
+  factory GameDismissedResponse.fromSocket(dynamic json) {
     try {
       if (json is! Map) {
         throw const FormatException('Invalid game dismissed response');

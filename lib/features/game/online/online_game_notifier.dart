@@ -397,10 +397,6 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
     clearError();
   }
 
-  // void setInfo(String message) {
-  //   state = state.copyWith(infoMessage: message);
-  // }
-
   void updateBoardValue(int index, PlayerSymbol symbol) {
     if (index < 0 ||
         index >= state.board.length ||
@@ -479,7 +475,7 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
   void sendReaction(GameReaction reaction) =>
       _roomSocketService.sendReaction(reaction);
 
-  void _handleReactionReceived(GameReactionEvent event) {
+  void _handleReactionReceived(ReactionReceivedResponse event) {
     _reactionTimer?.cancel();
 
     state = state.copyWith(reactionEvent: event);
