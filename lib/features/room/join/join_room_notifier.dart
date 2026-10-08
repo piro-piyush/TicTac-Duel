@@ -1,4 +1,3 @@
-
 import 'package:flutter/services.dart';
 import 'package:tictac_duel/lib.dart';
 
@@ -33,9 +32,7 @@ class JoinRoomNotifier extends Notifier<JoinRoomState> {
     playerNameController = TextEditingController();
     playerNameFocusNode = FocusNode();
 
-    roomCodeController = TextEditingController(
-      text: roomCode?.trim().toUpperCase() ?? '',
-    );
+    roomCodeController = TextEditingController(text: roomCode);
     roomCodeFocusNode = FocusNode();
 
     ref.onDispose(() {
@@ -88,63 +85,29 @@ class JoinRoomNotifier extends Notifier<JoinRoomState> {
       return;
     }
 
-    final code = roomCodeController.text.trim().toUpperCase();
+    final code = roomCodeController.text.trim();
     final name = playerNameController.text.trim();
 
-    state = state.copyWith(isJoining: true, clearError: true);
+    state = state.copyWith(isJoining: true);
 
     try {
-      await _roomSocketService.connect();
-
       _roomSocketService.joinRoom(
         roomCode: code,
         name: name,
-        onJoined: _handleRoomJoined,
-        onError: _handleSocketError,
+        onJoined: (response) {
+          _roomSocketService.offCreateRoomListeners();
+          state = state.copyWith(isJoining: false);
+          _navigation.pushGame(response.room);
+        },
+        onError: (error) {
+          _roomSocketService.offCreateRoomListeners();
+          state = state.copyWith(isJoining: false);
+          PopupUtils.showToast(error);
+        },
       );
-    } catch (error, stackTrace) {
-      _handleJoinError(error, stackTrace);
+    } catch (error) {
+      state = state.copyWith(isJoining: false);
+      PopupUtils.showError(error.toString());
     }
-  }
-
-  void _handleRoomJoined(RoomJoinedResponse response) {
-    state = state.copyWith(isJoining: false);
-
-    // _clearForm();
-    _navigation.pushGame(response.room);
-  }
-
-  void _handleSocketError(String message) {
-    state = state.copyWith(isJoining: false, errorMessage: message);
-
-    PopupUtils.showError(message);
-  }
-
-  void _handleJoinError(Object error, StackTrace stackTrace) {
-    final message = error is SocketException
-        ? error.message
-        : 'Failed to connect to the server.';
-
-    if (error is! SocketException) {
-      LoggerUtils.error('JoinRoomNotifier.joinRoom', error, stackTrace);
-    }
-
-    state = state.copyWith(isJoining: false, errorMessage: message);
-
-    PopupUtils.showError(message);
-  }
-
-  // void _clearForm() {
-  //   playerNameController.clear();
-  //   roomCodeController.clear();
-  //   joinFormKey.currentState?.reset();
-  // }
-
-  void clearError() {
-    if (state.errorMessage == null) {
-      return;
-    }
-
-    state = state.copyWith(clearError: true);
   }
 }
