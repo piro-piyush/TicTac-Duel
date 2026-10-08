@@ -1,8 +1,8 @@
 import 'package:tictac_duel/lib.dart';
 
-final gameDialogProvider = Provider<GameDialogUtils>((ref) {
-  return GameDialogUtils(ref.watch(appNavigationProvider));
-});
+final gameDialogProvider = Provider<GameDialogUtils>(
+  (ref) => GameDialogUtils(ref.watch(appNavigationProvider)),
+);
 
 class GameDialogUtils {
   GameDialogUtils(this._navigation);
@@ -17,285 +17,78 @@ class GameDialogUtils {
 
   bool _isDialogOpen = false;
 
-  // ===========================================================================
-  // DIALOG STATE
-  // ===========================================================================
+  void _markDialogOpen() => _isDialogOpen = true;
 
-  void _markDialogOpen() {
-    _isDialogOpen = true;
-  }
-
-  void _markDialogClosed() {
-    _isDialogOpen = false;
-  }
+  void _markDialogClosed() => _isDialogOpen = false;
 
   void closeOpenDialog() {
-    if (!_isDialogOpen) {
-      return;
-    }
+    if (!_isDialogOpen) return;
 
     if (_navigator.canPop()) {
       _navigator.pop();
     }
 
-    _isDialogOpen = false;
+    _markDialogClosed();
   }
-
-  // ===========================================================================
-  // ROUND RESULT
-  // ===========================================================================
 
   Future<void> showGameResult({
     required GameResult result,
     required PlayerSymbol mySymbol,
     VoidCallback? onConfirm,
-  }) {
-    final isDraw = result == GameResult.draw;
-    final hasWon = result.winner == mySymbol;
+  }) => _show(
+    builder: (_) => RoundResultDialog(
+      result: result,
+      mySymbol: mySymbol,
+      onConfirm: onConfirm,
+    ),
+    barrierDismissible: false,
+  );
 
-    final title = isDraw
-        ? 'Draw'
-        : hasWon
-        ? 'You Won!'
-        : 'You Lose';
+  Future<void> showRoomClosed({required GameDismissReason reason}) => _show(
+    builder: (_) => RoomClosedDialog(
+      reason: reason,
+      onBack: _navigator.pop,
+      onHome: _navigation.goToHome,
+    ),
+    barrierDismissible: false,
+  );
 
-    final message = isDraw
-        ? 'The round ended in a draw.'
-        : hasWon
-        ? 'You won this round!'
-        : 'Your opponent won this round.';
+  Future<void> showPrivacyPolicy() =>
+      _show(builder: (_) => const PrivacyPolicyDialog());
 
-    _markDialogOpen();
+  Future<bool> confirmQuit() async =>
+      await _show<bool>(
+        builder: (_) => const QuitDialog(),
+        barrierDismissible: false,
+      ) ??
+      false;
 
-    return showDialog<void>(
-      context: _context,
-      barrierDismissible: false,
-      builder: (context) {
-        return PopScope(
-          canPop: false,
-          child: AlertDialog(
-            backgroundColor: AppColors.surface,
-            shape: _dialogShape(context),
-            insetPadding: const EdgeInsets.symmetric(
-              horizontal: 24,
-              vertical: 24,
-            ),
-            titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-            title: Text(
-              title,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.primary,
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0.5,
-              ),
-            ),
-            contentPadding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              spacing: Dimens.sixteen,
-              children: [
-                Text(
-                  message,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface,
-                    fontSize: 15,
-                    height: 1.5,
-                  ),
-                ),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      _navigator.pop();
-                      _markDialogClosed();
-                      onConfirm?.call();
-                    },
-                    child: const Text('OK'),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    ).whenComplete(_markDialogClosed);
-  }
-
-  // ===========================================================================
-  // ROOM CLOSED
-  // ===========================================================================
-
-  Future<void> showRoomClosed({required GameDismissReason reason}) {
-    _markDialogOpen();
-
-    return showDialog<void>(
-      context: _context,
-      barrierDismissible: false,
-      builder: (context) {
-        return PopScope(
-          canPop: false,
-          child: AlertDialog(
-            backgroundColor: AppColors.surface,
-            shape: _dialogShape(context),
-            insetPadding: const EdgeInsets.symmetric(
-              horizontal: Dimens.twentyFour,
-            ),
-            titlePadding: const EdgeInsets.fromLTRB(
-              Dimens.twentyFour,
-              Dimens.twentyFour,
-              Dimens.twentyFour,
-              Dimens.eight,
-            ),
-            contentPadding: const EdgeInsets.fromLTRB(
-              Dimens.twentyFour,
-              Dimens.eight,
-              Dimens.twentyFour,
-              Dimens.twentyFour,
-            ),
-            title: Column(
-              spacing: Dimens.sixteen,
-              children: [
-                Container(
-                  width: Dimens.fiftySix,
-                  height: Dimens.fiftySix,
-                  decoration: BoxDecoration(
-                    color: reason.color.withValues(alpha: 0.12),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: reason.color.withValues(alpha: 0.35),
-                    ),
-                  ),
-                  child: Icon(
-                    reason.icon,
-                    color: reason.color,
-                    size: Dimens.twentyEight,
-                  ),
-                ),
-                Text(
-                  'Room Closed',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontSize: Dimens.twenty,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              spacing: Dimens.twelve,
-              children: [
-                Text(
-                  reason.title,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface,
-                    fontSize: Dimens.sixteen,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                Text(
-                  reason.subtitle,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface
-                        .withValues(alpha: 0.65),
-                    fontSize: Dimens.thirteen,
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: Dimens.four),
-                Row(
-                  spacing: Dimens.twelve,
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {
-                          _navigator.pop();
-                          _markDialogClosed();
-                          _navigation.goToHome();
-                        },
-                        child: const Text('BACK HOME'),
-                      ),
-                    ),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          _navigator.pop();
-                          _markDialogClosed();
-                          _navigation.replaceCreateRoom();
-                        },
-                        child: const Text('NEW GAME'),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    ).whenComplete(_markDialogClosed);
-  }
-
-  // ===========================================================================
-  // QUIT CONFIRMATION
-  // ===========================================================================
-
-  Future<bool> confirmQuit() async {
-    _markDialogOpen();
-
-    final result = await showDialog<bool>(
-      context: _context,
-      barrierDismissible: false,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Quit Game?'),
-          content: const Text(
-            'Are you sure you want to quit the current game?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => _navigator.pop(false),
-              child: const Text('CANCEL'),
-            ),
-            TextButton(
-              onPressed: () => _navigator.pop(true),
-              child: const Text('QUIT'),
-            ),
-          ],
-        );
-      },
-    );
-
-    _markDialogClosed();
-
-    return result == true;
-  }
-
-  // ===========================================================================
-  // HELPERS
-  // ===========================================================================
-
-  RoundedRectangleBorder _dialogShape(BuildContext context) {
-    return RoundedRectangleBorder(
-      borderRadius: Dimens.radius16,
-      side: BorderSide(
-        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.4),
-      ),
-    );
-  }
-
-  // ===========================================================================
-  // GENERIC DIALOG
-  // ===========================================================================
+  void showAbout() => showAboutDialog(
+    context: _context,
+    applicationName: GameConstants.appName,
+    applicationVersion: GameConstants.appVersion,
+    applicationIcon: const Icon(
+      Icons.grid_3x3_rounded,
+      color: AppColors.neonCyan,
+      size: Dimens.fiftySix,
+    ),
+    children: [
+      const Text(GameConstants.appDescription, textAlign: TextAlign.center),
+    ],
+  );
 
   Future<T?> show<T>({
     required Widget child,
+    bool barrierDismissible = true,
+    Color? barrierColor,
+  }) => _show<T>(
+    builder: (_) => child,
+    barrierDismissible: barrierDismissible,
+    barrierColor: barrierColor,
+  );
+
+  Future<T?> _show<T>({
+    required WidgetBuilder builder,
     bool barrierDismissible = true,
     Color? barrierColor,
   }) {
@@ -305,7 +98,7 @@ class GameDialogUtils {
       context: _context,
       barrierDismissible: barrierDismissible,
       barrierColor: barrierColor,
-      builder: (_) => child,
+      builder: builder,
     ).whenComplete(_markDialogClosed);
   }
 }
