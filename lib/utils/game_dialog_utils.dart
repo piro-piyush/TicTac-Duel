@@ -1,242 +1,134 @@
 import 'package:tictac_duel/lib.dart';
 
+final gameDialogProvider = Provider<GameDialogUtils>(
+  (ref) => GameDialogUtils(ref.watch(appNavigationProvider)),
+);
+
 class GameDialogUtils {
-  GameDialogUtils._();
+  GameDialogUtils(this._navigation);
 
-  // ===========================================================================
-  // ROUND RESULT
-  // ===========================================================================
+  final AppNavigation _navigation;
 
-  static Future<void> showGameResult({
+  static final rootNavigatorKey = AppPages.rootNavigatorKey;
+
+  NavigatorState get _navigator => rootNavigatorKey.currentState!;
+
+  BuildContext get _context => _navigator.context;
+
+  bool _isDialogOpen = false;
+
+  bool get isDialogOpen => _isDialogOpen;
+  bool _isModalOpen = false;
+
+  bool get isModalOpen => _isModalOpen;
+
+  void _markModalOpen() => _isModalOpen = true;
+
+  void _markModalClosed() => _isModalOpen = false;
+
+  void _markDialogOpen() => _isDialogOpen = true;
+
+  void _markDialogClosed() => _isDialogOpen = false;
+
+  void closeOpenDialog() {
+    if (!_isDialogOpen) return;
+
+    if (_navigator.canPop()) {
+      _navigator.pop();
+    }
+
+    _markDialogClosed();
+  }
+
+  Future<void> showGameResult({
     required GameResult result,
     required PlayerSymbol mySymbol,
     VoidCallback? onConfirm,
-  }) {
-    final isDraw = result == GameResult.draw;
-    final hasWon = result.winner == mySymbol;
-
-    final title = isDraw
-        ? 'Draw'
-        : hasWon
-        ? 'You Won!'
-        : 'You Lose';
-
-    final message = isDraw
-        ? 'The round ended in a draw.'
-        : hasWon
-        ? 'You won this round!'
-        : 'Your opponent won this round.';
-
-    return Get.dialog<void>(
-      PopScope(
-        canPop: false,
-        child: AlertDialog(
-          backgroundColor: AppColors.surface,
-          shape: _dialogShape,
-          insetPadding: const EdgeInsets.symmetric(
-            horizontal: 24,
-            vertical: 24,
-          ),
-          titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-          title: Text(
-            title,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Get.theme.colorScheme.primary,
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.5,
-            ),
-          ),
-          contentPadding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            spacing: Dimens.sixteen,
-            children: [
-              Text(
-                message,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Get.theme.colorScheme.onSurface,
-                  fontSize: 15,
-                  height: 1.5,
-                ),
-              ),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Get.back();
-                    onConfirm?.call();
-                  },
-                  child: const Text('OK'),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      barrierDismissible: false,
-    );
-  }
-
-  // ===========================================================================
-  // ROOM CLOSED
-  // ===========================================================================
-
-  static Future<void> showRoomClosed({required String reason}) {
-    return Get.dialog<void>(
-      PopScope(
-        canPop: false,
-        child: AlertDialog(
-          backgroundColor: AppColors.surface,
-          shape: _dialogShape,
-          title: Text(
-            'Room Closed',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Get.theme.colorScheme.primary,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            spacing: Dimens.sixteen,
-            children: [
-              Text(
-                reason,
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Get.theme.colorScheme.onSurface),
-              ),
-              Row(
-                spacing: Dimens.twelve,
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () {
-                        Get.back();
-                        AppNavigation.goToHome();
-                      },
-                      child: const Text('BACK HOME'),
-                    ),
-                  ),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Get.back();
-                        AppNavigation.replaceCreateRoom();
-                      },
-                      child: const Text('NEW GAME'),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-
-          actionsAlignment: MainAxisAlignment.center,
-        ),
-      ),
-      barrierDismissible: false,
-    );
-  }
-
-  // ===========================================================================
-  // GAME DISMISSED
-  // ===========================================================================
-
-  static Future<void> showGameDismissed({
-    required GameDismissedResponse response,
-  }) {
-    final reason = response.reason;
-
-    return Get.dialog<void>(
-      PopScope(
-        canPop: false,
-        child: AlertDialog(
-          backgroundColor: AppColors.surface,
-          shape: _dialogShape,
-          insetPadding: const EdgeInsets.symmetric(horizontal: 24),
-          icon: Icon(reason.icon, color: reason.color, size: 48),
-          title: Text(
-            'Game Dismissed',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: reason.color, fontWeight: FontWeight.w800),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            spacing: 20,
-            children: [
-              Text(
-                reason.message,
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Get.theme.colorScheme.onSurface),
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () {
-                        Get.back();
-                        AppNavigation.goToHome();
-                      },
-                      child: const Text('BACK HOME'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Get.back();
-                        AppNavigation.replaceCreateRoom();
-                      },
-                      child: const Text('NEW GAME'),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-      barrierDismissible: false,
-    );
-  }
-
-  // ===========================================================================
-  // HELPERS
-  // ===========================================================================
-
-  static RoundedRectangleBorder get _dialogShape => RoundedRectangleBorder(
-    borderRadius: Dimens.radius16,
-    side: BorderSide(
-      color: Get.theme.colorScheme.primary.withValues(alpha: 0.4),
+  }) => _show(
+    builder: (_) => RoundResultDialog(
+      result: result,
+      mySymbol: mySymbol,
+      onConfirm: onConfirm,
     ),
+    barrierDismissible: false,
   );
 
-  // ===========================================================================
-  // QUIT CONFIRMATION
-  // ===========================================================================
+  Future<void> showRoomClosed({required GameDismissReason reason}) => _show(
+    builder: (_) => RoomClosedDialog(
+      reason: reason,
+      onBack: _navigator.pop,
+      onHome: _navigation.goToHome,
+    ),
+    barrierDismissible: false,
+  );
 
-  static Future<bool> confirmQuit() async {
-    final result = await Get.dialog<bool>(
-      AlertDialog(
-        title: const Text('Quit Game?'),
-        content: const Text('Are you sure you want to quit the current game?'),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(result: false),
-            child: const Text('CANCEL'),
-          ),
-          TextButton(
-            onPressed: () => Get.back(result: true),
-            child: const Text('QUIT'),
-          ),
-        ],
-      ),
-      barrierDismissible: false,
-    );
+  Future<void> showPrivacyPolicy() =>
+      _show(builder: (_) => const PrivacyPolicyDialog());
 
-    return result == true;
+  Future<bool> confirmQuit() async =>
+      await _show<bool>(
+        builder: (_) => const QuitDialog(),
+        barrierDismissible: false,
+      ) ??
+      false;
+
+  void showAbout() => showAboutDialog(
+    context: _context,
+    applicationName: GameConstants.appName,
+    applicationVersion: GameConstants.appVersion,
+    applicationIcon: const Icon(
+      Icons.grid_3x3_rounded,
+      color: AppColors.neonCyan,
+      size: Dimens.fiftySix,
+    ),
+    children: [
+      const Text(GameConstants.appDescription, textAlign: TextAlign.center),
+    ],
+  );
+
+  Future<T?> show<T>({
+    required Widget child,
+    bool barrierDismissible = true,
+    Color? barrierColor,
+  }) => _show<T>(
+    builder: (_) => child,
+    barrierDismissible: barrierDismissible,
+    barrierColor: barrierColor,
+  );
+
+  Future<T?> _show<T>({
+    required WidgetBuilder builder,
+    bool barrierDismissible = true,
+    Color? barrierColor,
+  }) {
+    _markDialogOpen();
+
+    return showDialog<T>(
+      context: _context,
+      barrierDismissible: barrierDismissible,
+      barrierColor: barrierColor,
+      builder: builder,
+    ).whenComplete(_markDialogClosed);
+  }
+
+  Future<T?> showBottomSheet<T>({
+    required WidgetBuilder builder,
+    bool isDismissible = true,
+    bool enableDrag = true,
+    bool useSafeArea = true,
+    Color? backgroundColor,
+    ShapeBorder? shape,
+  }) {
+    _markModalOpen();
+
+    return showModalBottomSheet<T>(
+      context: _context,
+      builder: builder,
+      isDismissible: isDismissible,
+      enableDrag: enableDrag,
+      useSafeArea: useSafeArea,
+      backgroundColor: backgroundColor,
+      shape: shape,
+    ).whenComplete(_markModalClosed);
   }
 }

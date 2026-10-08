@@ -40,7 +40,7 @@ class _TicTacToeWinningLineWidgetState
   // ===========================================================================
 
   static const Duration _animationDuration =
-  Duration(milliseconds: 500);
+      GameConstants.winningLineAnimationDuration;
 
   // ===========================================================================
   // ANIMATION

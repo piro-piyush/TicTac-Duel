@@ -28,29 +28,55 @@ extension RoomThemeX on RoomTheme {
   String get value => name;
 }
 
-extension RoundStatusExtension on RoundStatus {
-  String get displayName => switch (this) {
-    RoundStatus.waiting => 'Waiting',
-    RoundStatus.playing => 'Playing',
-    RoundStatus.result => 'Result',
+extension RoundStatusExtension on RoomStatus {
+  String get title => switch (this) {
+    RoomStatus.waiting => 'Waiting',
+    RoomStatus.playing => 'In Progress',
+    RoomStatus.result => 'Round Complete',
+    RoomStatus.finished => 'Game Over',
   };
 
-  bool get isWaiting => this == RoundStatus.waiting;
+  String get description => switch (this) {
+    RoomStatus.waiting => 'Waiting for players to get ready.',
+    RoomStatus.playing => 'The round is currently in progress.',
+    RoomStatus.result => 'The round has ended. Check the result.',
+    RoomStatus.finished => 'The game has been completed.',
+  };
 
-  bool get isPlaying => this == RoundStatus.playing;
+  IconData get icon => switch (this) {
+    RoomStatus.waiting => Icons.hourglass_empty_rounded,
+    RoomStatus.playing => Icons.sports_esports_rounded,
+    RoomStatus.result => Icons.emoji_events_rounded,
+    RoomStatus.finished => Icons.flag_rounded,
+  };
 
-  bool get isResult => this == RoundStatus.result;
+  Color get color => switch (this) {
+    RoomStatus.waiting => AppColors.neonPurple,
+    RoomStatus.playing => AppColors.neonCyan,
+    RoomStatus.result => AppColors.neonGreen,
+    RoomStatus.finished => AppColors.neonPink,
+  };
 
   String get value => name;
+
+  bool get isWaiting => this == RoomStatus.waiting;
+
+  bool get isPlaying => this == RoomStatus.playing;
+
+  bool get isResult => this == RoomStatus.result;
+
+  bool get isFinished => this == RoomStatus.finished;
+
+  bool get isActive => isWaiting || isPlaying || isResult;
 }
 
 extension GameDismissReasonX on GameDismissReason {
-  String get displayName => switch (this) {
+  String get title => switch (this) {
     GameDismissReason.opponentDisconnected => 'Opponent Disconnected',
     GameDismissReason.opponentQuit => 'Opponent Quit',
   };
 
-  String get message => switch (this) {
+  String get subtitle => switch (this) {
     GameDismissReason.opponentDisconnected =>
       'Your opponent disconnected from the game.',
     GameDismissReason.opponentQuit => 'Your opponent quit the game.',

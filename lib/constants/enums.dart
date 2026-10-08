@@ -32,13 +32,23 @@ enum RoomTheme {
   cyber,
 }
 
-enum RoundStatus {
+enum RoomStatus {
   waiting,
   playing,
   result,
+  finished
 }
 
 enum GameDismissReason {
   opponentDisconnected,
   opponentQuit,
+}enum GameReaction {
+  laugh,
+  love,
+  angry,
+  wow,
+  fire,
+  clap,
+  party,
+  cool,
 }

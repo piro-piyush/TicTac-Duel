@@ -2,56 +2,60 @@ import 'package:tictac_duel/lib.dart';
 
 class RoundStartedResponse {
   const RoundStartedResponse({
-    required this.room,
-    required this.playerOneReady,
-    required this.playerTwoReady,
+    required this.currentRound,
+    required this.status,
+    required this.hostReady,
+    required this.guestReady,
     required this.turnPlayerId,
-    required this.turnIndex,
   });
 
-  final RoomModel room;
-  final bool playerOneReady;
-  final bool playerTwoReady;
+  final int currentRound;
+  final RoomStatus status;
+  final bool hostReady;
+  final bool guestReady;
   final String turnPlayerId;
-  final int turnIndex;
 
-  factory RoundStartedResponse.fromJson(dynamic json) {
-    if (json is! Map) {
-      throw const FormatException('Invalid round started response');
+  factory RoundStartedResponse.fromSocket(dynamic json) {
+    try {
+      if (json is! Map) {
+        throw const FormatException('Invalid round started response');
+      }
+
+      final currentRound = json['currentRound'];
+      final status = json['status'];
+      final hostReady = json['hostReady'];
+      final guestReady = json['guestReady'];
+      final turnPlayerId = json['turnPlayerId'];
+
+      if (currentRound is! int || currentRound < 1) {
+        throw const FormatException('Invalid current round');
+      }
+
+      if (status is! String || status.isEmpty) {
+        throw const FormatException('Invalid room status');
+      }
+
+      if (hostReady is! bool) {
+        throw const FormatException('Invalid host ready state');
+      }
+
+      if (guestReady is! bool) {
+        throw const FormatException('Invalid guest ready state');
+      }
+
+      if (turnPlayerId is! String || turnPlayerId.isEmpty) {
+        throw const FormatException('Invalid turn player ID');
+      }
+
+      return RoundStartedResponse(
+        currentRound: currentRound,
+        status: RoomStatus.values.byName(status),
+        hostReady: hostReady,
+        guestReady: guestReady,
+        turnPlayerId: turnPlayerId,
+      );
+    } catch (e) {
+      rethrow;
     }
-
-    final roomData = json['room'];
-    final playerOneReady = json['playerOneReady'];
-    final playerTwoReady = json['playerTwoReady'];
-    final turnPlayerId = json['turnPlayerId'];
-    final turnIndex = json['turnIndex'];
-
-    if (roomData is! Map) {
-      throw const FormatException('Invalid room data');
-    }
-
-    if (playerOneReady is! bool) {
-      throw const FormatException('Invalid player one ready state');
-    }
-
-    if (playerTwoReady is! bool) {
-      throw const FormatException('Invalid player two ready state');
-    }
-
-    if (turnPlayerId is! String) {
-      throw const FormatException('Invalid turn player ID');
-    }
-
-    if (turnIndex is! int) {
-      throw const FormatException('Invalid turn index');
-    }
-
-    return RoundStartedResponse(
-      room: RoomModel.fromJson(roomData),
-      playerOneReady: playerOneReady,
-      playerTwoReady: playerTwoReady,
-      turnPlayerId: turnPlayerId,
-      turnIndex: turnIndex,
-    );
   }
 }

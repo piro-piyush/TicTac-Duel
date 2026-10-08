@@ -3,24 +3,29 @@ import 'package:tictac_duel/lib.dart';
 class PlayerJoinedResponse {
   const PlayerJoinedResponse({
     required this.player,
-    required this.points,
-    required this.isReady,
+    this.points = 0,
+    this.isReady = false,
   });
 
   final PlayerModel player;
   final int points;
   final bool isReady;
 
-  factory PlayerJoinedResponse.fromJson(dynamic json) {
+  factory PlayerJoinedResponse.fromSocket(dynamic data) {
     try {
-      if (json is! Map) {
+      if (data is! Map) {
         throw const FormatException('Invalid player joined response');
       }
 
-      final data = Map<String, dynamic>.from(json);
+      final json = Map<String, dynamic>.from(data);
 
-      final points = data['points'];
-      final isReady = data['isReady'];
+      final player = json['player'];
+      final points = json['points'];
+      final isReady = json['isReady'];
+
+      if (player is! Map) {
+        throw const FormatException('Invalid player');
+      }
 
       if (points is! int) {
         throw const FormatException('Invalid player points');
@@ -31,7 +36,7 @@ class PlayerJoinedResponse {
       }
 
       return PlayerJoinedResponse(
-        player:PlayerModel.fromJson(data),
+        player: PlayerModel.fromSocket(player),
         points: points,
         isReady: isReady,
       );

@@ -18,6 +18,7 @@ class NeonBackgroundWidget extends StatefulWidget {
     this.showTapEffects = true,
     this.showVignette = true,
     this.maxWidth,
+    this.floatingActionButton,
   });
 
   final Widget child;
@@ -26,6 +27,7 @@ class NeonBackgroundWidget extends StatefulWidget {
   final List<Widget>? actions;
   final EdgeInsets? padding;
   final Widget? bottomNavigationBar;
+  final Widget? floatingActionButton;
 
   final bool showGrid;
   final bool showParticles;
@@ -145,37 +147,38 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
     return Scaffold(
       backgroundColor: AppColors.background,
       resizeToAvoidBottomInset: true,
+      floatingActionButton:widget.floatingActionButton,
       body: Listener(
         behavior: HitTestBehavior.translucent,
         onPointerDown: _handlePointerDown,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            const _BackgroundBase(),
+        child: SizedBox.expand(
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              const _BackgroundBase(),
+              const _AmbientGlows(),
 
-            const _AmbientGlows(),
+              if (widget.showGrid) const _GridLayer(),
+              if (widget.showParticles) const _ParticleLayer(),
 
-            if (widget.showGrid) const _GridLayer(),
+              if (widget.showTapEffects && _tapEffects.isNotEmpty)
+                _TapEffectsLayer(effects: _tapEffects),
 
-            if (widget.showParticles) const _ParticleLayer(),
+              if (widget.showVignette) const _VignetteLayer(),
 
-            if (widget.showTapEffects && _tapEffects.isNotEmpty)
-              _TapEffectsLayer(effects: _tapEffects),
-
-            if (widget.showVignette) const _VignetteLayer(),
-
-            _ForegroundLayer(
-              title: widget.title,
-              bottom: widget.bottom,
-              actions: widget.actions,
-              padding: widget.padding,
-              bottomNavigationBar: widget.bottomNavigationBar,
-              needScroll: widget.needScroll,
-              keyboardAware: widget.keyboardAware,
-              maxWidth: widget.maxWidth,
-              child: widget.child,
-            ),
-          ],
+              _ForegroundLayer(
+                title: widget.title,
+                bottom: widget.bottom,
+                actions: widget.actions,
+                padding: widget.padding,
+                bottomNavigationBar: widget.bottomNavigationBar,
+                needScroll: widget.needScroll,
+                keyboardAware: widget.keyboardAware,
+                maxWidth: widget.maxWidth,
+                child: widget.child,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -397,7 +400,6 @@ class _ForegroundLayer extends StatelessWidget {
               child: ConstrainedBox(
                 constraints: BoxConstraints(
                   maxWidth: contentMaxWidth,
-                  maxHeight: constraints.maxHeight,
                 ),
                 child: SizedBox(
                   width: double.infinity,

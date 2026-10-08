@@ -1,44 +1,41 @@
 import 'package:tictac_duel/lib.dart';
 
 Future<void> main() async {
-  final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  final binding = WidgetsFlutterBinding.ensureInitialized();
 
-  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  FlutterNativeSplash.preserve(widgetsBinding: binding);
 
-  await _initCore();
+  await dotenv.load();
+
+  final container = ProviderContainer();
+  await Future.wait([
+    // container.read(audioProvider.notifier).initialize(),
+  ]);
 
   FlutterNativeSplash.remove();
 
-  runApp(const MyApp());
+  runApp(UncontrolledProviderScope(container: container, child: const MyApp()));
 }
-
-// =============================================================================
-// CORE INITIALIZATION
-// =============================================================================
-
-Future<void> _initCore() async {
-  await dotenv.load();
-}
-
 // =============================================================================
 // APP
 // =============================================================================
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return GetMaterialApp(
+  Widget build(BuildContext context, WidgetRef ref) {
+    return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: GameConstants.appName,
       theme: AppTheme.darkTheme,
-      initialBinding: GlobalBindings(),
-      initialRoute: AppRoutes.home,
-      getPages: AppPages.routes,
+      routerConfig: ref.watch(appRouterProvider),
+      scaffoldMessengerKey: AppPages.rootScaffoldMessengerKey,
       builder: (context, child) {
         return Listener(
-          onPointerDown: (_) => Get.find<MusicController>().playTouch(),
+          onPointerDown: (_) {
+            ref.read(audioProvider.notifier).playTouch();
+          },
           child: child ?? const SizedBox.shrink(),
         );
       },
