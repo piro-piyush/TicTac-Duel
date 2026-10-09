@@ -10,7 +10,7 @@ class LocalGameScreen extends ConsumerWidget {
 
     return NeonBackgroundWidget(
       title: 'Local Game',
-      bottomNavigationBar: NeonElevatedButton.icon(
+      bottomNavigationBar: NeonElevatedButtonWidget.icon(
         label: 'START GAME',
         icon: Icons.sports_esports_rounded,
         isLoading: state.isStarting,

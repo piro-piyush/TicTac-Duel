@@ -45,25 +45,24 @@ class HomeActionsWidget extends ConsumerWidget {
         ),
         Row(
           spacing: Dimens.twelve,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Expanded(
-              child: QuickActionWidget(
-                icon: Icons.add_rounded,
-                label: 'Create Room',
-                onTap: () => _checkInternetConnection(
-                  networkService,
-                  navigation.pushCreateRoom,
-                ),
+            NeonTextButtonWidget.icon(
+              icon: Icons.add_rounded,
+              label: 'Create Room',
+              isSmall: true,
+              onPressed: () => _checkInternetConnection(
+                networkService,
+                navigation.pushCreateRoom,
               ),
             ),
-            Expanded(
-              child: QuickActionWidget(
-                icon: Icons.login_rounded,
-                label: 'Join Room',
-                onTap: () => _checkInternetConnection(
-                  networkService,
-                  navigation.pushJoinRoom,
-                ),
+            NeonTextButtonWidget.icon(
+              icon: Icons.login_rounded,
+              label: 'Join Room',
+              isSmall: true,
+              onPressed: () => _checkInternetConnection(
+                networkService,
+                navigation.pushJoinRoom,
               ),
             ),
           ],

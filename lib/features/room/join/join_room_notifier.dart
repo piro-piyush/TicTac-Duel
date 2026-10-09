@@ -2,7 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:tictac_duel/lib.dart';
 
 final joinRoomProvider =
-    NotifierProvider.family<JoinRoomNotifier, JoinRoomState, String?>(
+    NotifierProvider.autoDispose.family<JoinRoomNotifier, JoinRoomState, String?>(
       JoinRoomNotifier.new,
     );
 

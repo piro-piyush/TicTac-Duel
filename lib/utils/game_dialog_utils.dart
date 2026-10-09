@@ -15,29 +15,22 @@ class GameDialogUtils {
 
   BuildContext get _context => _navigator.context;
 
-  bool _isDialogOpen = false;
+  bool _isOverlayOpen = false;
 
-  bool get isDialogOpen => _isDialogOpen;
-  bool _isModalOpen = false;
+  bool get isOverlayOpen => _isOverlayOpen;
 
-  bool get isModalOpen => _isModalOpen;
+  void _markOverlayOpen() => _isOverlayOpen = true;
 
-  void _markModalOpen() => _isModalOpen = true;
-
-  void _markModalClosed() => _isModalOpen = false;
-
-  void _markDialogOpen() => _isDialogOpen = true;
-
-  void _markDialogClosed() => _isDialogOpen = false;
+  void _markOverlayClosed() => _isOverlayOpen = false;
 
   void closeOpenDialog() {
-    if (!_isDialogOpen) return;
+    if (!_isOverlayOpen) return;
 
     if (_navigator.canPop()) {
       _navigator.pop();
     }
 
-    _markDialogClosed();
+    _markOverlayClosed();
   }
 
   Future<void> showGameResult({
@@ -101,14 +94,15 @@ class GameDialogUtils {
     bool barrierDismissible = true,
     Color? barrierColor,
   }) {
-    _markDialogOpen();
+    _markOverlayOpen();
 
     return showDialog<T>(
       context: _context,
       barrierDismissible: barrierDismissible,
       barrierColor: barrierColor,
       builder: builder,
-    ).whenComplete(_markDialogClosed);
+
+    ).whenComplete(_markOverlayClosed);
   }
 
   Future<T?> showBottomSheet<T>({
@@ -119,7 +113,7 @@ class GameDialogUtils {
     Color? backgroundColor,
     ShapeBorder? shape,
   }) {
-    _markModalOpen();
+    _markOverlayOpen();
 
     return showModalBottomSheet<T>(
       context: _context,
@@ -129,6 +123,6 @@ class GameDialogUtils {
       useSafeArea: useSafeArea,
       backgroundColor: backgroundColor,
       shape: shape,
-    ).whenComplete(_markModalClosed);
+    ).whenComplete(_markOverlayClosed);
   }
 }
