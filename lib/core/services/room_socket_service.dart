@@ -143,7 +143,6 @@ class RoomSocketService {
 
   void off(String event) => _socket.off(event);
 
-  void offRoomJoined() => off(RoomSocketEvents.roomJoined);
 
   void offPlayerJoined() => off(RoomSocketEvents.playerJoined);
 

@@ -39,7 +39,7 @@ class CreateRoomContentWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      spacing: Dimens.twentyEight,
+      spacing: Dimens.defaultSpace,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const RoomHeaderWidget(

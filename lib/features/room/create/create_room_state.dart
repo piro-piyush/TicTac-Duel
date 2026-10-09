@@ -29,6 +29,8 @@ class CreateRoomState extends Equatable {
     isCreating: isCreating ?? this.isCreating,
   );
 
+  static CreateRoomState initial() => const CreateRoomState();
+
   @override
   List<Object?> get props => [
     selectedSymbol,

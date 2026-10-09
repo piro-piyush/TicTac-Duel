@@ -1,10 +1,8 @@
 import 'package:flutter/services.dart';
 import 'package:tictac_duel/lib.dart';
 
-final joinRoomProvider =
-    NotifierProvider.autoDispose.family<JoinRoomNotifier, JoinRoomState, String?>(
-      JoinRoomNotifier.new,
-    );
+final joinRoomProvider = NotifierProvider.autoDispose
+    .family<JoinRoomNotifier, JoinRoomState, String?>(JoinRoomNotifier.new);
 
 class JoinRoomNotifier extends Notifier<JoinRoomState> {
   JoinRoomNotifier(this.roomCode);
@@ -94,20 +92,25 @@ class JoinRoomNotifier extends Notifier<JoinRoomState> {
       _roomSocketService.joinRoom(
         roomCode: code,
         name: name,
-        onJoined: (response) {
-          _roomSocketService.offCreateRoomListeners();
-          state = state.copyWith(isJoining: false);
-          _navigation.pushGame(response.room);
-        },
-        onError: (error) {
-          _roomSocketService.offCreateRoomListeners();
-          state = state.copyWith(isJoining: false);
-          PopupUtils.showToast(error);
-        },
+        onJoined: onRoomJoined,
+        onError: onJoinRoomError,
       );
     } catch (error) {
       state = state.copyWith(isJoining: false);
       PopupUtils.showError(error.toString());
     }
+  }
+
+  void onRoomJoined(RoomJoinedResponse response) {
+    _roomSocketService.offJoinRoomListeners();
+    state = JoinRoomState.initial();
+    playerNameController.clear();
+    _navigation.pushGame(response.room);
+  }
+
+  void onJoinRoomError(String error) {
+    _roomSocketService.offJoinRoomListeners();
+    state = state.copyWith(isJoining: false);
+    PopupUtils.showToast(error);
   }
 }

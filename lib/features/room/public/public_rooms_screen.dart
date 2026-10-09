@@ -26,7 +26,8 @@ class PublicRoomsScreen extends ConsumerWidget {
               ),
               if (state.isFetchingRooms)
                 const PublicRoomsLoadingWidget()
-              else if (state.rooms.isEmpty)
+              else
+              if (state.rooms.isEmpty)
                 const EmptyPublicRoomsWidget()
               else
                 Column(
