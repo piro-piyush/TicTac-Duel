@@ -3,6 +3,7 @@ export 'dart:convert';
 export 'dart:io';
 
 export 'package:connectivity_plus/connectivity_plus.dart';
+export 'package:flutter_animate/flutter_animate.dart';
 export 'package:equatable/equatable.dart';
 export 'package:flutter/material.dart' hide ViewBuilder;
 export 'package:flutter_confetti/flutter_confetti.dart';
