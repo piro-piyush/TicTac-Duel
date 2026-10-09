@@ -48,6 +48,7 @@ class JoinRoomContentWidget extends StatelessWidget {
           onPasteCode: onPasteCode,
           onJoinRoom: onJoinRoom,
         ),
+
         const JoinRoomHintWidget(),
         const OrDividerWidget(),
         NeonOutlinedButtonWidget.icon(

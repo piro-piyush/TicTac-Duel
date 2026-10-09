@@ -263,6 +263,9 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
             : room.guestPoints,
       ),
     );
+    if (response.winningIndexes.isNotEmpty) {
+      _audioNotifier.playDraw();
+    }
 
     if (response.gameFinished) {
       _showRoundResultAfterDelay(_showFinalResult);
