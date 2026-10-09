@@ -3,7 +3,6 @@ import 'package:tictac_duel/lib.dart';
 class GameReactionBottomSheetWidget extends StatelessWidget {
   const GameReactionBottomSheetWidget({super.key});
 
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -67,14 +66,22 @@ class GameReactionBottomSheetWidget extends StatelessWidget {
   }
 
   Widget _buildReactionGrid(BuildContext context) {
-    return Wrap(
-      alignment: WrapAlignment.center,
-      spacing: Dimens.spaceBtwItems,
-      runSpacing: Dimens.spaceBtwItems,
-      children: [
-        for (final reaction in GameReaction.values)
-          _buildReactionButton(context, reaction),
-      ],
+    return Flexible(
+      child: GridView.builder(
+        shrinkWrap: true,
+        padding: EdgeInsets.zero,
+        itemCount: GameReaction.values.length,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 5,
+          mainAxisSpacing: Dimens.spaceBtwItems,
+          crossAxisSpacing: Dimens.spaceBtwItems,
+        ),
+        itemBuilder: (context, index) {
+          final reaction = GameReaction.values[index];
+
+          return _buildReactionButton(context, reaction);
+        },
+      ),
     );
   }
 
@@ -104,7 +111,7 @@ class GameReactionBottomSheetWidget extends StatelessWidget {
           ),
           child: Center(
             child: Lottie.network(
-              reaction.animation,
+              reaction.animationUrl,
               width: Dimens.forty,
               height: Dimens.forty,
               fit: BoxFit.contain,

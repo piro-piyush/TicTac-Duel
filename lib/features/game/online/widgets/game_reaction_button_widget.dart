@@ -1,12 +1,19 @@
 import 'package:tictac_duel/lib.dart';
 
 class GameReactionButtonWidget extends ConsumerWidget {
-  const GameReactionButtonWidget({super.key, required this.onSendReaction});
+  const GameReactionButtonWidget({
+    super.key,
+    required this.showReactionButton,
+    required this.onSendReaction,
+  });
 
+  final bool showReactionButton;
   final ValueChanged<GameReaction> onSendReaction;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (!showReactionButton) return const SizedBox.shrink();
+
     final gameDialog = ref.read(gameDialogProvider);
 
     return FloatingActionButton(

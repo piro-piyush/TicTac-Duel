@@ -36,19 +36,51 @@ enum RoomStatus {
   waiting,
   playing,
   result,
-  finished
+  finished,
 }
 
 enum GameDismissReason {
   opponentDisconnected,
   opponentQuit,
-}enum GameReaction {
+}
+
+enum GameReaction {
+  // Emotions
   laugh,
-  love,
   angry,
-  wow,
+  cool,
+  cry,
+  mindBlown,
+  sick,
+  sleepy,
+
+  // Celebration
   fire,
   clap,
-  party,
-  cool,
+  confetti,
+
+  // Competitive
+  ez,
+  oops,
+  clown,
+
+  // Friendly
+  wave,
+
+  // Gaming
+  lightning,
+  bomb,
+
+  // Fun
+  wink,
+  tongue,
+  poop,
+  monkey,
+
+  // Hearts
+  heart,
+  brokenHeart,
+  kiss,
+  rose,
+  eyes,
 }

@@ -132,7 +132,10 @@ abstract final class Dimens {
   static const EdgeInsets edgeInsets24_0 = EdgeInsets.symmetric(
     horizontal: twentyFour,
   );
-
+  static const EdgeInsets edgeInsets24_12 = EdgeInsets.symmetric(
+    horizontal: twentyFour,
+    vertical: 12
+  );
   static const EdgeInsets edgeInsets30_0 = EdgeInsets.symmetric(
     horizontal: thirty,
   );

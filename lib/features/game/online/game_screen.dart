@@ -9,39 +9,24 @@ class GameScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(onlineGameProvider(room));
     final notifier = ref.read(onlineGameProvider(room).notifier);
-    final navigation = ref.read(appNavigationProvider);
-    final gameDialog = ref.read(gameDialogProvider);
-
     final currentRoom = state.room;
     final showGame = notifier.showGame;
 
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return;
-
-        final shouldQuit = await gameDialog.confirmQuit();
-
-        if (!shouldQuit || !context.mounted) return;
-
-        notifier.quitGame();
-        navigation.back();
-      },
+      onPopInvokedWithResult: (didPop, result) =>
+          notifier.handlePop(didPop, () => context.mounted),
       child: TicTacToeGameTemplateWidget(
         currentRound: currentRoom.currentRound,
         maxRounds: currentRoom.maxRounds,
-        floatingActionButton: currentRoom.status == RoomStatus.playing
-            ? GameReactionButtonWidget(onSendReaction: notifier.sendReaction)
-            : null,
-        actions: notifier.isWaitingForPlayers
-            ? [
-                IconButton(
-                  onPressed: () => notifier.share(currentRoom.roomCode),
-                  icon: const Icon(Icons.share_rounded),
-                  tooltip: 'Share room',
-                ),
-              ]
-            : null,
+        floatingActionButton: GameReactionButtonWidget(
+          onSendReaction: notifier.sendReaction,
+          showReactionButton: currentRoom.status == RoomStatus.playing,
+        ),
+        actions: ShareButtonWidget.actions(
+          showShareButton: notifier.showShareButton,
+          onShare: () => notifier.share(currentRoom.roomCode),
+        ),
         turnPlayerId: notifier.turnPlayerId,
         isOnline: true,
         showGameStatus: showGame,

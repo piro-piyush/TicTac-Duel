@@ -1,7 +1,7 @@
 import 'package:tictac_duel/lib.dart';
 
 final createRoomProvider =
-    NotifierProvider<CreateRoomNotifier, CreateRoomState>(
+    NotifierProvider.autoDispose<CreateRoomNotifier, CreateRoomState>(
       CreateRoomNotifier.new,
     );
 
