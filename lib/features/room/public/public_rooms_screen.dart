@@ -20,26 +20,63 @@ class PublicRoomsScreen extends ConsumerWidget {
             spacing: Dimens.twenty,
             children: [
               const RoomHeaderWidget(
-                eyebrow: 'CHOOSE YOUR',
-                title: 'NEXT ROOM',
-                description: 'Browse available rooms and join a duel.',
-              ),
+                    eyebrow: 'CHOOSE YOUR',
+                    title: 'NEXT ROOM',
+                    description: 'Browse available rooms and join a duel.',
+                  )
+                  .animate()
+                  .fadeIn(duration: AnimationConstants.medium)
+                  .slideY(
+                    begin: AnimationConstants.slideSmall,
+                    end: 0,
+                    duration: AnimationConstants.medium,
+                    curve: AnimationConstants.defaultCurve,
+                  ),
+
               if (state.isFetchingRooms)
-                const PublicRoomsLoadingWidget()
-              else
-              if (state.rooms.isEmpty)
+                const PublicRoomsLoadingWidget().animate().fadeIn(
+                  duration: AnimationConstants.fast,
+                )
+              else if (state.rooms.isEmpty)
                 const EmptyPublicRoomsWidget()
+                    .animate()
+                    .fadeIn(duration: AnimationConstants.medium)
+                    .scale(
+                      begin: const Offset(
+                        AnimationConstants.scaleSmall,
+                        AnimationConstants.scaleSmall,
+                      ),
+                      end: const Offset(
+                        AnimationConstants.scaleNormal,
+                        AnimationConstants.scaleNormal,
+                      ),
+                      duration: AnimationConstants.medium,
+                      curve: AnimationConstants.defaultCurve,
+                    )
               else
                 Column(
                   spacing: Dimens.twelve,
-                  children: state.rooms
-                      .map(
-                        (room) => PublicRoomCardWidget(
-                          room: room,
-                          onJoin: () => notifier.showJoinDialog(room),
-                        ),
-                      )
-                      .toList(),
+                  children: [
+                    for (var index = 0; index < state.rooms.length; index++)
+                      PublicRoomCardWidget(
+                            key: ValueKey(state.rooms[index].roomCode),
+                            room: state.rooms[index],
+                            onJoin: () =>
+                                notifier.showJoinDialog(state.rooms[index]),
+                          )
+                          .animate()
+                          .fadeIn(
+                            delay: AnimationConstants.staggerShort * index,
+                            duration: AnimationConstants.medium,
+                          )
+                          .slideY(
+                            begin: AnimationConstants.slideSmall,
+                            end: 0,
+                            delay: AnimationConstants.staggerShort * index,
+                            duration: AnimationConstants.medium,
+                            curve: AnimationConstants.defaultCurve,
+                          ),
+                  ],
                 ),
             ],
           ),

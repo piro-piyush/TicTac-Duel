@@ -1,4 +1,3 @@
-import 'package:tictac_duel/constants/animation_constants.dart';
 import 'package:tictac_duel/lib.dart';
 
 class ResultScreen extends ConsumerWidget {
@@ -16,7 +15,6 @@ class ResultScreen extends ConsumerWidget {
         if (!context.mounted) {
           return;
         }
-
         _showConfetti(context);
         notifier.dismissConfetti();
       });
@@ -24,7 +22,19 @@ class ResultScreen extends ConsumerWidget {
 
     return NeonBackgroundWidget(
       needScroll: false,
-      bottomNavigationBar: ResultActionsWidget(isOnline: state.isOnline),
+      bottomNavigationBar: ResultActionsWidget(isOnline: state.isOnline)
+          .animate()
+          .fadeIn(
+            delay: AnimationConstants.staggerMedium,
+            duration: AnimationConstants.medium,
+          )
+          .slideY(
+            begin: AnimationConstants.slideSmall,
+            end: 0,
+            delay: AnimationConstants.staggerMedium,
+            duration: AnimationConstants.medium,
+            curve: AnimationConstants.entranceCurve,
+          ),
       child: _buildContent(context, state, notifier),
     );
   }
@@ -45,17 +55,73 @@ class ResultScreen extends ConsumerWidget {
         Column(
           spacing: Dimens.spaceBtwSections,
           children: [
-            _buildResultAnimation(state),
-            _buildResultHeader(context, state),
+            _buildResultAnimation(state)
+                .animate()
+                .fadeIn(
+                  duration: AnimationConstants.medium,
+                  curve: AnimationConstants.entranceCurve,
+                )
+                .scale(
+                  begin: const Offset(
+                    AnimationConstants.scaleSmall,
+                    AnimationConstants.scaleSmall,
+                  ),
+                  end: const Offset(
+                    AnimationConstants.scaleNormal,
+                    AnimationConstants.scaleNormal,
+                  ),
+                  duration: AnimationConstants.long,
+                  curve: AnimationConstants.entranceCurve,
+                ),
+
+            _buildResultHeader(context, state)
+                .animate()
+                .fadeIn(
+                  delay: AnimationConstants.staggerShort,
+                  duration: AnimationConstants.medium,
+                )
+                .slideY(
+                  begin: AnimationConstants.slideSmall,
+                  end: 0,
+                  delay: AnimationConstants.staggerShort,
+                  duration: AnimationConstants.medium,
+                  curve: AnimationConstants.entranceCurve,
+                ),
           ],
         ),
+
         ResultScoreCardWidget(
-          state: state,
-          isPlayerOneMe: notifier.isMe(state.host),
-          isPlayerTwoMe: notifier.isMe(state.guest),
-          isOnline: state.isOnline,
-        ),
-        _buildRoundLabel(context, state),
+              state: state,
+              isPlayerOneMe: notifier.isMe(state.host),
+              isPlayerTwoMe: notifier.isMe(state.guest),
+              isOnline: state.isOnline,
+            )
+            .animate()
+            .fadeIn(
+              delay: AnimationConstants.staggerMedium,
+              duration: AnimationConstants.medium,
+            )
+            .slideY(
+              begin: AnimationConstants.slideSmall,
+              end: 0,
+              delay: AnimationConstants.staggerMedium,
+              duration: AnimationConstants.medium,
+              curve: AnimationConstants.entranceCurve,
+            ),
+
+        _buildRoundLabel(context, state)
+            .animate()
+            .fadeIn(
+              delay: AnimationConstants.staggerLong,
+              duration: AnimationConstants.medium,
+            )
+            .slideY(
+              begin: AnimationConstants.slideSmall,
+              end: 0,
+              delay: AnimationConstants.staggerLong,
+              duration: AnimationConstants.medium,
+              curve: AnimationConstants.entranceCurve,
+            ),
       ],
     );
   }

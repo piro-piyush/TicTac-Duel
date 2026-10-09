@@ -7,7 +7,6 @@ export 'effects/effects.dart';
 export 'footer_card_widget.dart';
 export 'game_board_cell_widget.dart';
 export 'game_text_form_field_widget.dart';
-export 'game_type_selector_widget.dart';
 export 'games/games.dart';
 export 'header_section_widget.dart';
 export 'neon_background_widget.dart';
