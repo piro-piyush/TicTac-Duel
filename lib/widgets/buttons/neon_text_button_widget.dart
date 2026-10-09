@@ -6,6 +6,7 @@ class NeonTextButton extends StatelessWidget {
     required this.onPressed,
     this.color,
     this.isLoading = false,
+    this.isSmall = false,
     super.key,
   }) : icon = null,
        iconAlignment = null;
@@ -16,6 +17,7 @@ class NeonTextButton extends StatelessWidget {
     required this.icon,
     this.color,
     this.isLoading = false,
+    this.isSmall = false,
     this.iconAlignment,
     super.key,
   });
@@ -25,26 +27,29 @@ class NeonTextButton extends StatelessWidget {
   final IconData? icon;
   final Color? color;
   final bool isLoading;
+  final bool isSmall;
   final IconAlignment? iconAlignment;
 
   @override
   Widget build(BuildContext context) {
-    final label = Text(
-      this.label,
+    final text = Text(
+      label,
       style: color == null ? null : TextStyle(color: color),
     );
 
-    return icon == null
+    final button = icon == null
         ? TextButton(
             onPressed: isLoading ? null : onPressed,
-            child: isLoading ? _loader : label,
+            child: isLoading ? _loader : text,
           )
         : TextButton.icon(
             onPressed: isLoading ? null : onPressed,
             icon: isLoading ? _loader : Icon(icon),
-            label: label,
+            label: text,
             iconAlignment: iconAlignment,
           );
+
+    return isSmall ? button : SizedBox(width: double.infinity, child: button);
   }
 
   Widget get _loader => SizedBox(

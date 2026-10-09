@@ -152,11 +152,10 @@ class AppTheme {
           height: 1.2,
         ),
       ),
-
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ButtonStyle(
-          minimumSize: const WidgetStatePropertyAll(
-            Size(double.infinity, Dimens.elevatedButtonHeight),
+          fixedSize: const WidgetStatePropertyAll(
+            Size.fromHeight(Dimens.elevatedButtonHeight),
           ),
           padding: const WidgetStatePropertyAll(
             EdgeInsets.symmetric(
@@ -200,11 +199,56 @@ class AppTheme {
           ),
         ),
       ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: ButtonStyle(
+          fixedSize: const WidgetStatePropertyAll(
+            Size.fromHeight(Dimens.elevatedButtonHeight),
+          ),
+          padding: const WidgetStatePropertyAll(
+            EdgeInsets.symmetric(
+              horizontal: Dimens.twentyFour,
+              vertical: Dimens.eight,
+            ),
+          ),
+          backgroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return AppColors.disabled;
+            }
 
+            if (states.contains(WidgetState.pressed)) {
+              return AppColors.neonPurple.withValues(alpha: 0.8);
+            }
+
+            return AppColors.neonPurple;
+          }),
+          foregroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return AppColors.textSecondary;
+            }
+
+            return AppColors.textPrimary;
+          }),
+          overlayColor: WidgetStatePropertyAll(
+            AppColors.textPrimary.withValues(alpha: 0.08),
+          ),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(Dimens.radiusMd),
+            ),
+          ),
+          textStyle: const WidgetStatePropertyAll(
+            TextStyle(
+              fontSize: Dimens.fontSm,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.8,
+            ),
+          ),
+        ),
+      ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: ButtonStyle(
-          minimumSize: const WidgetStatePropertyAll(
-            Size(double.infinity, Dimens.elevatedButtonHeight),
+          fixedSize: const WidgetStatePropertyAll(
+            Size.fromHeight(Dimens.elevatedButtonHeight),
           ),
           padding: const WidgetStatePropertyAll(
             EdgeInsets.symmetric(
@@ -239,10 +283,16 @@ class AppTheme {
             }
 
             if (states.contains(WidgetState.pressed)) {
-              return const BorderSide(color: AppColors.neonPurple, width: 1.5);
+              return const BorderSide(
+                color: AppColors.neonPurple,
+                width: 1.5,
+              );
             }
 
-            return const BorderSide(color: AppColors.border, width: 1.2);
+            return const BorderSide(
+              color: AppColors.border,
+              width: 1.2,
+            );
           }),
           shape: WidgetStatePropertyAll(
             RoundedRectangleBorder(
@@ -258,11 +308,10 @@ class AppTheme {
           ),
         ),
       ),
-
       textButtonTheme: TextButtonThemeData(
         style: ButtonStyle(
-          minimumSize: const WidgetStatePropertyAll(
-            Size(0, Dimens.elevatedButtonHeight),
+          fixedSize: const WidgetStatePropertyAll(
+            Size.fromHeight(Dimens.elevatedButtonHeight),
           ),
           padding: const WidgetStatePropertyAll(
             EdgeInsets.symmetric(
@@ -380,10 +429,7 @@ class AppTheme {
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: AppColors.surface,
-        insetPadding: const EdgeInsets.symmetric(
-          horizontal: Dimens.twentyFour,
-          vertical: Dimens.twentyFour,
-        ),
+        insetPadding: Dimens.edgeInsets24_12,
         shape: RoundedRectangleBorder(
           borderRadius: Dimens.radius16,
           side: BorderSide(color: colorScheme.primary.withValues(alpha: 0.4)),

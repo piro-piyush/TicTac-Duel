@@ -5,6 +5,7 @@ class NeonElevatedButton extends StatelessWidget {
     required this.label,
     required this.onPressed,
     this.isLoading = false,
+    this.isSmall = false,
     super.key,
   }) : icon = null,
        iconAlignment = null;
@@ -14,6 +15,7 @@ class NeonElevatedButton extends StatelessWidget {
     required this.onPressed,
     required this.icon,
     this.isLoading = false,
+    this.isSmall = false,
     this.iconAlignment,
     super.key,
   });
@@ -22,22 +24,24 @@ class NeonElevatedButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final IconData? icon;
   final bool isLoading;
+  final bool isSmall;
   final IconAlignment? iconAlignment;
 
   @override
   Widget build(BuildContext context) {
-    final label = Text(this.label);
-    return icon == null
+    final button = icon == null
         ? ElevatedButton(
-      onPressed: isLoading ? null : onPressed,
-      child: isLoading ? _loader : label,
-    )
+            onPressed: isLoading ? null : onPressed,
+            child: isLoading ? _loader : Text(label),
+          )
         : ElevatedButton.icon(
-      onPressed: isLoading ? null : onPressed,
-      icon: isLoading ? _loader : Icon(icon),
-      label: label,
-      iconAlignment: iconAlignment,
-    );
+            onPressed: isLoading ? null : onPressed,
+            icon: isLoading ? _loader : Icon(icon),
+            label: Text(label),
+            iconAlignment: iconAlignment,
+          );
+
+    return isSmall ? button : SizedBox(width: double.infinity, child: button);
   }
 
   Widget get _loader => const SizedBox(

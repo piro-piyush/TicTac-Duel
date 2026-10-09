@@ -5,6 +5,7 @@ class NeonOutlinedButtonWidget extends StatelessWidget {
     required this.label,
     required this.onPressed,
     this.isLoading = false,
+    this.isSmall = false,
     this.color,
     super.key,
   }) : icon = null,
@@ -15,6 +16,7 @@ class NeonOutlinedButtonWidget extends StatelessWidget {
     required this.onPressed,
     required IconData this.icon,
     this.isLoading = false,
+    this.isSmall = false,
     this.color,
     super.key,
     this.iconAlignment,
@@ -25,22 +27,24 @@ class NeonOutlinedButtonWidget extends StatelessWidget {
   final IconData? icon;
   final Color? color;
   final bool isLoading;
+  final bool isSmall;
   final IconAlignment? iconAlignment;
 
   @override
   Widget build(BuildContext context) {
-    final label = Text(this.label);
-    return icon == null
+    final button = icon == null
         ? OutlinedButton(
             onPressed: isLoading ? null : onPressed,
-            child: isLoading ? _loader : label,
+            child: isLoading ? _loader : Text(label),
           )
         : OutlinedButton.icon(
             onPressed: isLoading ? null : onPressed,
             icon: isLoading ? _loader : Icon(icon),
-            label: label,
+            label: Text(label),
             iconAlignment: iconAlignment,
           );
+
+    return isSmall ? button : SizedBox(width: double.infinity, child: button);
   }
 
   Widget get _loader => const SizedBox(
