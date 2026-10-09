@@ -20,34 +20,36 @@ class RoundSelectorWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       spacing: Dimens.eight,
       children: [
-        const SectionTitleWidget(
-          title: 'ROUNDS',
-        ),
+        const SectionTitleWidget(title: 'ROUNDS'),
         Container(
-          padding: Dimens.edgeInsets6,
-          decoration: BoxDecoration(
-            color: AppColors.card,
-            borderRadius: Dimens.radius16,
-            border: Border.all(
-              color: AppColors.border,
+              padding: Dimens.edgeInsets6,
+              decoration: BoxDecoration(
+                color: AppColors.card,
+                borderRadius: Dimens.radius16,
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Row(
+                spacing: Dimens.six,
+                children: roundOptions.map((rounds) {
+                  return Expanded(
+                    child: _RoundOption(
+                      rounds: rounds,
+                      isSelected: rounds == selectedRounds,
+                      textTheme: textTheme,
+                      onTap: () => onRoundChanged(rounds),
+                    ),
+                  );
+                }).toList(),
+              ),
+            )
+            .animate()
+            .fadeIn(duration: AnimationConstants.medium)
+            .slideY(
+              begin: AnimationConstants.slideSmall,
+              end: 0,
+              duration: AnimationConstants.medium,
+              curve: AnimationConstants.defaultCurve,
             ),
-          ),
-          child: Row(
-            spacing: Dimens.six,
-            children: roundOptions.map((rounds) {
-              final isSelected = rounds == selectedRounds;
-
-              return Expanded(
-                child: _RoundOption(
-                  rounds: rounds,
-                  isSelected: isSelected,
-                  textTheme: textTheme,
-                  onTap: () => onRoundChanged(rounds),
-                ),
-              );
-            }).toList(),
-          ),
-        ),
       ],
     );
   }
@@ -76,7 +78,7 @@ class _RoundOption extends StatelessWidget {
         splashColor: AppColors.neonPurple.withValues(alpha: 0.08),
         highlightColor: AppColors.neonPurple.withValues(alpha: 0.04),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
+          duration: AnimationConstants.fast,
           height: 68,
           decoration: BoxDecoration(
             color: isSelected
@@ -91,11 +93,11 @@ class _RoundOption extends StatelessWidget {
             ),
             boxShadow: isSelected
                 ? [
-              BoxShadow(
-                color: AppColors.neonPurple.withValues(alpha: 0.10),
-                blurRadius: 12,
-              ),
-            ]
+                    BoxShadow(
+                      color: AppColors.neonPurple.withValues(alpha: 0.10),
+                      blurRadius: 12,
+                    ),
+                  ]
                 : null,
           ),
           child: Column(

@@ -117,26 +117,46 @@ class TicTacToeGameWidget extends StatelessWidget {
                 spacing: sectionSpacing,
                 children: [
                   Align(
-                    alignment: Alignment.centerRight,
-                    child: _buildPlayerCard(
-                      player: opponent,
-                      points: opponentPoints,
-                      isTurn: opponentIsTurn,
-                      compact: isCompact,
-                    ),
-                  ),
+                        alignment: Alignment.centerRight,
+                        child: _buildPlayerCard(
+                          player: opponent,
+                          points: opponentPoints,
+                          isTurn: opponentIsTurn,
+                          compact: isCompact,
+                        ),
+                      )
+                      .animate()
+                      .fadeIn(duration: AnimationConstants.medium)
+                      .slideX(
+                        begin: -AnimationConstants.slideLarge,
+                        end: 0,
+                        duration: AnimationConstants.medium,
+                        curve: AnimationConstants.defaultCurve,
+                      ),
 
                   _buildBoard(isWide),
 
                   Align(
-                    alignment: Alignment.centerLeft,
-                    child: _buildPlayerCard(
-                      player: me,
-                      points: mePoints,
-                      isTurn: meIsTurn,
-                      compact: isCompact,
-                    ),
-                  ),
+                        alignment: Alignment.centerLeft,
+                        child: _buildPlayerCard(
+                          player: me,
+                          points: mePoints,
+                          isTurn: meIsTurn,
+                          compact: isCompact,
+                        ),
+                      )
+                      .animate()
+                      .fadeIn(
+                        delay: AnimationConstants.staggerShort,
+                        duration: AnimationConstants.medium,
+                      )
+                      .slideX(
+                        begin: AnimationConstants.slideLarge,
+                        end: 0,
+                        delay: AnimationConstants.staggerShort,
+                        duration: AnimationConstants.medium,
+                        curve: AnimationConstants.defaultCurve,
+                      ),
                 ],
               ),
 

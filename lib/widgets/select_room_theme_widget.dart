@@ -39,7 +39,7 @@ class SelectRoomThemeWidget extends StatelessWidget {
         splashColor: theme.primary.withValues(alpha: 0.08),
         highlightColor: theme.primary.withValues(alpha: 0.04),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
+          duration: AnimationConstants.fast,
           height: Dimens.fiftySix,
           padding: Dimens.edgeInsets12_8,
           decoration: BoxDecoration(
@@ -67,19 +67,19 @@ class SelectRoomThemeWidget extends StatelessWidget {
                 ),
               ),
               AnimatedSwitcher(
-                duration: const Duration(milliseconds: 150),
+                duration: AnimationConstants.fast,
                 child: isSelected
                     ? Icon(
-                  Icons.check_circle_rounded,
-                  key: const ValueKey('selected'),
-                  color: theme.primary,
-                  size: Dimens.iconSm,
-                )
+                        Icons.check_circle_rounded,
+                        key: const ValueKey('selected'),
+                        color: theme.primary,
+                        size: Dimens.iconSm,
+                      )
                     : const SizedBox(
-                  key: ValueKey('unselected'),
-                  width: Dimens.iconSm,
-                  height: Dimens.iconSm,
-                ),
+                        key: ValueKey('unselected'),
+                        width: Dimens.iconSm,
+                        height: Dimens.iconSm,
+                      ),
               ),
             ],
           ),
@@ -92,7 +92,7 @@ class SelectRoomThemeWidget extends StatelessWidget {
     final theme = selectedTheme;
 
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 220),
+      duration: AnimationConstants.fast,
       padding: Dimens.edgeInsets12,
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -181,14 +181,14 @@ class SelectRoomThemeWidget extends StatelessWidget {
             child: symbol == null
                 ? null
                 : Center(
-              child: Icon(
-                symbol.icon,
-                color: symbol == PlayerSymbol.x
-                    ? theme.primary
-                    : theme.secondary,
-                size: Dimens.iconMd,
-              ),
-            ),
+                    child: Icon(
+                      symbol.icon,
+                      color: symbol == PlayerSymbol.x
+                          ? theme.primary
+                          : theme.secondary,
+                      size: Dimens.iconMd,
+                    ),
+                  ),
           );
         },
       ),
