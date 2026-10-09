@@ -6,7 +6,7 @@ class TicTacToeGameWidget extends StatelessWidget {
   const TicTacToeGameWidget({
     super.key,
     required this.theme,
-     this.playerId,
+    this.playerId,
     required this.board,
     required this.winningIndexes,
     required this.turnPlayerId,
@@ -229,7 +229,7 @@ class TicTacToeGameWidget extends StatelessWidget {
         width: Dimens.seventy,
         height: Dimens.seventy,
         child: Lottie.network(
-          event.reaction.animation,
+          event.reaction.animationUrl,
           fit: BoxFit.contain,
           repeat: false,
         ),

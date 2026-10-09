@@ -1,7 +1,7 @@
 import 'package:tictac_duel/lib.dart';
 
-class NeonElevatedButton extends StatelessWidget {
-  const NeonElevatedButton({
+class NeonElevatedButtonWidget extends StatelessWidget {
+  const NeonElevatedButtonWidget({
     required this.label,
     required this.onPressed,
     this.isLoading = false,
@@ -10,7 +10,7 @@ class NeonElevatedButton extends StatelessWidget {
   }) : icon = null,
        iconAlignment = null;
 
-  const NeonElevatedButton.icon({
+  const NeonElevatedButtonWidget.icon({
     required this.label,
     required this.onPressed,
     required this.icon,
