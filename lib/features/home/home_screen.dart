@@ -16,15 +16,17 @@ class HomeScreen extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         spacing: Dimens.twelve,
         children: [
-          QuickActionWidget(
+          NeonTextButtonWidget.icon(
             icon: Icons.settings_rounded,
             label: 'Settings',
-            onTap: navigation.pushSettings,
+            onPressed: navigation.pushSettings,
+            isSmall: true,
           ),
-          QuickActionWidget(
+          NeonTextButtonWidget.icon(
             icon: Icons.help_outline_rounded,
             label: 'Help',
-            onTap: navigation.pushHelp,
+            onPressed: navigation.pushHelp,
+            isSmall: true,
           ),
         ],
       ),

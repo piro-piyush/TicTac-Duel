@@ -76,24 +76,27 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
     return currentPlayer.id == state.room.guest?.id && state.room.guestReady;
   }
 
-  bool get showGame {
-    final status = state.room.status;
+  // bool get showGame {
+  //   final status = state.room.status;
+  //
+  //   if (status == RoomStatus.playing ||
+  //       status == RoomStatus.finished) {
+  //     return true;
+  //   }
+  //
+  //   if (status == RoomStatus.result) {
+  //     return !amIReady;
+  //   }
+  //
+  //   return false;
+  // }
 
-    if (status == RoomStatus.playing) {
-      return true;
-    }
+  bool get showGame =>
+      state.room.status != RoomStatus.waiting &&
+      (state.room.status != RoomStatus.result || !amIReady);
 
-    if (status == RoomStatus.result) {
-      return !amIReady;
-    }
-
-    return false;
-  }
-
-  bool get isWaitingForPlayers =>
+  bool get showShareButton =>
       state.room.status == RoomStatus.waiting && state.room.guest == null;
-
-  bool get waitingForNextRound => state.room.currentRound > 0;
 
   Future<void> _initialize() async {
     state = state.copyWith(clearError: true);
@@ -132,6 +135,7 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
         guestReady: response.isReady,
       ),
     );
+    _audioNotifier.playJoin();
   }
 
   void _handlePlayerLeft(String playerId) {
@@ -145,6 +149,7 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
         guestReady: false,
       ),
     );
+    _audioNotifier.lightVibration();
   }
 
   void _handleReadyUpdated(ReadyUpdatedResponse response) {
@@ -506,4 +511,13 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
       subject: GameConstants.appName,
     ),
   );
+
+  Future<void> handlePop(bool didPop, bool Function() isMounted) async {
+    if (didPop) return;
+
+    if (!await _gameDialog.confirmQuit() || !isMounted()) return;
+
+    _roomSocketService.quitGame();
+    _navigation.back();
+  }
 }

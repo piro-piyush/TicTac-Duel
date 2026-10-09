@@ -31,7 +31,7 @@ class PlayerNameAndRoomCodeFieldWidget extends StatelessWidget {
     return Form(
       key: formKey,
       child: Column(
-        spacing: Dimens.twenty,
+        spacing: Dimens.twelve,
         children: [_buildPlayerNameField(), _buildRoomCodeField()],
       ),
     );

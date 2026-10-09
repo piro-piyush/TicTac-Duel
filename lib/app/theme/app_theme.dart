@@ -7,22 +7,16 @@ class AppTheme {
     const colorScheme = ColorScheme.dark(
       primary: AppColors.neonPurple,
       onPrimary: AppColors.textPrimary,
-
       secondary: AppColors.neonCyan,
       onSecondary: AppColors.background,
-
       tertiary: AppColors.neonPink,
       onTertiary: AppColors.textPrimary,
-
       surface: AppColors.surface,
       onSurface: AppColors.textPrimary,
-
       error: AppColors.neonPink,
       onError: AppColors.textPrimary,
-
       outline: AppColors.border,
       outlineVariant: AppColors.border,
-
       surfaceContainerHighest: AppColors.card,
     );
     return ThemeData(
@@ -30,9 +24,7 @@ class AppTheme {
       brightness: Brightness.dark,
       scaffoldBackgroundColor: AppColors.background,
       fontFamily: 'Poppins',
-
       colorScheme: colorScheme,
-
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.transparent,
         foregroundColor: AppColors.textPrimary,
@@ -48,7 +40,6 @@ class AppTheme {
           height: 1.2,
         ),
       ),
-
       textTheme: const TextTheme(
         displayLarge: TextStyle(
           color: AppColors.textPrimary,
@@ -167,18 +158,15 @@ class AppTheme {
             if (states.contains(WidgetState.disabled)) {
               return AppColors.disabled;
             }
-
             if (states.contains(WidgetState.pressed)) {
               return AppColors.neonPurple.withValues(alpha: 0.8);
             }
-
             return AppColors.neonPurple;
           }),
           foregroundColor: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.disabled)) {
               return AppColors.textSecondary;
             }
-
             return AppColors.textPrimary;
           }),
           overlayColor: WidgetStatePropertyAll(
@@ -214,18 +202,15 @@ class AppTheme {
             if (states.contains(WidgetState.disabled)) {
               return AppColors.disabled;
             }
-
             if (states.contains(WidgetState.pressed)) {
               return AppColors.neonPurple.withValues(alpha: 0.8);
             }
-
             return AppColors.neonPurple;
           }),
           foregroundColor: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.disabled)) {
               return AppColors.textSecondary;
             }
-
             return AppColors.textPrimary;
           }),
           overlayColor: WidgetStatePropertyAll(
@@ -260,18 +245,15 @@ class AppTheme {
             if (states.contains(WidgetState.disabled)) {
               return AppColors.disabled;
             }
-
             if (states.contains(WidgetState.pressed)) {
               return AppColors.textPrimary;
             }
-
             return AppColors.neonPurple;
           }),
           backgroundColor: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.pressed)) {
               return AppColors.neonPurple.withValues(alpha: 0.12);
             }
-
             return Colors.transparent;
           }),
           overlayColor: WidgetStatePropertyAll(
@@ -281,18 +263,10 @@ class AppTheme {
             if (states.contains(WidgetState.disabled)) {
               return const BorderSide(color: AppColors.disabled);
             }
-
             if (states.contains(WidgetState.pressed)) {
-              return const BorderSide(
-                color: AppColors.neonPurple,
-                width: 1.5,
-              );
+              return const BorderSide(color: AppColors.neonPurple, width: 1.5);
             }
-
-            return const BorderSide(
-              color: AppColors.border,
-              width: 1.2,
-            );
+            return const BorderSide(color: AppColors.border, width: 1.2);
           }),
           shape: WidgetStatePropertyAll(
             RoundedRectangleBorder(
@@ -323,11 +297,9 @@ class AppTheme {
             if (states.contains(WidgetState.disabled)) {
               return AppColors.disabled;
             }
-
             if (states.contains(WidgetState.pressed)) {
               return AppColors.neonPurple;
             }
-
             return AppColors.textSecondary;
           }),
           overlayColor: WidgetStatePropertyAll(
@@ -350,68 +322,56 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.card,
-
         contentPadding: const EdgeInsets.symmetric(
           horizontal: Dimens.sixteen,
           vertical: Dimens.fourteen,
         ),
-
         hintStyle: const TextStyle(
           color: AppColors.textSecondary,
           fontSize: Dimens.fontSm,
           fontWeight: FontWeight.w500,
           letterSpacing: 0.6,
         ),
-
         labelStyle: const TextStyle(
           color: AppColors.textSecondary,
           fontSize: Dimens.fontSm,
           fontWeight: FontWeight.w500,
         ),
-
         floatingLabelStyle: const TextStyle(
           color: AppColors.neonPurple,
           fontSize: Dimens.fontSm,
           fontWeight: FontWeight.w600,
         ),
-
         prefixIconColor: AppColors.textSecondary,
         suffixIconColor: AppColors.textSecondary,
-
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(Dimens.radiusMd),
           borderSide: const BorderSide(color: AppColors.border, width: 1.2),
         ),
-
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(Dimens.radiusMd),
           borderSide: const BorderSide(color: AppColors.border, width: 1.2),
         ),
-
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(Dimens.radiusMd),
           borderSide: const BorderSide(color: AppColors.neonPurple, width: 1.5),
         ),
-
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(Dimens.radiusMd),
           borderSide: const BorderSide(color: AppColors.neonPink, width: 1.2),
         ),
-
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(Dimens.radiusMd),
           borderSide: const BorderSide(color: AppColors.neonPink, width: 1.5),
         ),
-
         errorStyle: const TextStyle(
           color: AppColors.neonPink,
           fontSize: Dimens.fontXs,
           fontWeight: FontWeight.w500,
         ),
-
         counterStyle: const TextStyle(
           color: AppColors.textSecondary,
-          fontSize: Dimens.fontXs,
+          fontSize: Dimens.font2Xs,
         ),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(

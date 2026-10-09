@@ -30,6 +30,7 @@ class PlayerNameWidget extends StatelessWidget {
             focusNode: _playerNameFocusNode,
             textCapitalization: TextCapitalization.words,
             validator: ValidatorUtils.gameName,
+            maxLength: GameConstants.maxPlayerNameLength,
             hintText: 'ENTER YOUR NAME',
             suffixIcon: IconButton(
               onPressed: onPressed,

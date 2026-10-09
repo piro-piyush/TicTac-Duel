@@ -1,42 +1,85 @@
 import 'package:tictac_duel/lib.dart';
 
-class JoinPublicRoomDialogWidget extends StatelessWidget {
-  const JoinPublicRoomDialogWidget({
-    super.key,
-    required this.playerNameController,
-    required this.playerNameFocusNode,
-    required this.onGenerateRandomName,
-    required this.onJoin,
-    required this.onCancel,
-  });
+class JoinPublicRoomDialogWidget extends StatefulWidget {
+  const JoinPublicRoomDialogWidget({super.key});
 
-  final TextEditingController playerNameController;
-  final FocusNode playerNameFocusNode;
-  final VoidCallback onGenerateRandomName;
-  final VoidCallback onJoin;
-  final VoidCallback onCancel;
+  @override
+  State<JoinPublicRoomDialogWidget> createState() =>
+      _JoinPublicRoomDialogWidgetState();
+}
+
+class _JoinPublicRoomDialogWidgetState
+    extends State<JoinPublicRoomDialogWidget> {
+  final _formKey = GlobalKey<FormState>();
+
+  late final TextEditingController playerNameController;
+  late final FocusNode playerNameFocusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    playerNameController = TextEditingController();
+    playerNameFocusNode = FocusNode();
+  }
+
+  @override
+  void dispose() {
+    playerNameController.dispose();
+    playerNameFocusNode.dispose();
+    super.dispose();
+  }
+
+  void _validateAndJoin() {
+    if (_formKey.currentState?.validate() ?? false) {
+      context.pop(playerNameController.text.trim());
+    }
+  }
+
+  void _generateRandomName() {
+    final name = GameNameUtils.random();
+
+    playerNameController
+      ..text = name
+      ..selection = TextSelection.collapsed(offset: name.length);
+
+    playerNameFocusNode.requestFocus();
+  }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('JOIN THE DUEL'),
-      content: GameTextFormFieldWidget(
-        controller: playerNameController,
-        focusNode: playerNameFocusNode,
-        hintText: 'ENTER YOUR NAME',
-        validator: ValidatorUtils.gameName,
-        textCapitalization: TextCapitalization.words,
-        maxLength: GameConstants.maxPlayerNameLength,
-        onFieldSubmitted: (_) => onJoin(),
-        suffixIcon: IconButton(
-          onPressed: onGenerateRandomName,
-          tooltip: 'Random name',
-          icon: const Icon(Icons.casino_outlined, color: AppColors.neonPurple),
+      content: Form(
+        key: _formKey,
+        child: GameTextFormFieldWidget(
+          controller: playerNameController,
+          focusNode: playerNameFocusNode,
+          hintText: 'ENTER YOUR NAME',
+          validator: ValidatorUtils.gameName,
+          textCapitalization: TextCapitalization.words,
+          maxLength: GameConstants.maxPlayerNameLength,
+          onFieldSubmitted: (_) => _validateAndJoin(),
+          suffixIcon: IconButton(
+            onPressed: _generateRandomName,
+            tooltip: 'Random name',
+            icon: const Icon(
+              Icons.casino_outlined,
+              color: AppColors.neonPurple,
+            ),
+          ),
         ),
       ),
       actions: [
-        TextButton(onPressed: onCancel, child: const Text('CANCEL')),
-        FilledButton(onPressed: onJoin, child: const Text('JOIN')),
+        NeonTextButtonWidget(
+          onPressed: () => context.pop(),
+          label: 'CANCEL',
+          isSmall: true,
+        ),
+        NeonElevatedButtonWidget(
+          onPressed: _validateAndJoin,
+          label: 'JOIN',
+          isSmall: true,
+        ),
       ],
     );
   }
