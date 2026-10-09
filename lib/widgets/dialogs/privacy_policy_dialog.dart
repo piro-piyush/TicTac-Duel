@@ -9,6 +9,8 @@ class PrivacyPolicyDialog extends StatelessWidget {
     content: const SingleChildScrollView(
       child: Text(GameConstants.privacyPolicyText),
     ),
-    actions: [NeonTextButton(onPressed: context.pop, label: 'CLOSE')],
+    actions: [
+      NeonTextButtonWidget(onPressed: context.pop, label: 'CLOSE', isSmall: true),
+    ],
   );
 }

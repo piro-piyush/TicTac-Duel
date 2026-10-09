@@ -33,9 +33,7 @@ class ReactionReceivedResponse {
         throw const FormatException('Invalid target player ID');
       }
 
-      final parsedReaction = GameReaction.values
-          .where((item) => item.name == reaction)
-          .firstOrNull;
+      final parsedReaction = GameReactionX.tryParse(reaction);
 
       if (parsedReaction == null) {
         throw FormatException('Unknown reaction: $reaction');

@@ -19,7 +19,7 @@ class QuitDialog extends StatelessWidget {
               ),
             ),
             Expanded(
-              child: NeonElevatedButton(
+              child: NeonElevatedButtonWidget(
                 onPressed: () => context.pop(true),
                 label: 'QUIT',
               ),

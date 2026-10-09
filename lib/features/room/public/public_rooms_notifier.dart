@@ -1,7 +1,7 @@
 import 'package:tictac_duel/lib.dart';
 
 final publicRoomsProvider =
-    NotifierProvider<PublicRoomsNotifier, PublicRoomsState>(
+    NotifierProvider.autoDispose<PublicRoomsNotifier, PublicRoomsState>(
       PublicRoomsNotifier.new,
     );
 
@@ -11,9 +11,6 @@ class PublicRoomsNotifier extends Notifier<PublicRoomsState> {
   late final AppNavigation _navigation;
   late final GameDialogUtils _gameDialog;
 
-  late final TextEditingController playerNameController;
-  late final FocusNode playerNameFocusNode;
-
   @override
   PublicRoomsState build() {
     _roomApiService = ref.read(roomApiServiceProvider);
@@ -21,144 +18,79 @@ class PublicRoomsNotifier extends Notifier<PublicRoomsState> {
     _navigation = ref.read(appNavigationProvider);
     _gameDialog = ref.read(gameDialogProvider);
 
-    playerNameController = TextEditingController();
-    playerNameFocusNode = FocusNode();
-
-    ref.onDispose(() {
-      playerNameController.dispose();
-      playerNameFocusNode.dispose();
-    });
-
     Future.microtask(fetchPublicRooms);
 
     return const PublicRoomsState();
   }
 
-  void generateRandomName() {
-    final name = GameNameUtils.random();
-
-    playerNameController
-      ..text = name
-      ..selection = TextSelection.collapsed(offset: name.length);
-
-    playerNameFocusNode.requestFocus();
-  }
-
   Future<void> fetchPublicRooms() async {
-    if (state.isFetchingRooms) {
-      return;
-    }
+    if (state.isFetchingRooms) return;
 
-    state = state.copyWith(isFetchingRooms: true, clearError: true);
+    state = state.copyWith(isFetchingRooms: true);
 
     try {
       final rooms = await _roomApiService.getRooms();
 
-      state = state.copyWith(rooms: rooms);
-    } catch (error, stackTrace) {
-      _handleError(error, 'Failed to fetch public rooms.', stackTrace);
-    } finally {
-      state = state.copyWith(isFetchingRooms: false);
+      state = state.copyWith(rooms: rooms, isFetchingRooms: false);
+    } catch (error) {
+      final message = error.toString();
+
+      state = state.copyWith(
+        isJoining: false,
+        isFetchingRooms: false,
+        errorMessage: message,
+      );
+
+      PopupUtils.showError(message);
+      LoggerUtils.error('Public rooms error: $message');
     }
   }
 
-  Future<void> refreshRooms() {
-    return fetchPublicRooms();
-  }
+  Future<void> refreshRooms() => fetchPublicRooms();
 
-  void showJoinDialog(RoomModel room) {
-    _gameDialog.show<void>(
+  Future<void> showJoinDialog(RoomModel room) async {
+    final name = await _gameDialog.show<String>(
       barrierDismissible: false,
-      child: JoinPublicRoomDialogWidget(
-        playerNameController: playerNameController,
-        playerNameFocusNode: playerNameFocusNode,
-        onGenerateRandomName: generateRandomName,
-        onCancel: _gameDialog.closeOpenDialog,
-        onJoin: () {
-          _gameDialog.closeOpenDialog();
-          joinPublicRoom(room);
-        },
-      ),
+      child: const JoinPublicRoomDialogWidget(),
     );
+
+    if (name == null || name.isEmpty) return;
+
+    await joinPublicRoom(room, name);
   }
 
-  Future<void> joinPublicRoom(RoomModel room) async {
-    if (state.isJoining || state.isFetchingRooms) {
-      return;
-    }
+  Future<void> joinPublicRoom(RoomModel room, String name) async {
+    if (state.isJoining || state.isFetchingRooms) return;
 
-    final playerName = playerNameController.text.trim();
-
-    if (playerName.isEmpty) {
-      playerNameFocusNode.requestFocus();
-      return;
-    }
-
-    state = state.copyWith(isJoining: true, clearError: true);
+    state = state.copyWith(isJoining: true);
 
     try {
       await _roomSocketService.connect();
 
       _roomSocketService.joinRoom(
         roomCode: room.roomCode,
-        name: playerName,
-        onJoined: _handleRoomJoined,
-        onError: _handleSocketError,
+        name: name,
+        onJoined: (response) {
+          state = state.copyWith(isJoining: false);
+          _navigation.pushGame(response.room);
+        },
+        onError: (message) {
+          state = state.copyWith(isJoining: false, errorMessage: message);
+
+          PopupUtils.showError(message);
+        },
       );
-    } catch (error, stackTrace) {
-      _handleError(error, 'Failed to join room.', stackTrace);
+    } catch (error) {
+      final message = error.toString();
+
+      state = state.copyWith(
+        isJoining: false,
+        isFetchingRooms: false,
+        errorMessage: message,
+      );
+
+      PopupUtils.showError(message);
+      LoggerUtils.error('Public rooms error: $message');
     }
-  }
-
-  void _handleRoomJoined(RoomJoinedResponse response) {
-    state = state.copyWith(isJoining: false);
-
-    _clearForm();
-    _navigation.pushGame(response.room);
-  }
-
-  void _handleSocketError(String message) {
-    state = state.copyWith(isJoining: false, errorMessage: message);
-
-    PopupUtils.showError(message);
-  }
-
-  void _clearForm() {
-    playerNameController.clear();
-    playerNameFocusNode.unfocus();
-
-    state = state.copyWith(clearError: true);
-  }
-
-  void _handleError(
-    Object error,
-    String fallbackMessage,
-    StackTrace stackTrace,
-  ) {
-    final message = error is ApiException ? error.message : fallbackMessage;
-
-    if (error is! ApiException) {
-      LoggerUtils.error('PublicRoomsNotifier', error, stackTrace);
-    }
-
-    state = state.copyWith(
-      isJoining: false,
-      isFetchingRooms: false,
-      errorMessage: message,
-    );
-
-    PopupUtils.showError(message);
-
-    LoggerUtils.error('Public rooms error: $message');
-
-    clearError();
-  }
-
-  void clearError() {
-    if (state.errorMessage == null) {
-      return;
-    }
-
-    state = state.copyWith(clearError: true);
   }
 }

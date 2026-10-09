@@ -5,3 +5,4 @@ export 'room_state_widget.dart';
 export 'game_round_animation_widget.dart';
 export 'game_reaction_bottom_sheet_widget.dart';
 export 'game_reaction_button_widget.dart';
+export 'share_button_widget.dart';

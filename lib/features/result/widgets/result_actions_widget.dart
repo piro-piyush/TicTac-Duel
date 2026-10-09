@@ -19,7 +19,7 @@ class ResultActionsWidget extends ConsumerWidget {
           ),
         ),
         Expanded(
-          child: NeonElevatedButton(
+          child: NeonElevatedButtonWidget(
             label: isOnline ? 'NEW ROOM' : 'NEW GAME',
             onPressed: () => _onNewGame(navigation),
           ),

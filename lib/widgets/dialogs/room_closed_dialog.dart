@@ -50,21 +50,21 @@ class RoomClosedDialog extends StatelessWidget {
             spacing: Dimens.twelve,
             children: [
               Expanded(
-                child: OutlinedButton(
+                child: NeonOutlinedButtonWidget(
                   onPressed: () {
                     context.pop();
                     onBack();
                   },
-                  child: const Text('BACK'),
+                  label: 'BACK',
                 ),
               ),
               Expanded(
-                child: ElevatedButton(
+                child: NeonElevatedButtonWidget(
                   onPressed: () {
                     context.pop();
                     onHome();
                   },
-                  child: const Text('HOME'),
+                  label: 'HOME'
                 ),
               ),
             ],
