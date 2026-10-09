@@ -24,7 +24,7 @@ class CreateRoomNotifier extends Notifier<CreateRoomState> {
 
     ref.onDispose(_dispose);
 
-    return const CreateRoomState();
+    return CreateRoomState.initial();
   }
 
   void _dispose() {
@@ -83,20 +83,25 @@ class CreateRoomNotifier extends Notifier<CreateRoomState> {
         maxRounds: state.selectedMaxRounds,
         theme: state.selectedTheme,
         isPrivate: state.isRoomPrivate,
-        onCreated: (response) {
-          _roomSocketService.offCreateRoomListeners();
-          state = state.copyWith(isCreating: false);
-          _navigation.pushGame(response.room);
-        },
-        onError: (error) {
-          _roomSocketService.offCreateRoomListeners();
-          state = state.copyWith(isCreating: false);
-          PopupUtils.showToast(error);
-        },
+        onCreated: onRoomCreated,
+        onError: onCreateRoomError,
       );
     } catch (error) {
       state = state.copyWith(isCreating: false);
       PopupUtils.showError(error.toString());
     }
+  }
+
+  void onRoomCreated(RoomCreatedResponse response) {
+    _roomSocketService.offCreateRoomListeners();
+    state = CreateRoomState.initial();
+    playerNameController.clear();
+    _navigation.pushGame(response.room);
+  }
+
+  void onCreateRoomError(String error) {
+    _roomSocketService.offCreateRoomListeners();
+    state = state.copyWith(isCreating: false);
+    PopupUtils.showToast(error);
   }
 }

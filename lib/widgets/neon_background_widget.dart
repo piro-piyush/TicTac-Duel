@@ -147,7 +147,7 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
     return Scaffold(
       backgroundColor: AppColors.background,
       resizeToAvoidBottomInset: true,
-      floatingActionButton:widget.floatingActionButton,
+      floatingActionButton: widget.floatingActionButton,
       body: Listener(
         behavior: HitTestBehavior.translucent,
         onPointerDown: _handlePointerDown,
@@ -398,9 +398,7 @@ class _ForegroundLayer extends StatelessWidget {
           builder: (context, constraints) {
             return Center(
               child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: contentMaxWidth,
-                ),
+                constraints: BoxConstraints(maxWidth: contentMaxWidth),
                 child: SizedBox(
                   width: double.infinity,
                   height: constraints.maxHeight,
@@ -449,19 +447,30 @@ class _NeonAppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: kToolbarHeight + (bottom?.preferredSize.height ?? 0),
-      child: AppBar(
-        title: title != null
-            ? Text(title!, maxLines: 1, overflow: TextOverflow.ellipsis)
-            : null,
-        actions: actions,
-        bottom: bottom,
-        backgroundColor: Colors.transparent,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-      ),
-    );
+          height: kToolbarHeight + (bottom?.preferredSize.height ?? 0),
+          child: AppBar(
+            title: title != null
+                ? Text(title!, maxLines: 1, overflow: TextOverflow.ellipsis)
+                : null,
+            actions: actions,
+            bottom: bottom,
+            backgroundColor: Colors.transparent,
+            surfaceTintColor: Colors.transparent,
+            elevation: 0,
+            scrolledUnderElevation: 0,
+          ),
+        )
+        .animate()
+        .fadeIn(
+          duration: AnimationConstants.medium,
+          curve: AnimationConstants.entranceCurve,
+        )
+        .slideY(
+          begin: -AnimationConstants.slideSmall,
+          end: 0,
+          duration: AnimationConstants.medium,
+          curve: AnimationConstants.entranceCurve,
+        );
   }
 }
 // =============================================================================

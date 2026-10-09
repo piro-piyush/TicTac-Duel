@@ -16,83 +16,63 @@ class ChooseYourSymbolWidget extends StatelessWidget {
       spacing: Dimens.eight,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const SectionTitleWidget(
-          title: 'CHOOSE YOUR SYMBOL',
-        ),
+        const SectionTitleWidget(title: 'CHOOSE YOUR SYMBOL'),
         Row(
-          spacing: Dimens.twelve,
-          children: [
-            Expanded(
-              child: _buildSymbolCard(
-                symbol: PlayerSymbol.x,
-                color: AppColors.neonCyan,
-              ),
-            ),
-            Expanded(
-              child: _buildSymbolCard(
-                symbol: PlayerSymbol.o,
-                color: AppColors.neonPink,
-              ),
-            ),
-          ],
+          spacing: Dimens.eight,
+          children: PlayerSymbol.values
+              .map(
+                (symbol) => Expanded(child: _buildSymbolCard(context, symbol)),
+              )
+              .toList(),
         ),
       ],
     );
   }
 
-  Widget _buildSymbolCard({
-    required PlayerSymbol symbol,
-    required Color color,
-  }) {
+  Widget _buildSymbolCard(BuildContext context, PlayerSymbol symbol) {
     final isSelected = selectedSymbol == symbol;
+    final color = symbol.symbolColor;
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: () => onSymbolChanged(symbol),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: Dimens.radius16,
         splashColor: color.withValues(alpha: 0.08),
         highlightColor: color.withValues(alpha: 0.04),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
-          padding: const EdgeInsets.symmetric(vertical: 20),
+          height: Dimens.seventyTwo,
+          padding: const EdgeInsets.symmetric(horizontal: Dimens.twelve),
           decoration: BoxDecoration(
             color: isSelected
-                ? color.withValues(alpha: 0.10)
+                ? color.withValues(alpha: 0.08)
                 : AppColors.surface,
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: Dimens.radius16,
             border: Border.all(
               color: isSelected
-                  ? color.withValues(alpha: 0.8)
+                  ? color.withValues(alpha: 0.7)
                   : AppColors.border,
               width: isSelected ? 1.5 : 1,
             ),
             boxShadow: isSelected
                 ? [
-              BoxShadow(
-                color: color.withValues(alpha: 0.12),
-                blurRadius: 18,
-                spreadRadius: 1,
-              ),
-            ]
+                    BoxShadow(
+                      color: color.withValues(alpha: 0.10),
+                      blurRadius: 14,
+                    ),
+                  ]
                 : null,
           ),
-          child: Column(
-            spacing: 9,
+          child: Row(
+            spacing: Dimens.ten,
             children: [
-              Icon(
-                symbol == PlayerSymbol.x
-                    ? Icons.close_rounded
-                    : Icons.circle_outlined,
-                color: color,
-                size: 46,
-              ),
-              Text(
-                symbol.name,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
+              Icon(symbol.icon, color: color, size: Dimens.iconXl),
+              Expanded(
+                child: Text(
+                  symbol.displayName,
+                  style: Theme.of(context).textTheme.titleSmall
+                      ?.copyWith(fontWeight: FontWeight.w700),
                 ),
               ),
               AnimatedSwitcher(
@@ -103,7 +83,7 @@ class ChooseYourSymbolWidget extends StatelessWidget {
                       : Icons.radio_button_unchecked_rounded,
                   key: ValueKey(isSelected),
                   color: isSelected ? color : AppColors.disabled,
-                  size: 18,
+                  size: Dimens.iconMd,
                 ),
               ),
             ],

@@ -33,6 +33,18 @@ class GameDialogUtils {
     _markOverlayClosed();
   }
 
+  double _getMaxWidth(double screenWidth) {
+    if (screenWidth < Dimens.mobileBreakpoint) {
+      return screenWidth;
+    }
+
+    if (screenWidth < Dimens.tabletBreakpoint) {
+      return Dimens.tabletMaxContentWidth;
+    }
+
+    return Dimens.desktopMaxContentWidth;
+  }
+
   Future<void> showGameResult({
     required GameResult result,
     required PlayerSymbol mySymbol,
@@ -100,8 +112,17 @@ class GameDialogUtils {
       context: _context,
       barrierDismissible: barrierDismissible,
       barrierColor: barrierColor,
-      builder: builder,
+      builder: (context) {
+        final screenWidth = MediaQuery.sizeOf(context).width;
+        final maxContentWidth = _getMaxWidth(screenWidth);
 
+        return Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: maxContentWidth),
+            child: builder(context),
+          ),
+        );
+      },
     ).whenComplete(_markOverlayClosed);
   }
 

@@ -33,12 +33,12 @@ class RoundResultDialog extends StatelessWidget {
       title: Text(title, textAlign: TextAlign.center),
       content: Text(message, textAlign: TextAlign.center),
       actions: [
-        ElevatedButton(
+        NeonElevatedButtonWidget(
           onPressed: () {
             context.pop();
             onConfirm?.call();
           },
-          child: const Text('OK'),
+          label: 'OK',
         ),
       ],
     );

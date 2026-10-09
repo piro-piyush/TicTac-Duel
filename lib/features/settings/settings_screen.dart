@@ -1,3 +1,4 @@
+
 import 'package:tictac_duel/lib.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -22,6 +23,16 @@ class SettingsScreen extends ConsumerWidget {
                 title: 'Game Settings',
                 subtitle: 'Customize your duel experience.',
                 icon: Icons.settings_rounded,
+              )
+                  .animate()
+                  .fadeIn(
+                duration: AnimationConstants.medium,
+              )
+                  .slideY(
+                begin: -AnimationConstants.slideMedium,
+                end: 0,
+                duration: AnimationConstants.medium,
+                curve: AnimationConstants.defaultCurve,
               ),
 
               SettingsAudioSectionWidget(
@@ -31,13 +42,49 @@ class SettingsScreen extends ConsumerWidget {
                 onSoundChanged: audioNotifier.setEffectsEnabled,
                 onMusicChanged: audioNotifier.setEnabled,
                 onVibrationChanged: audioNotifier.setVibrationEnabled,
+              )
+                  .animate()
+                  .fadeIn(
+                delay: AnimationConstants.staggerShort,
+                duration: AnimationConstants.medium,
+              )
+                  .slideY(
+                begin: AnimationConstants.slideMedium,
+                end: 0,
+                delay: AnimationConstants.staggerShort,
+                duration: AnimationConstants.medium,
+                curve: AnimationConstants.defaultCurve,
               ),
 
-              const SettingsAboutSectionWidget(),
+              const SettingsAboutSectionWidget()
+                  .animate()
+                  .fadeIn(
+                delay: AnimationConstants.staggerMedium,
+                duration: AnimationConstants.medium,
+              )
+                  .slideY(
+                begin: AnimationConstants.slideMedium,
+                end: 0,
+                delay: AnimationConstants.staggerMedium,
+                duration: AnimationConstants.medium,
+                curve: AnimationConstants.defaultCurve,
+              ),
             ],
           ),
 
-          const FooterCardWidget(),
+          const FooterCardWidget()
+              .animate()
+              .fadeIn(
+            delay: AnimationConstants.staggerLong,
+            duration: AnimationConstants.medium,
+          )
+              .slideY(
+            begin: AnimationConstants.slideLarge,
+            end: 0,
+            delay: AnimationConstants.staggerLong,
+            duration: AnimationConstants.medium,
+            curve: AnimationConstants.defaultCurve,
+          ),
         ],
       ),
     );

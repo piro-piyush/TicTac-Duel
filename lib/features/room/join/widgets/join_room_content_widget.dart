@@ -34,28 +34,79 @@ class JoinRoomContentWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const RoomHeaderWidget(
-          eyebrow: 'HAVE A ROOM',
-          title: 'CODE?',
-          description: 'Enter the room code and join the battle.',
-        ),
+              eyebrow: 'HAVE A ROOM',
+              title: 'CODE?',
+              description: 'Enter the room code and join the battle.',
+            )
+            .animate()
+            .fadeIn(duration: AnimationConstants.medium)
+            .slideY(
+              begin: AnimationConstants.slideSmall,
+              end: 0,
+              duration: AnimationConstants.medium,
+              curve: AnimationConstants.defaultCurve,
+            ),
+
         PlayerNameAndRoomCodeFieldWidget(
-          formKey: formKey,
-          playerNameController: playerNameController,
-          roomCodeController: roomCodeController,
-          playerNameFocusNode: playerNameFocusNode,
-          roomCodeFocusNode: roomCodeFocusNode,
-          onGenerateRandomName: onGenerateRandomName,
-          onPasteCode: onPasteCode,
-          onJoinRoom: onJoinRoom,
+              formKey: formKey,
+              playerNameController: playerNameController,
+              roomCodeController: roomCodeController,
+              playerNameFocusNode: playerNameFocusNode,
+              roomCodeFocusNode: roomCodeFocusNode,
+              onGenerateRandomName: onGenerateRandomName,
+              onPasteCode: onPasteCode,
+              onJoinRoom: onJoinRoom,
+            )
+            .animate()
+            .fadeIn(
+              delay: AnimationConstants.staggerShort,
+              duration: AnimationConstants.medium,
+            )
+            .slideY(
+              begin: AnimationConstants.slideSmall,
+              end: 0,
+              delay: AnimationConstants.staggerShort,
+              duration: AnimationConstants.medium,
+              curve: AnimationConstants.defaultCurve,
+            ),
+
+        const JoinRoomHintWidget()
+            .animate()
+            .fadeIn(
+              delay: AnimationConstants.staggerMedium,
+              duration: AnimationConstants.medium,
+            )
+            .slideY(
+              begin: AnimationConstants.slideSmall,
+              end: 0,
+              delay: AnimationConstants.staggerMedium,
+              duration: AnimationConstants.medium,
+              curve: AnimationConstants.defaultCurve,
+            ),
+
+        const OrDividerWidget().animate().fadeIn(
+          delay: AnimationConstants.staggerLong,
+          duration: AnimationConstants.medium,
         ),
-        const JoinRoomHintWidget(),
-        const OrDividerWidget(),
+
         NeonOutlinedButtonWidget.icon(
-          label: 'CREATE YOUR OWN ROOM',
-          icon: Icons.add_rounded,
-          color: AppColors.neonPurple,
-          onPressed: onCreateRoom,
-        ),
+              label: 'CREATE YOUR OWN ROOM',
+              icon: Icons.add_rounded,
+              color: AppColors.neonPurple,
+              onPressed: onCreateRoom,
+            )
+            .animate()
+            .fadeIn(
+              delay: AnimationConstants.staggerLong,
+              duration: AnimationConstants.medium,
+            )
+            .slideY(
+              begin: AnimationConstants.slideSmall,
+              end: 0,
+              delay: AnimationConstants.staggerLong,
+              duration: AnimationConstants.medium,
+              curve: AnimationConstants.defaultCurve,
+            ),
       ],
     );
   }

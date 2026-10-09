@@ -70,7 +70,7 @@ class RoomSocketService {
   void setReady() => _socket.emit(RoomSocketEvents.setReady);
 
   void sendReaction(GameReaction reaction) =>
-      _socket.emit(RoomSocketEvents.sendReaction, {'reaction': reaction.name});
+      _socket.emit(RoomSocketEvents.sendReaction, {'reaction': reaction.emoji});
 
   void makeMove(int index) =>
       _socket.emit(RoomSocketEvents.makeMove, {'index': index});
@@ -143,7 +143,6 @@ class RoomSocketService {
 
   void off(String event) => _socket.off(event);
 
-  void offRoomJoined() => off(RoomSocketEvents.roomJoined);
 
   void offPlayerJoined() => off(RoomSocketEvents.playerJoined);
 

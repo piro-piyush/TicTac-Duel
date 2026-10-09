@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:tictac_duel/lib.dart';
 
 class SettingsAudioSectionWidget extends StatelessWidget {
@@ -17,6 +18,15 @@ class SettingsAudioSectionWidget extends StatelessWidget {
     required this.onSoundChanged,
     required this.onVibrationChanged,
   });
+
+  bool get _supportsVibration {
+    if (kIsWeb) return false;
+
+    return switch (defaultTargetPlatform) {
+      TargetPlatform.android || TargetPlatform.iOS => true,
+      _ => false,
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,14 +49,15 @@ class SettingsAudioSectionWidget extends StatelessWidget {
           color: AppColors.neonCyan,
           onChanged: onSoundChanged,
         ),
-        SectionTileWidget.withSwitch(
-          icon: Icons.vibration_rounded,
-          title: 'Vibration',
-          subtitle: 'Vibrate when making a move',
-          value: vibrationEnabled,
-          color: AppColors.neonPink,
-          onChanged: onVibrationChanged,
-        ),
+        if (_supportsVibration)
+          SectionTileWidget.withSwitch(
+            icon: Icons.vibration_rounded,
+            title: 'Vibration',
+            subtitle: 'Vibrate when making a move',
+            value: vibrationEnabled,
+            color: AppColors.neonPink,
+            onChanged: onVibrationChanged,
+          ),
       ],
     );
   }

@@ -14,16 +14,7 @@ class HomeActionsWidget extends ConsumerWidget {
         Column(
           spacing: Dimens.fourteen,
           children: [
-            // MenuButtonWidget(
-            //   title: 'Quick Match',
-            //   subtitle: 'Find an opponent and play',
-            //   icon: Icons.bolt_rounded,
-            //   color: AppColors.neonCyan,
-            //   onTap: () => _checkInternetConnection(
-            //     networkService,
-            //     () => PopupUtils.showWarning('Coming Soon...'),
-            //   ),
-            // ),
+
             MenuButtonWidget(
               title: 'Local Game',
               subtitle: 'Play with a friend or challenge the CPU',

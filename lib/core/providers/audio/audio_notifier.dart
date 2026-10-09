@@ -15,7 +15,7 @@ class AudioNotifier extends Notifier<AudioState> {
     AudioPlayer(),
   ];
   static const String _logName = 'AudioNotifier';
-
+  bool _webMusicStartAttempted = false;
   int _musicOperation = 0;
   int _effectPlayerIndex = 0;
   bool _disposed = false;
@@ -110,14 +110,14 @@ class AudioNotifier extends Notifier<AudioState> {
     }
 
     try {
-      await _backgroundPlayer.play();
+      _backgroundPlayer.play();
 
       if (_disposed) {
         return;
       }
 
       if (operation != _musicOperation || !state.isEnabled) {
-        await _backgroundPlayer.pause();
+        _backgroundPlayer.pause();
 
         if (!_disposed) {
           state = state.copyWith(isPlaying: false);
@@ -137,66 +137,69 @@ class AudioNotifier extends Notifier<AudioState> {
     }
   }
 
-  Future<void> pause() async {
-    if (_disposed || !state.isInitialized) {
-      return;
-    }
+  // Future<void> pause() async {
+  //   if (_disposed || !state.isInitialized) {
+  //     return;
+  //   }
+  //
+  //   _musicOperation++;
+  //
+  //   try {
+  //     await _backgroundPlayer.pause();
+  //
+  //     if (!_disposed) {
+  //       state = state.copyWith(isPlaying: false);
+  //     }
+  //   } catch (error, stackTrace) {
+  //     dev.log(
+  //       'Failed to pause music',
+  //       name: _logName,
+  //       error: error,
+  //       stackTrace: stackTrace,
+  //     );
+  //   }
+  // }
 
-    _musicOperation++;
+  // Future<void> stop() async {
+  //   if (_disposed || !state.isInitialized) {
+  //     return;
+  //   }
+  //
+  //   _musicOperation++;
+  //
+  //   try {
+  //     await _backgroundPlayer.stop();
+  //
+  //     if (!_disposed) {
+  //       state = state.copyWith(isPlaying: false);
+  //     }
+  //   } catch (error, stackTrace) {
+  //     dev.log(
+  //       'Failed to stop music',
+  //       name: _logName,
+  //       error: error,
+  //       stackTrace: stackTrace,
+  //     );
+  //   }
+  // }
 
-    try {
-      await _backgroundPlayer.pause();
-
-      if (!_disposed) {
-        state = state.copyWith(isPlaying: false);
-      }
-    } catch (error, stackTrace) {
-      dev.log(
-        'Failed to pause music',
-        name: _logName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-    }
-  }
-
-  Future<void> stop() async {
-    if (_disposed || !state.isInitialized) {
-      return;
-    }
-
-    _musicOperation++;
-
-    try {
-      await _backgroundPlayer.stop();
-
-      if (!_disposed) {
-        state = state.copyWith(isPlaying: false);
-      }
-    } catch (error, stackTrace) {
-      dev.log(
-        'Failed to stop music',
-        name: _logName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-    }
-  }
-
-  Future<void> resume() async {
-    if (_disposed || !state.isInitialized || !state.isEnabled) {
-      return;
-    }
-
-    await play();
-  }
+  // Future<void> resume() async {
+  //   if (_disposed || !state.isInitialized || !state.isEnabled) {
+  //     return;
+  //   }
+  //
+  //   await play();
+  // }
 
   void playTouch() {
     if (_disposed || !state.isInitialized) {
       return;
     }
 
-    if (state.isEnabled && isWeb && !_backgroundPlayer.playing) {
+    // Web browsers may require a user gesture to start audio.
+    // Attempt automatic startup only on the first interaction.
+    if (isWeb && state.isEnabled && !_webMusicStartAttempted) {
+      _webMusicStartAttempted = true;
       unawaited(play());
     }
 
@@ -266,6 +269,14 @@ class AudioNotifier extends Notifier<AudioState> {
 
     unawaited(_playEffect(AudioConstants.swordSound));
   }
+
+  // void playMove() {
+  //   if (_disposed || !state.isInitialized) {
+  //     return;
+  //   }
+  //
+  //   unawaited(_playEffect(AudioConstants.moveSound));
+  // }
 
   void playRoundStart() {
     if (_disposed || !state.isInitialized) {
@@ -365,8 +376,7 @@ class AudioNotifier extends Notifier<AudioState> {
       if (enabled) {
         await play();
       } else {
-        await _backgroundPlayer.pause();
-
+        _backgroundPlayer.pause();
         if (!_disposed) {
           state = state.copyWith(isPlaying: false);
         }
