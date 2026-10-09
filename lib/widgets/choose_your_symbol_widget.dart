@@ -22,7 +22,7 @@ class ChooseYourSymbolWidget extends StatelessWidget {
           children: PlayerSymbol.values
               .map(
                 (symbol) => Expanded(child: _buildSymbolCard(context, symbol)),
-          )
+              )
               .toList(),
         ),
       ],
@@ -42,7 +42,7 @@ class ChooseYourSymbolWidget extends StatelessWidget {
         highlightColor: color.withValues(alpha: 0.04),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
-          height: 72,
+          height: Dimens.seventyTwo,
           padding: const EdgeInsets.symmetric(horizontal: Dimens.twelve),
           decoration: BoxDecoration(
             color: isSelected
@@ -57,17 +57,17 @@ class ChooseYourSymbolWidget extends StatelessWidget {
             ),
             boxShadow: isSelected
                 ? [
-              BoxShadow(
-                color: color.withValues(alpha: 0.10),
-                blurRadius: 14,
-              ),
-            ]
+                    BoxShadow(
+                      color: color.withValues(alpha: 0.10),
+                      blurRadius: 14,
+                    ),
+                  ]
                 : null,
           ),
           child: Row(
+            spacing: Dimens.ten,
             children: [
               Icon(symbol.icon, color: color, size: Dimens.iconXl),
-              const SizedBox(width: Dimens.ten),
               Expanded(
                 child: Text(
                   symbol.displayName,

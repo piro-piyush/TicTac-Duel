@@ -10,12 +10,25 @@ class CreateRoomScreen extends ConsumerWidget {
 
     return NeonBackgroundWidget(
       title: 'Create Room',
-      bottomNavigationBar: NeonElevatedButtonWidget.icon(
-        label: 'CREATE ROOM',
-        icon: Icons.rocket_launch_rounded,
-        isLoading: state.isCreating,
-        onPressed: notifier.createRoom,
-      ),
+      bottomNavigationBar:
+          NeonElevatedButtonWidget.icon(
+                label: 'CREATE ROOM',
+                icon: Icons.rocket_launch_rounded,
+                isLoading: state.isCreating,
+                onPressed: notifier.createRoom,
+              )
+              .animate()
+              .fadeIn(
+                delay: AnimationConstants.staggerMedium,
+                duration: AnimationConstants.medium,
+              )
+              .slideY(
+                begin: AnimationConstants.slideSmall,
+                end: 0,
+                delay: AnimationConstants.staggerMedium,
+                duration: AnimationConstants.medium,
+                curve: AnimationConstants.defaultCurve,
+              ),
       child: CreateRoomContentWidget(
         formKey: notifier.createFormKey,
         playerNameController: notifier.playerNameController,

@@ -270,6 +270,14 @@ class AudioNotifier extends Notifier<AudioState> {
     unawaited(_playEffect(AudioConstants.swordSound));
   }
 
+  // void playMove() {
+  //   if (_disposed || !state.isInitialized) {
+  //     return;
+  //   }
+  //
+  //   unawaited(_playEffect(AudioConstants.moveSound));
+  // }
+
   void playRoundStart() {
     if (_disposed || !state.isInitialized) {
       return;
