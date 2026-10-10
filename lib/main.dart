@@ -1,21 +1,17 @@
 import 'package:tictac_duel/lib.dart';
 
 Future<void> main() async {
-  final binding = WidgetsFlutterBinding.ensureInitialized();
-
-  // FlutterNativeSplash.preserve(widgetsBinding: binding);
+  WidgetsFlutterBinding.ensureInitialized();
 
   await dotenv.load();
 
   final container = ProviderContainer();
-  await Future.wait([
-     container.read(audioProvider.notifier).initialize(),
-  ]);
 
-  // FlutterNativeSplash.remove();
+  await container.read(audioProvider.notifier).initialize();
 
   runApp(UncontrolledProviderScope(container: container, child: const MyApp()));
 }
+
 // =============================================================================
 // APP
 // =============================================================================
@@ -26,8 +22,8 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp.router(
-      debugShowCheckedModeBanner: false,
       title: GameConstants.appName,
+      debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
       routerConfig: ref.watch(appRouterProvider),
       scaffoldMessengerKey: AppPages.rootScaffoldMessengerKey,

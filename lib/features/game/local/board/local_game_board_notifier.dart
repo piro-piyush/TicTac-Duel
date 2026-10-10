@@ -1,7 +1,7 @@
 import 'package:tictac_duel/lib.dart';
 
 final localGameBoardProvider =
-    NotifierProvider.family<
+    NotifierProvider.autoDispose.family<
       LocalGameBoardNotifier,
       LocalGameBoardState,
       LocalGameModel
@@ -239,7 +239,7 @@ class LocalGameBoardNotifier extends Notifier<LocalGameBoardState> {
       theme: state.game.theme,
     );
 
-    _navigation.replaceResult(result);
+    _navigation.goToResult(result);
   }
 
   // ===========================================================================

@@ -205,7 +205,7 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
       dismissReason: response.reason,
       theme: currentRoom.theme,
     );
-    _navigation.replaceResult(result);
+    _navigation.goToResult(result);
   }
 
   void startGame() => _roomSocketService.startGame();
@@ -341,7 +341,7 @@ class OnlineGameNotifier extends Notifier<OnlineGameState> {
         theme: state.room.theme,
       );
 
-      _navigation.replaceResult(result);
+      _navigation.goToResult(result);
     } catch (error, stackTrace) {
       LoggerUtils.error(
         'OnlineGameNotifier._showFinalResult',
