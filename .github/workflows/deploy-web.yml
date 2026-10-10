@@ -101,19 +101,42 @@ jobs:
       - name: Install Vercel CLI
         run: npm install --global vercel
 
+
       - name: Deploy to Vercel
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
           TARGET_BRANCH: ${{ github.ref_name }}
         run: |
           set -euo pipefail
 
+          test -n "$VERCEL_TOKEN" || {
+            echo "::error::VERCEL_TOKEN secret is missing."
+            exit 1
+          }
+
+          test -n "$VERCEL_ORG_ID" || {
+            echo "::error::VERCEL_ORG_ID secret is missing."
+            exit 1
+          }
+
+          test -n "$VERCEL_PROJECT_ID" || {
+            echo "::error::VERCEL_PROJECT_ID secret is missing."
+            exit 1
+          }
+
+          test -s build/web/index.html || {
+            echo "::error::Flutter web index.html is missing."
+            exit 1
+          }
+
           case "$TARGET_BRANCH" in
             main)
-              vercel deploy build/web --prod --yes --token="$VERCEL_TOKEN"
+              vercel deploy --cwd build/web --prod --yes --token="$VERCEL_TOKEN"
               ;;
             dev)
-              vercel deploy build/web --yes --token="$VERCEL_TOKEN"
+              vercel deploy --cwd build/web --yes --token="$VERCEL_TOKEN"
               ;;
             *)
               echo "::error::Unsupported branch: $TARGET_BRANCH"
