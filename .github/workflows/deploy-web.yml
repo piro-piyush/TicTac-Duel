@@ -1,5 +1,4 @@
 name: Deploy Flutter Web
-
 on:
   pull_request:
     branches: [dev, main]
