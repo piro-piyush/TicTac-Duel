@@ -1,28 +1,35 @@
+
 name: Build Flutter Android
 
 on:
   pull_request:
     branches:
       - dev
-      - "release/**"
+      - main
 
   push:
     branches:
       - dev
-      - "release/**"
+      - main
     tags:
       - "v*.*.*"
 
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: build-android-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-android:
+    name: Build Android
     runs-on: ubuntu-latest
     timeout-minutes: 30
     environment: production
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v6
@@ -50,12 +57,18 @@ jobs:
       - name: Accept Android Licenses
         run: yes | flutter doctor --android-licenses || true
 
+      # --------------------------------------------------
+      # ANDROID SIGNING
+      # --------------------------------------------------
       - name: Restore Android Keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
           test -n "$KEYSTORE_BASE64"
-          echo "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
+          mkdir -p android/app
+          printf '%s' "$KEYSTORE_BASE64" \
+            | base64 --decode > android/app/upload-keystore.jks
+          test -s android/app/upload-keystore.jks
 
       - name: Create key.properties
         env:
@@ -80,6 +93,9 @@ jobs:
           test -f android/key.properties
           echo "Android signing files restored successfully."
 
+      # --------------------------------------------------
+      # DEPENDENCIES
+      # --------------------------------------------------
       - name: Clean Project
         run: |
           flutter clean
@@ -94,18 +110,17 @@ jobs:
           BASE_URL: ${{ secrets.BASE_URL }}
         run: |
           test -n "$BASE_URL"
-
-          cat > .env <<EOF
-          BASE_URL=$BASE_URL
-          EOF
-
+          printf 'BASE_URL=%s\n' "$BASE_URL" > .env
           echo "Environment file created successfully."
 
+      # --------------------------------------------------
+      # VERSION
+      # --------------------------------------------------
       - name: Read App Version
         id: version
         shell: bash
         run: |
-          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //')
+          VERSION=$(sed -n 's/^version: *//p' pubspec.yaml | head -n 1)
           APP_VERSION="${VERSION%%+*}"
           BUILD_NUMBER="${VERSION##*+}"
 
@@ -115,9 +130,15 @@ jobs:
           echo "App Version: $APP_VERSION"
           echo "Build Number: $BUILD_NUMBER"
 
+      # --------------------------------------------------
+      # VALIDATION
+      # --------------------------------------------------
       - name: Analyze
         run: flutter analyze
 
+      # --------------------------------------------------
+      # BUILD APKs AND AAB
+      # --------------------------------------------------
       - name: Build Split Release APKs
         env:
           GRADLE_OPTS: "-Xmx4g"
@@ -145,12 +166,16 @@ jobs:
           echo "===== AAB ====="
           find build/app/outputs/bundle/release -name "*.aab" -print || true
 
+      # --------------------------------------------------
+      # UPLOAD ARTIFACTS
+      # --------------------------------------------------
       - name: Upload armeabi-v7a APK
         uses: actions/upload-artifact@v5
         with:
           name: app-armeabi-v7a-release
           path: build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
           if-no-files-found: error
+          retention-days: 14
 
       - name: Upload arm64-v8a APK
         uses: actions/upload-artifact@v5
@@ -158,6 +183,7 @@ jobs:
           name: app-arm64-v8a-release
           path: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
           if-no-files-found: error
+          retention-days: 14
 
       - name: Upload x86_64 APK
         uses: actions/upload-artifact@v5
@@ -165,6 +191,7 @@ jobs:
           name: app-x86_64-release
           path: build/app/outputs/flutter-apk/app-x86_64-release.apk
           if-no-files-found: error
+          retention-days: 14
 
       - name: Upload AAB
         uses: actions/upload-artifact@v5
@@ -172,7 +199,11 @@ jobs:
           name: app-release-aab
           path: build/app/outputs/bundle/release/app-release.aab
           if-no-files-found: error
+          retention-days: 14
 
+      # --------------------------------------------------
+      # CREATE RELEASE ONLY FOR VERSION TAGS
+      # --------------------------------------------------
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
@@ -180,6 +211,7 @@ jobs:
           tag_name: ${{ github.ref_name }}
           name: Tic Tac Duel ${{ github.ref_name }}
           generate_release_notes: true
+          fail_on_unmatched_files: true
           files: |
             build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
             build/app/outputs/flutter-apk/app-arm64-v8a-release.apk

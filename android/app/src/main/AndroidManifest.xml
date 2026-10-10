@@ -30,7 +30,7 @@
 
                 <data
                     android:scheme="https"
-                    android:host="tictacduel.app" />
+                    android:host="tictacduel.vercel.app" />
             </intent-filter>
         </activity>
         <meta-data
