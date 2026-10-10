@@ -1,10 +1,12 @@
 name: Deploy Flutter Web
+
 on:
   pull_request:
     branches: [dev, main]
   push:
     branches: [dev, main]
   workflow_dispatch:
+
 permissions:
   contents: read
 
@@ -57,6 +59,7 @@ jobs:
       - name: Prepare Web Files
         run: |
           set -euo pipefail
+          
           test -s build/web/index.html
           test -s web/.well-known/assetlinks.json
           test -s web/vercel.json
@@ -102,13 +105,13 @@ jobs:
       - name: Install Vercel CLI
         run: npm install --global vercel
 
-
       - name: Deploy to Vercel
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
           TARGET_BRANCH: ${{ github.ref_name }}
+        shell: bash
         run: |
           set -euo pipefail
           
@@ -166,6 +169,7 @@ jobs:
               DEPLOYMENT_URL="$(
                 printf '%s\n' "$DEPLOY_OUTPUT" |
                   grep -Eo 'https://[^[:space:]]+\.vercel\.app' |
+                  grep -v 'dev-tictacduel\.vercel\.app' |
                   tail -n 1
               )"
           
@@ -179,7 +183,7 @@ jobs:
               vercel alias set \
                 "$DEPLOYMENT_URL" \
                 dev-tictacduel.vercel.app \
-                --scope=piyushs-projects-01eb5f70 \
+                --cwd build/web \
                 --token="$VERCEL_TOKEN"
           
               echo "Dev deployment completed."
@@ -191,4 +195,3 @@ jobs:
               exit 1
               ;;
           esac
-
