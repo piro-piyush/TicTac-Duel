@@ -21,6 +21,7 @@ class AppLogoWidget extends StatelessWidget {
                 color: AppColors.neonPurple.withValues(alpha: 0.16),
                 blurRadius: 32,
                 spreadRadius: 2,
+
               ),
               BoxShadow(
                 color: AppColors.neonCyan.withValues(alpha: 0.07),
@@ -134,7 +135,7 @@ class _LogoCell extends StatelessWidget {
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.07),
             borderRadius: Dimens.radius10,
-            border: Border.all(color: color.withValues(alpha: 0.12)),
+            border: Border.all(color: color.withValues(alpha: 0.12,),),
             boxShadow: [
               BoxShadow(color: color.withValues(alpha: 0.08), blurRadius: 10),
             ],
