@@ -110,32 +110,29 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_SCOPE: ${{ secrets.VERCEL_SCOPE }}
           TARGET_BRANCH: ${{ github.ref_name }}
         shell: bash
         run: |
           set -euo pipefail
           
-          test -n "$VERCEL_TOKEN" || {
-            echo "::error::VERCEL_TOKEN secret is missing."
-            exit 1
-          }
-          
-          test -n "$VERCEL_ORG_ID" || {
-            echo "::error::VERCEL_ORG_ID secret is missing."
-            exit 1
-          }
-          
-          test -n "$VERCEL_PROJECT_ID" || {
-            echo "::error::VERCEL_PROJECT_ID secret is missing."
-            exit 1
-          }
+          for name in \
+            VERCEL_TOKEN \
+            VERCEL_ORG_ID \
+            VERCEL_PROJECT_ID \
+            VERCEL_SCOPE
+          do
+            if [[ -z "${!name}" ]]; then
+              echo "::error::$name secret is missing."
+              exit 1
+            fi
+          done
           
           test -s build/web/index.html || {
             echo "::error::Flutter web index.html is missing."
             exit 1
           }
           
-          # Link the CLI to the intended Vercel project.
           mkdir -p build/web/.vercel
           
           printf '{"orgId":"%s","projectId":"%s"}\n' \
@@ -151,36 +148,50 @@ jobs:
                 --cwd build/web \
                 --prod \
                 --yes \
+                --scope="$VERCEL_SCOPE" \
                 --token="$VERCEL_TOKEN"
               ;;
           
-    
             dev)
-            echo "Deploying dev to preview..."
+              echo "Deploying dev to preview..."
           
-            DEPLOY_OUTPUT="$(
-            vercel deploy \
-            --cwd build/web \
-            --yes \
-            --token="$VERCEL_TOKEN" 2>&1
-            )"
+              DEPLOY_OUTPUT="$(
+                vercel deploy \
+                  --cwd build/web \
+                  --yes \
+                  --scope="$VERCEL_SCOPE" \
+                  --token="$VERCEL_TOKEN" 2>&1
+              )"
           
-            printf '%s\n' "$DEPLOY_OUTPUT"
+              printf '%s\n' "$DEPLOY_OUTPUT"
           
-            DEPLOYMENT_URL="$(
-            printf '%s\n' "$DEPLOY_OUTPUT" |
-            grep -Eo 'https://[^[:space:]]+\.vercel\.app' |
-            grep -v 'vercel\.com/' |
-            tail -n 1
-            )"
+              DEPLOYMENT_URL="$(
+                printf '%s\n' "$DEPLOY_OUTPUT" |
+                  grep -Eo 'https://[^[:space:]]+\.vercel\.app' |
+                  grep -v 'vercel\.com/' |
+                  tail -n 1 || true
+              )"
           
-            if [[ -z "$DEPLOYMENT_URL" ]]; then
-            echo "::error::Could not determine the preview deployment URL."
-            exit 1
-            fi
+              if [[ -z "$DEPLOYMENT_URL" ]]; then
+                echo "::error::Could not determine the preview deployment URL."
+                exit 1
+              fi
           
-            echo "Dev deployment completed."
-          echo "Preview URL: $DEPLOYMENT_URL"
-            ;;
-  
+              echo "Assigning dev preview domain..."
+          
+              vercel alias set \
+                "$DEPLOYMENT_URL" \
+                dev-tictacduel.vercel.app \
+                --scope="$VERCEL_SCOPE" \
+                --token="$VERCEL_TOKEN"
+          
+              echo "Dev deployment completed."
+              echo "Preview URL: $DEPLOYMENT_URL"
+              echo "Stable URL: https://dev-tictacduel.vercel.app/"
+              ;;
+          
+            *)
+              echo "::error::Unsupported branch: $TARGET_BRANCH"
+              exit 1
+              ;;
           esac
