@@ -13,7 +13,7 @@ final baseUrlProvider = Provider<String>((ref) {
 // =============================================================================
 
 final localStorageServiceProvider = Provider<LocalStorageService>(
-  (ref) => const LocalStorageService(storage: FlutterSecureStorage()),
+      (ref) => const LocalStorageService(storage: FlutterSecureStorage()),
 );
 
 // =============================================================================
@@ -27,11 +27,11 @@ final httpServiceProvider = Provider<HttpService>((ref) {
 });
 
 final playerApiServiceProvider = Provider<PlayerApiService>(
-  (ref) => PlayerApiService(httpService: ref.watch(httpServiceProvider)),
+      (ref) => PlayerApiService(httpService: ref.watch(httpServiceProvider)),
 );
 
 final roomApiServiceProvider = Provider<RoomApiService>(
-  (ref) => RoomApiService(httpService: ref.watch(httpServiceProvider)),
+      (ref) => RoomApiService(httpService: ref.watch(httpServiceProvider)),
 );
 
 // =============================================================================
@@ -52,11 +52,11 @@ final networkServiceProvider = Provider<NetworkService>((ref) {
 // =============================================================================
 
 final socketServiceProvider = Provider<SocketService>(
-  (ref) => SocketService(url: ref.watch(baseUrlProvider)),
+      (ref) => SocketService(url: ref.watch(baseUrlProvider)),
 );
 
 final roomSocketServiceProvider = Provider<RoomSocketService>(
-  (ref) => RoomSocketService(socket: ref.watch(socketServiceProvider)),
+      (ref) => RoomSocketService(socket: ref.watch(socketServiceProvider)),
 );
 
 // =============================================================================
@@ -66,22 +66,30 @@ final roomSocketServiceProvider = Provider<RoomSocketService>(
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     debugLogDiagnostics: true,
-    initialLocation: AppRoutes.splash.path,
     navigatorKey: AppPages.rootNavigatorKey,
+    initialLocation: AppRoutes.splash.path,
+    redirect: (context, state) {
+      final uri = state.uri;
+      if (uri.scheme != 'tictacduel') return null;
+      final path = uri.host.isNotEmpty && uri.host != 'localhost'
+          ? '/${uri.host}'
+          : uri.path;
+      final destination = Uri(
+        path: path,
+        queryParameters: uri.queryParameters.isEmpty
+            ? null
+            : uri.queryParameters,
+      ).toString();
+      return destination == state.matchedLocation && uri.queryParameters.isEmpty
+          ? null
+          : destination;
+    },
     routes: [
-      // -----------------------------------------------------------------------
-      // SPLASH
-      // -----------------------------------------------------------------------
-
       GoRoute(
         name: AppRoutes.splash.name,
         path: AppRoutes.splash.path,
         builder: (context, state) => const SplashScreen(),
       ),
-
-      // -----------------------------------------------------------------------
-      // HOME AND NESTED ROUTES
-      // -----------------------------------------------------------------------
       GoRoute(
         name: AppRoutes.home.name,
         path: AppRoutes.home.path,
@@ -116,9 +124,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: AppRoutes.publicRooms.path,
             builder: (context, state) => const PublicRoomsScreen(),
           ),
-          // -------------------------------------------------------------------
-          // LOCAL GAME
-          // -------------------------------------------------------------------
           GoRoute(
             name: AppRoutes.localGame.name,
             path: AppRoutes.localGame.path,
@@ -129,7 +134,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 path: AppRoutes.localGameBoard.path,
                 builder: (context, state) {
                   final game = state.extra as LocalGameModel;
-
                   return LocalGameBoardScreen(game: game);
                 },
               ),
@@ -143,27 +147,19 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: AppRoutes.result.path,
             builder: (context, state) {
               final result = state.extra as ResultModel;
-
               return ResultScreen(result: result);
             },
           ),
         ],
       ),
-
-      // -----------------------------------------------------------------------
-      // ONLINE GAME
-      // -----------------------------------------------------------------------
       GoRoute(
         name: AppRoutes.game.name,
         path: AppRoutes.game.path,
         builder: (context, state) {
           final room = state.extra as RoomModel;
-
           return GameScreen(room: room);
         },
       ),
-
-
     ],
   );
 });

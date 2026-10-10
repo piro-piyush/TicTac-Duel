@@ -110,15 +110,22 @@ class GameConstants {
     '^[$roomCodeCharacters]{$roomCodeLength}\$',
   );
 
-  static const String baseUrl = 'https://tictacduel.vercel.app';
-  static const String roomJoinUrl = '$baseUrl/join-room';
+  static String get baseUrl {
+    final url = dotenv.env['FRONTEND_URL']?.trim();
 
-  static String getRoomJoinLink(String roomCode) {
-    return '$roomJoinUrl?code=$roomCode';
+    if (url == null || url.isEmpty) {
+      return 'https://dev-tictacduel.vercel.app';
+    }
+
+    return url.replaceAll(RegExp(r'/+$'), '');
+  }
+
+  static String roomJoinUrl(String roomCode) {
+    return '$baseUrl/join-room?code=${Uri.encodeQueryComponent(roomCode)}';
   }
 
   static String getRoomShareText(String roomCode) {
-    final joinLink = getRoomJoinLink(roomCode);
+    final joinLink = roomJoinUrl(roomCode);
 
     return '''
 🎮 You're Challenged!
