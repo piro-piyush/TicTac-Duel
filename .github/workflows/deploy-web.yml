@@ -67,7 +67,7 @@ jobs:
 
       - name: Upload Build
         if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: flutter-web-build
           path: build/web/
@@ -88,48 +88,32 @@ jobs:
 
     steps:
       - name: Download Build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: flutter-web-build
           path: build/web
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: '22'
+          node-version: 22
 
       - name: Install Vercel CLI
         run: npm install --global vercel
 
       - name: Deploy to Vercel
-        working-directory: build/web
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
           TARGET_BRANCH: ${{ github.ref_name }}
-        shell: bash
         run: |
           set -euo pipefail
-          
-          for name in VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID; do
-            if [[ -z "${!name:-}" ]]; then
-              echo "::error::$name secret is missing."
-              exit 1
-            fi
-          done
-          
-          mkdir -p .vercel
-          printf '{"orgId":"%s","projectId":"%s"}\n' \
-            "$VERCEL_ORG_ID" "$VERCEL_PROJECT_ID" \
-            > .vercel/project.json
-          
+
           case "$TARGET_BRANCH" in
             main)
-              vercel deploy --prod --yes --token="$VERCEL_TOKEN"
+              vercel deploy build/web --prod --yes --token="$VERCEL_TOKEN"
               ;;
             dev)
-              vercel deploy --yes --token="$VERCEL_TOKEN"
+              vercel deploy build/web --yes --token="$VERCEL_TOKEN"
               ;;
             *)
               echo "::error::Unsupported branch: $TARGET_BRANCH"
