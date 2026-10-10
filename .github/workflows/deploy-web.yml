@@ -1,4 +1,3 @@
-
 name: Deploy Flutter Web
 
 on:
@@ -6,17 +5,17 @@ on:
     branches:
       - dev
       - main
+
   push:
     branches:
       - dev
       - main
+
   workflow_dispatch:
 
-# This workflow only builds and deploys; it does not create GitHub releases.
 permissions:
   contents: read
 
-# Cancel older runs for the same branch/ref when a newer run starts.
 concurrency:
   group: deploy-web-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -28,140 +27,64 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      # --------------------------------------------------
-      # CHECKOUT
-      # --------------------------------------------------
       - name: Checkout Repository
         uses: actions/checkout@v6
 
-      # --------------------------------------------------
-      # FLUTTER SETUP
-      # --------------------------------------------------
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.47.7"
+          flutter-version: '3.47.7'
           channel: stable
           cache: true
 
-      - name: Verify Flutter
-        run: flutter --version
-
-      # --------------------------------------------------
-      # DEPENDENCIES
-      # --------------------------------------------------
       - name: Install Dependencies
         run: flutter pub get
 
-      # --------------------------------------------------
-      # ENVIRONMENT
-      # --------------------------------------------------
       - name: Configure Environment
         env:
           BASE_URL: ${{ secrets.BASE_URL }}
-        shell: bash
         run: |
           set -euo pipefail
-
-          # Forked pull requests may not have access to repository secrets.
+          
           if [[ "$GITHUB_EVENT_NAME" != "pull_request" ]]; then
             test -n "$BASE_URL" || {
               echo "::error::BASE_URL secret is missing."
               exit 1
             }
           fi
+          
+          printf 'BASE_URL=%s\n' \
+            "${BASE_URL:-https://example.invalid}" > .env
 
-          printf 'BASE_URL=%s\n' "${BASE_URL:-}" > .env
-          echo "Environment file created."
-
-      # --------------------------------------------------
-      # VALIDATION
-      # --------------------------------------------------
       - name: Analyze Flutter Code
         run: flutter analyze
 
-      # --------------------------------------------------
-      # BUILD WEB
-      # --------------------------------------------------
       - name: Build Flutter Web
         run: flutter build web --release
 
-      # --------------------------------------------------
-      # ANDROID APP LINKS
-      # --------------------------------------------------
-      - name: Prepare App Links
-        shell: bash
+      - name: Prepare Web Files
         run: |
           set -euo pipefail
-
+          
           test -s build/web/index.html
           test -s web/.well-known/assetlinks.json
-
+          test -s web/vercel.json
+          
           mkdir -p build/web/.well-known
-
+          
           cp web/.well-known/assetlinks.json \
             build/web/.well-known/assetlinks.json
-
-          test -s build/web/.well-known/assetlinks.json
-
-      # --------------------------------------------------
-      # VERCEL CONFIGURATION
-      # --------------------------------------------------
-      - name: Prepare Vercel Configuration
-        run: |
-          set -euo pipefail
-
-          test -s web/vercel.json
+          
           cp web/vercel.json build/web/vercel.json
-          test -s build/web/vercel.json
 
-      # --------------------------------------------------
-      # INSTALL VERCEL CLI
-      # --------------------------------------------------
-      - name: Install Vercel CLI
-        if: github.event_name != 'pull_request'
-        run: npm install --global vercel@latest
-
-      # --------------------------------------------------
-      # CONFIGURE VERCEL PROJECT
-      # --------------------------------------------------
-      - name: Configure Vercel Project
-        if: github.event_name != 'pull_request'
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          test -n "$VERCEL_ORG_ID" || {
-            echo "::error::VERCEL_ORG_ID secret is missing."
-            exit 1
-          }
-
-          test -n "$VERCEL_PROJECT_ID" || {
-            echo "::error::VERCEL_PROJECT_ID secret is missing."
-            exit 1
-          }
-
-          mkdir -p build/web/.vercel
-
-          printf '{"orgId":"%s","projectId":"%s"}\n' \
-            "$VERCEL_ORG_ID" \
-            "$VERCEL_PROJECT_ID" \
-            > build/web/.vercel/project.json
-
-      # --------------------------------------------------
-      # DEPLOY TO VERCEL
-      # dev = Preview
-      # main = Production
-      # --------------------------------------------------
       - name: Deploy to Vercel
-        id: deploy
         if: github.event_name != 'pull_request'
+        id: deploy
         working-directory: build/web
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
           TARGET_BRANCH: ${{ github.ref_name }}
         shell: bash
         run: |
@@ -172,63 +95,62 @@ jobs:
             exit 1
           }
           
+          test -n "$VERCEL_ORG_ID" || {
+            echo "::error::VERCEL_ORG_ID secret is missing."
+            exit 1
+          }
+          
+          test -n "$VERCEL_PROJECT_ID" || {
+            echo "::error::VERCEL_PROJECT_ID secret is missing."
+            exit 1
+          }
+          
+          mkdir -p .vercel
+          
+          printf '{"orgId":"%s","projectId":"%s"}\n' \
+            "$VERCEL_ORG_ID" "$VERCEL_PROJECT_ID" \
+            > .vercel/project.json
+          
           if [[ "$TARGET_BRANCH" == "main" ]]; then
-            echo "Deploying main to Vercel Production."
-          
-            vercel deploy \
-              --prod \
-              --yes \
-              --token="$VERCEL_TOKEN"
-          
-            DEPLOYMENT_URL="https://tictacduel.vercel.app"
-          
+            vercel deploy --prod --yes --token="$VERCEL_TOKEN" \
+              > /tmp/vercel-deploy.log 2>&1
           elif [[ "$TARGET_BRANCH" == "dev" ]]; then
-            echo "Deploying dev to Vercel Preview."
-          
-            vercel deploy \
-              --yes \
-              --token="$VERCEL_TOKEN"
-          
-            DEPLOYMENT_URL="https://dev-tictacduel.vercel.app"
-          
+            vercel deploy --yes --token="$VERCEL_TOKEN" \
+              > /tmp/vercel-deploy.log 2>&1
           else
             echo "::error::Unsupported deployment branch: $TARGET_BRANCH"
             exit 1
           fi
           
+          cat /tmp/vercel-deploy.log
+          
+          DEPLOYMENT_URL=$(
+            grep -Eo 'https://[^[:space:]]+' /tmp/vercel-deploy.log |
+            grep 'vercel.app' |
+            tail -n 1 || true
+          )
+          
+          if [[ -z "$DEPLOYMENT_URL" ]]; then
+            echo "::error::Could not determine the deployment URL."
+            exit 1
+          fi
+          
           echo "url=$DEPLOYMENT_URL" >> "$GITHUB_OUTPUT"
 
-      # --------------------------------------------------
-      # DEPLOYMENT SUMMARY
-      # --------------------------------------------------
       - name: Report Deployment
-        if: github.event_name != 'pull_request'
+        if: always()
         env:
           DEPLOYMENT_URL: ${{ steps.deploy.outputs.url }}
           TARGET_BRANCH: ${{ github.ref_name }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           {
-            echo "## Tic Tac Duel Web Deployment"
+            echo "## Tic Tac Duel Web"
             echo ""
+            echo "- Event: $EVENT_NAME"
             echo "- Branch: $TARGET_BRANCH"
-            echo "- Deployment: $DEPLOYMENT_URL"
-            echo "- App Links: $DEPLOYMENT_URL/.well-known/assetlinks.json"
+            echo "- Deployment: ${DEPLOYMENT_URL:-Not deployed}"
+            if [[ -n "$DEPLOYMENT_URL" ]]; then
+              echo "- App Links: $DEPLOYMENT_URL/.well-known/assetlinks.json"
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
-
-      # --------------------------------------------------
-      # VERIFY BUILD OUTPUTS
-      # --------------------------------------------------
-      - name: Verify Web Build Files
-        if: always()
-        run: |
-          echo "===== WEB BUILD ====="
-          ls -lah build/web/ || true
-
-          echo ""
-          echo "===== APP LINKS ====="
-          if test -s build/web/.well-known/assetlinks.json; then
-            echo "assetlinks.json exists."
-          else
-            echo "assetlinks.json is missing or empty."
-            exit 1
-          fi
