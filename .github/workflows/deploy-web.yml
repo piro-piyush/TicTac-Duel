@@ -1,141 +1,88 @@
-
-name: Deploy Flutter Web to Vercel
-
+name: Deploy Flutter Web
 on:
   pull_request:
     branches:
       - dev
       - main
-
   push:
     branches:
       - dev
       - main
-
   workflow_dispatch:
-
 permissions:
   contents: write
-
 concurrency:
   group: deploy-web-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-
 jobs:
-  deploy:
-    name: Build and Deploy Web
+  build:
+    name: Build Flutter Web
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    environment: production
-
     steps:
-      # --------------------------------------------------
-      # CHECKOUT
-      # --------------------------------------------------
+      # Checkout
       - name: Checkout Repository
         uses: actions/checkout@v6
-
-      # --------------------------------------------------
-      # FLUTTER
-      # --------------------------------------------------
+      # Flutter setup
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: "3.47.2"
           channel: stable
           cache: true
-
       - name: Verify Flutter
         run: flutter --version
-
-      # --------------------------------------------------
-      # DEPENDENCIES
-      # --------------------------------------------------
+      # Dependencies
       - name: Install Dependencies
         run: flutter pub get
-
-      # --------------------------------------------------
-      # ENVIRONMENT
-      # --------------------------------------------------
+      # Environment
       - name: Configure Environment
         env:
           BASE_URL: ${{ secrets.BASE_URL }}
         run: |
           test -n "$BASE_URL"
           printf 'BASE_URL=%s\n' "$BASE_URL" > .env
-
-      # --------------------------------------------------
-      # VALIDATION
-      # --------------------------------------------------
+      # Validation
       - name: Analyze Flutter Code
         run: flutter analyze
-
-      # --------------------------------------------------
-      # BUILD FLUTTER WEB
-      # --------------------------------------------------
+      # Web build
       - name: Build Flutter Web
         run: flutter build web --release
-
-      # --------------------------------------------------
-      # ANDROID APP LINKS
-      # --------------------------------------------------
+      # Android App Links
       - name: Prepare App Links
         run: |
           test -f build/web/index.html
-          test -f web/.well-known/assetlinks.json
-
+          test -s web/.well-known/assetlinks.json
           mkdir -p build/web/.well-known
-
           cp web/.well-known/assetlinks.json \
             build/web/.well-known/assetlinks.json
-
           test -s build/web/.well-known/assetlinks.json
-
-          echo "App Links file prepared."
-
-      # --------------------------------------------------
-      # VERCEL CONFIGURATION
-      # --------------------------------------------------
+      # Vercel configuration
       - name: Prepare Vercel Configuration
         run: |
-          test -f web/vercel.json
+          test -s web/vercel.json
           cp web/vercel.json build/web/vercel.json
           test -s build/web/vercel.json
-          echo "Vercel configuration prepared."
-
-      # --------------------------------------------------
-      # INSTALL VERCEL CLI
-      # Skip pull requests.
-      # --------------------------------------------------
+      # Install Vercel CLI only for deployments
       - name: Install Vercel CLI
         if: github.event_name != 'pull_request'
         run: npm install --global vercel@latest
-
-      # --------------------------------------------------
-      # CONFIGURE VERCEL PROJECT
-      # Skip pull requests.
-      # --------------------------------------------------
+      # Configure Vercel project
       - name: Configure Vercel Project
         if: github.event_name != 'pull_request'
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
+          set -euo pipefail
           test -n "$VERCEL_ORG_ID"
           test -n "$VERCEL_PROJECT_ID"
-
           mkdir -p build/web/.vercel
-
           printf '{"orgId":"%s","projectId":"%s"}\n' \
             "$VERCEL_ORG_ID" \
             "$VERCEL_PROJECT_ID" \
             > build/web/.vercel/project.json
-
-      # --------------------------------------------------
-      # DEPLOY TO VERCEL
-      # PRs only validate; dev deploys preview;
-      # main deploys production.
-      # --------------------------------------------------
+      # Deploy dev to Preview; main to Production
       - name: Deploy to Vercel
         id: deploy
         if: github.event_name != 'pull_request'
@@ -146,31 +93,24 @@ jobs:
         run: |
           set -euo pipefail
           test -n "$VERCEL_TOKEN"
-
           if [ "$TARGET_BRANCH" = "main" ]; then
             vercel deploy --prod --yes --token="$VERCEL_TOKEN" \
               2>&1 | tee "$RUNNER_TEMP/vercel-deploy.log"
           else
-            vercel deploy --yes --token="$VERCEL_TOKEN" \
+            vercel deploy --yes --yes --token="$VERCEL_TOKEN" \
               2>&1 | tee "$RUNNER_TEMP/vercel-deploy.log"
           fi
-
           DEPLOYMENT_URL="$(
             grep -Eo 'https://[^[:space:]]+\.vercel\.app' \
               "$RUNNER_TEMP/vercel-deploy.log" | tail -n 1 || true
           )"
-
           if [ -z "$DEPLOYMENT_URL" ]; then
             echo "::error::Could not extract the Vercel deployment URL."
             exit 1
           fi
-
           echo "url=$DEPLOYMENT_URL" >> "$GITHUB_OUTPUT"
-
-      # --------------------------------------------------
-      # REPORT DEPLOYMENT URLS
-      # --------------------------------------------------
-      - name: Report Deployment URLs
+      # Deployment summary
+      - name: Report Deployment
         if: github.event_name != 'pull_request'
         env:
           DEPLOYMENT_URL: ${{ steps.deploy.outputs.url }}
@@ -179,16 +119,12 @@ jobs:
           {
             echo "## Tic Tac Duel Web Deployment"
             echo ""
-            echo "- Branch: \`$TARGET_BRANCH\`"
+            echo "- Branch: $TARGET_BRANCH"
             echo "- Deployment: $DEPLOYMENT_URL"
-            echo "- App Links: ${DEPLOYMENT_URL}/.well-known/assetlinks.json"
+            echo "- App Links: $DEPLOYMENT_URL/.well-known/assetlinks.json"
           } >> "$GITHUB_STEP_SUMMARY"
-
-      # --------------------------------------------------
-      # CREATE GITHUB RELEASE ON MAIN
-      # One release per commit; no app version required.
-      # --------------------------------------------------
-      - name: Create GitHub Release
+      # Create a web deployment release only after a push to main
+      - name: Create GitHub Web Release
         id: release
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
@@ -198,20 +134,14 @@ jobs:
           COMMIT_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-
           RELEASE_TAG="web-deploy-${COMMIT_SHA:0:7}"
           RELEASE_URL="https://github.com/$REPOSITORY/releases/tag/$RELEASE_TAG"
-
           cat > "$RUNNER_TEMP/release-notes.md" <<EOF
           ## Tic Tac Duel Web Deployment
-
           **Website:** $DEPLOYMENT_URL
-
           **Android App Links:** $DEPLOYMENT_URL/.well-known/assetlinks.json
-
           **Commit:** $COMMIT_SHA
           EOF
-
           if gh release view "$RELEASE_TAG" \
             --repo "$REPOSITORY" >/dev/null 2>&1; then
             echo "Release $RELEASE_TAG already exists."
@@ -221,33 +151,26 @@ jobs:
               --title "Tic Tac Duel Web Deployment" \
               --notes-file "$RUNNER_TEMP/release-notes.md"
           fi
-
           echo "url=$RELEASE_URL" >> "$GITHUB_OUTPUT"
-
-      # --------------------------------------------------
-      # REPORT RELEASE URL
-      # --------------------------------------------------
-      - name: Report GitHub Release URL
+      # Final release summary
+      - name: Report GitHub Release
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
           RELEASE_URL: ${{ steps.release.outputs.url }}
           DEPLOYMENT_URL: ${{ steps.deploy.outputs.url }}
         run: |
           {
-            echo "## Tic Tac Duel Release"
+            echo "## Tic Tac Duel Web Release"
             echo ""
             echo "- GitHub Release: $RELEASE_URL"
             echo "- Website: $DEPLOYMENT_URL"
             echo "- App Links: $DEPLOYMENT_URL/.well-known/assetlinks.json"
           } >> "$GITHUB_STEP_SUMMARY"
-
-      # --------------------------------------------------
-      # VERIFY OUTPUTS
-      # --------------------------------------------------
-      - name: List Web Build Files
+      # Verify output
+      - name: Verify Web Build Files
         run: |
           echo "===== WEB BUILD ====="
           ls -lah build/web/
-
           echo "===== APP LINKS ====="
+          test -s build/web/.well-known/assetlinks.json
           cat build/web/.well-known/assetlinks.json
