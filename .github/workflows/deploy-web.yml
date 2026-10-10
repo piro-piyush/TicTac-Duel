@@ -105,13 +105,33 @@ jobs:
       - name: Install Vercel CLI
         run: npm install --global vercel
 
-      - name: Deploy to Vercel
+      - name: Verify Vercel Authentication
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          
+          if [[ -z "$VERCEL_TOKEN" ]]; then
+            echo "::error::VERCEL_TOKEN secret is missing or unavailable."
+            exit 1
+          fi
+          
+          echo "Checking Vercel token authentication..."
+          
+          if vercel whoami --token="$VERCEL_TOKEN"; then
+            echo "Vercel authentication successful."
+          else
+            echo "::error::Vercel authentication failed. Check that VERCEL_TOKEN is valid and belongs to the correct Vercel account."
+            exit 1
+          fi
+
+      - name: Check Vercel Configuration
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
           VERCEL_SCOPE: ${{ secrets.VERCEL_SCOPE }}
-          TARGET_BRANCH: ${{ github.ref_name }}
         shell: bash
         run: |
           set -euo pipefail
@@ -122,11 +142,24 @@ jobs:
             VERCEL_PROJECT_ID \
             VERCEL_SCOPE
           do
-            if [[ -z "${!name}" ]]; then
-              echo "::error::$name secret is missing."
+            if [[ -n "${!name}" ]]; then
+              echo "$name is configured."
+            else
+              echo "::error::$name secret is missing or unavailable."
               exit 1
             fi
           done
+
+      - name: Deploy to Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_SCOPE: ${{ secrets.VERCEL_SCOPE }}
+          TARGET_BRANCH: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
           
           test -s build/web/index.html || {
             echo "::error::Flutter web index.html is missing."
@@ -151,45 +184,52 @@ jobs:
                 --scope="$VERCEL_SCOPE" \
                 --token="$VERCEL_TOKEN"
               ;;
-          dev)
-            echo "Deploying dev to preview..."
-            if DEPLOY_OUTPUT="$(
-            vercel deploy \
-            --cwd build/web \
-            --yes \
-            --scope="$VERCEL_SCOPE" \
-            --token="$VERCEL_TOKEN" \
-            --debug 2>&1
-            )"; then
-            printf '%s\n' "$DEPLOY_OUTPUT"
-            else
-            DEPLOY_STATUS=$?
-            printf '%s\n' "$DEPLOY_OUTPUT"
-            echo "::error::Vercel preview deployment failed with exit code $DEPLOY_STATUS."
-            exit "$DEPLOY_STATUS"
-            fi
           
-            DEPLOYMENT_URL="$(
-            printf '%s\n' "$DEPLOY_OUTPUT" |
-            grep -Eo 'https://[^[:space:]]+\.vercel\.app' |
-            tail -n 1 || true
-            )"
+            dev)
+              echo "Deploying dev to preview..."
           
-            if [[ -z "$DEPLOYMENT_URL" ]]; then
-            echo "::error::Could not determine the preview deployment URL."
-            exit 1
-            fi
+              if DEPLOY_OUTPUT="$(
+                vercel deploy \
+                  --cwd build/web \
+                  --yes \
+                  --scope="$VERCEL_SCOPE" \
+                  --token="$VERCEL_TOKEN" \
+                  --debug 2>&1
+              )"; then
+                printf '%s\n' "$DEPLOY_OUTPUT"
+              else
+                DEPLOY_STATUS=$?
+                printf '%s\n' "$DEPLOY_OUTPUT"
+                echo "::error::Vercel preview deployment failed with exit code $DEPLOY_STATUS."
+                exit "$DEPLOY_STATUS"
+              fi
           
-            echo "Assigning dev preview domain..."
+              DEPLOYMENT_URL="$(
+                printf '%s\n' "$DEPLOY_OUTPUT" |
+                grep -Eo 'https://[^[:space:]]+\.vercel\.app' |
+                tail -n 1 || true
+              )"
           
-            vercel alias set \
-            "$DEPLOYMENT_URL" \
-            dev-tictacduel.vercel.app \
-            --scope="$VERCEL_SCOPE" \
-            --token="$VERCEL_TOKEN"
+              if [[ -z "$DEPLOYMENT_URL" ]]; then
+                echo "::error::Could not determine the preview deployment URL."
+                exit 1
+              fi
           
-            echo "Dev deployment completed."
-          echo "Preview URL: $DEPLOYMENT_URL"
-          echo "Stable URL: https://dev-tictacduel.vercel.app/"
-            ;;
+              echo "Assigning dev preview domain..."
+          
+              vercel alias set \
+                "$DEPLOYMENT_URL" \
+                dev-tictacduel.vercel.app \
+                --scope="$VERCEL_SCOPE" \
+                --token="$VERCEL_TOKEN"
+          
+              echo "Dev deployment completed."
+              echo "Preview URL: $DEPLOYMENT_URL"
+              echo "Stable URL: https://dev-tictacduel.vercel.app/"
+              ;;
+          
+            *)
+              echo "::error::Unsupported deployment branch: $TARGET_BRANCH"
+              exit 1
+              ;;
           esac
