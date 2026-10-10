@@ -3,14 +3,10 @@ import 'package:tictac_duel/lib.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   usePathUrlStrategy();
   await dotenv.load();
-
   final container = ProviderContainer();
-
   await container.read(audioProvider.notifier).initialize();
-  // Initialize the router in the same container used by MyApp.
   container.read(appRouterProvider);
   runApp(UncontrolledProviderScope(container: container, child: const MyApp()));
 }
