@@ -98,8 +98,10 @@ jobs:
       # --------------------------------------------------
       - name: Prepare Vercel Configuration
         run: |
-          test -f vercel.json
+          test -f web/vercel.json
           cp web/vercel.json build/web/vercel.json
+          test -s build/web/vercel.json
+          echo "Vercel configuration prepared."
 
       # --------------------------------------------------
       # INSTALL VERCEL CLI
