@@ -38,22 +38,26 @@ class HomeActionsWidget extends ConsumerWidget {
           spacing: Dimens.twelve,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            NeonTextButtonWidget.icon(
-              icon: Icons.add_rounded,
-              label: 'Create Room',
-              isSmall: true,
-              onPressed: () => _checkInternetConnection(
-                networkService,
-                navigation.pushCreateRoom,
+            Flexible(
+              child: NeonTextButtonWidget.icon(
+                icon: Icons.add_rounded,
+                label: 'Create Room',
+                isSmall: true,
+                onPressed: () => _checkInternetConnection(
+                  networkService,
+                  navigation.pushCreateRoom,
+                ),
               ),
             ),
-            NeonTextButtonWidget.icon(
-              icon: Icons.login_rounded,
-              label: 'Join Room',
-              isSmall: true,
-              onPressed: () => _checkInternetConnection(
-                networkService,
-                navigation.pushJoinRoom,
+            Flexible(
+              child: NeonTextButtonWidget.icon(
+                icon: Icons.login_rounded,
+                label: 'Join Room',
+                isSmall: true,
+                onPressed: () => _checkInternetConnection(
+                  networkService,
+                  navigation.pushJoinRoom,
+                ),
               ),
             ),
           ],

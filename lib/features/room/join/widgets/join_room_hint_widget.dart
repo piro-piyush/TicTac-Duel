@@ -9,6 +9,7 @@ class JoinRoomHintWidget extends StatelessWidget {
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
       spacing: Dimens.eight,
       children: [
         const Icon(
@@ -16,9 +17,13 @@ class JoinRoomHintWidget extends StatelessWidget {
           color: AppColors.textSecondary,
           size: Dimens.iconSm,
         ),
-        Text(
-          'Use the 6–8 character code from your friend',
-          style: textTheme.labelSmall,
+        Flexible(
+          child: Text(
+            'Use the 6–8 character code from your friend',
+            textAlign: TextAlign.center,
+            softWrap: true,
+            style: textTheme.labelSmall,
+          ),
         ),
       ],
     );
