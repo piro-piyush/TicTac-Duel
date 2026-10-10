@@ -2,38 +2,30 @@ name: Build Flutter Android
 
 on:
   pull_request:
-    branches:
-      - dev
-      - main
-
+    branches: [dev, main]
   push:
-    branches:
-      - dev
-      - main
-    tags:
-      - 'v*.*.*'
-
+    branches: [dev, main]
+    tags: ['v*.*.*']
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
-# Cancel older runs for the same ref.
 concurrency:
-  group: build-android-${{ github.workflow }}-${{ github.ref }}
+  group: android-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  # ============================================================
+  # BUILD AND VALIDATE
+  # ============================================================
   build-android:
     name: Build Android
     runs-on: ubuntu-24.04
     timeout-minutes: 30
 
     steps:
-      # --------------------------------------------------
-      # CHECKOUT AND TOOLCHAIN
-      # --------------------------------------------------
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v6
 
       - name: Setup Java
@@ -50,311 +42,162 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Flutter Version
-        run: flutter --version
-
-      - name: Flutter Doctor
-        run: flutter doctor -v
-
-      - name: Accept Android Licenses
-        run: yes | flutter doctor --android-licenses || true
-
-      # --------------------------------------------------
-      # DEPENDENCIES
-      # --------------------------------------------------
-      - name: Get Dependencies
+      - name: Install Dependencies
         run: flutter pub get
 
-      # --------------------------------------------------
-      # DETERMINE BUILD TYPE
-      # --------------------------------------------------
-      - name: Determine Build Type
-        id: build-type
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          if [[ "$GITHUB_EVENT_NAME" == "push" &&
-                ( "$GITHUB_REF" == "refs/heads/main" ||
-                  "$GITHUB_REF" == refs/tags/v* ) ]] ||
-             [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
-            echo "release=true" >> "$GITHUB_OUTPUT"
-            echo "Build type: signed release"
-          else
-            echo "release=false" >> "$GITHUB_OUTPUT"
-            echo "Build type: debug validation"
-          fi
-
-      # --------------------------------------------------
-      # ENVIRONMENT
-      # --------------------------------------------------
-      - name: Create Environment File
+      - name: Configure Environment
         env:
           BASE_URL: ${{ secrets.BASE_URL }}
-          RELEASE_BUILD: ${{ steps.build-type.outputs.release }}
-        shell: bash
         run: |
-          set -euo pipefail
-
-          if [[ "$RELEASE_BUILD" == "true" ]]; then
-            test -n "$BASE_URL" || {
-              echo "::error::BASE_URL secret is missing."
-              exit 1
-            }
-          fi
-
-          # Use the real URL when available.
-          # The placeholder is only for validation builds.
           printf 'BASE_URL=%s\n' \
             "${BASE_URL:-https://example.invalid}" > .env
 
-          echo "Environment file created."
-
-      # --------------------------------------------------
-      # ANDROID SIGNING
-      # --------------------------------------------------
-      - name: Restore Android Keystore
-        if: steps.build-type.outputs.release == 'true'
-        env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          test -n "$KEYSTORE_BASE64" || {
-            echo "::error::KEYSTORE_BASE64 secret is missing."
-            exit 1
-          }
-
-          mkdir -p android/app
-
-          printf '%s' "$KEYSTORE_BASE64" |
-            base64 --decode > android/app/upload-keystore.jks
-
-          test -s android/app/upload-keystore.jks
-          echo "Android keystore restored."
-
-      - name: Create key.properties
-        if: steps.build-type.outputs.release == 'true'
-        env:
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          test -n "$KEYSTORE_PASSWORD" || {
-            echo "::error::KEYSTORE_PASSWORD secret is missing."
-            exit 1
-          }
-
-          test -n "$KEY_PASSWORD" || {
-            echo "::error::KEY_PASSWORD secret is missing."
-            exit 1
-          }
-
-          test -n "$KEY_ALIAS" || {
-            echo "::error::KEY_ALIAS secret is missing."
-            exit 1
-          }
-
-          cat > android/key.properties <<EOF
-          storePassword=$KEYSTORE_PASSWORD
-          keyPassword=$KEY_PASSWORD
-          keyAlias=$KEY_ALIAS
-          storeFile=upload-keystore.jks
-          EOF
-
-      - name: Verify Signing Files
-        if: steps.build-type.outputs.release == 'true'
-        run: |
-          set -euo pipefail
-          test -s android/app/upload-keystore.jks
-          test -s android/key.properties
-          echo "Android signing files verified."
-
-      # --------------------------------------------------
-      # DIAGNOSTIC: KOTLIN MAVEN ARTIFACT
-      # --------------------------------------------------
-      - name: Check Kotlin Maven Artifact
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          URL="https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-gradle-plugins-bom/2.2.0/kotlin-gradle-plugins-bom-2.2.0.pom"
-
-          STATUS=$(curl \
-            --silent \
-            --show-error \
-            --location \
-            --retry 3 \
-            --retry-delay 2 \
-            --output /tmp/kotlin-bom.pom \
-            --write-out "%{http_code}" \
-            "$URL") || true
-
-          echo "Kotlin BOM HTTP status: ${STATUS:-connection failed}"
-
-          if [[ "$STATUS" != "200" ]]; then
-            echo "::warning::Kotlin BOM is unreachable. Gradle will verify dependency resolution."
-          else
-            echo "Kotlin BOM is reachable."
-          fi
-
-      # --------------------------------------------------
-      # VERSION
-      # --------------------------------------------------
-      - name: Read App Version
-        id: version
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          VERSION=$(awk '/^version:/ { print $2; exit }' pubspec.yaml)
-
-          if [[ "$VERSION" != *"+"* ]]; then
-            echo "::error::Expected pubspec.yaml version in version+build format."
-            exit 1
-          fi
-
-          APP_VERSION="${VERSION%%+*}"
-          BUILD_NUMBER="${VERSION##*+}"
-
-          if [[ -z "$APP_VERSION" || -z "$BUILD_NUMBER" ]]; then
-            echo "::error::Invalid app version: $VERSION"
-            exit 1
-          fi
-
-          echo "version=$APP_VERSION" >> "$GITHUB_OUTPUT"
-          echo "build_number=$BUILD_NUMBER" >> "$GITHUB_OUTPUT"
-
-          echo "App Version: $APP_VERSION"
-          echo "Build Number: $BUILD_NUMBER"
-
-      - name: Validate Release Tag
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-        env:
-          TAG_NAME: ${{ github.ref_name }}
-          APP_VERSION: ${{ steps.version.outputs.version }}
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          EXPECTED_TAG="v${APP_VERSION}"
-
-          if [[ "$TAG_NAME" != "$EXPECTED_TAG" ]]; then
-            echo "::error::Tag $TAG_NAME does not match pubspec version $EXPECTED_TAG."
-            exit 1
-          fi
-
-          echo "Release tag matches app version."
-
-      # --------------------------------------------------
-      # VALIDATION
-      # --------------------------------------------------
       - name: Analyze Flutter Code
         run: flutter analyze
 
-      # --------------------------------------------------
-      # DEBUG BUILD
-      # Runs for dev pushes and PRs targeting dev/main.
-      # No signing secrets required.
-      # --------------------------------------------------
       - name: Build Debug APK
-        if: steps.build-type.outputs.release == 'false'
+        if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/dev')
         run: flutter build apk --debug --no-pub
 
       - name: Upload Debug APK
-        if: steps.build-type.outputs.release == 'false'
-        uses: actions/upload-artifact@v7.0.2
+        if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/dev')
+        uses: actions/upload-artifact@v4
         with:
           name: app-debug-apk
           path: build/app/outputs/flutter-apk/app-debug.apk
           if-no-files-found: error
           retention-days: 7
 
-      # --------------------------------------------------
-      # SIGNED RELEASE BUILDS
-      # Runs on main pushes, version tags and manual runs.
-      # --------------------------------------------------
-      - name: Build Split Release APKs
-        if: steps.build-type.outputs.release == 'true'
-        env:
-          GRADLE_OPTS: '-Xmx4g'
-        run: |
-          flutter build apk \
-            --release \
-            --split-per-abi \
-            --no-pub
+  # ============================================================
+  # SIGNED RELEASE BUILDS
+  # ============================================================
+  release-android:
+    name: Build Android Release
+    needs: build-android
+    if: >-
+      (github.event_name == 'push' &&
+      (github.ref == 'refs/heads/main' ||
+      startsWith(github.ref, 'refs/tags/v'))) ||
+      github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: write
 
-      - name: Build Release AAB
-        if: steps.build-type.outputs.release == 'true'
-        env:
-          GRADLE_OPTS: '-Xmx4g'
-        run: |
-          flutter build appbundle \
-            --release \
-            --no-pub
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
 
-      # --------------------------------------------------
-      # LIST BUILD OUTPUTS
-      # --------------------------------------------------
-      - name: List Build Outputs
-        if: always()
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.7'
+          channel: stable
+          cache: true
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Configure Environment
+        env:
+          BASE_URL: ${{ secrets.BASE_URL }}
+        run: |
+          set -euo pipefail
+          test -n "$BASE_URL" || {
+            echo "::error::BASE_URL secret is missing."
+            exit 1
+          }
+          printf 'BASE_URL=%s\n' "$BASE_URL" > .env
+
+      - name: Read App Version
+        id: version
         shell: bash
         run: |
-          echo "===== APK OUTPUTS ====="
-          find build/app/outputs/flutter-apk \
-            -name "*.apk" -print 2>/dev/null || true
+          set -euo pipefail
+          VERSION=$(awk '/^version:/ { print $2; exit }' pubspec.yaml)
+          
+          if [[ "$VERSION" != *"+"* ]]; then
+            echo "::error::Expected version+build format in pubspec.yaml."
+            exit 1
+          fi
+          
+          APP_VERSION="${VERSION%%+*}"
+          BUILD_NUMBER="${VERSION##*+}"
+          
+          [[ -n "$APP_VERSION" && -n "$BUILD_NUMBER" ]] || exit 1
+          
+          echo "version=$APP_VERSION" >> "$GITHUB_OUTPUT"
+          echo "build_number=$BUILD_NUMBER" >> "$GITHUB_OUTPUT"
 
-          echo ""
-          echo "===== AAB OUTPUTS ====="
-          find build/app/outputs/bundle/release \
-            -name "*.aab" -print 2>/dev/null || true
+      - name: Validate Release Tag
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+          APP_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          if [[ "$TAG_NAME" != "v$APP_VERSION" ]]; then
+            echo "::error::Tag must match pubspec version: v$APP_VERSION"
+            exit 1
+          fi
 
-      # --------------------------------------------------
-      # UPLOAD SIGNED RELEASE ARTIFACTS
-      # --------------------------------------------------
-      - name: Upload armeabi-v7a APK
-        if: steps.build-type.outputs.release == 'true'
-        uses: actions/upload-artifact@v7.0.2
+      - name: Restore Keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          set -euo pipefail
+          test -n "$KEYSTORE_BASE64"
+          mkdir -p android/app
+          printf '%s' "$KEYSTORE_BASE64" |
+            base64 --decode > android/app/upload-keystore.jks
+          test -s android/app/upload-keystore.jks
+
+      - name: Configure Android Signing
+        env:
+          STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          set -euo pipefail
+          test -n "$STORE_PASSWORD"
+          test -n "$KEY_PASSWORD"
+          test -n "$KEY_ALIAS"
+          
+          cat > android/key.properties <<EOF
+          storePassword=$STORE_PASSWORD
+          keyPassword=$KEY_PASSWORD
+          keyAlias=$KEY_ALIAS
+          storeFile=upload-keystore.jks
+          EOF
+
+      - name: Build Release APKs
+        env:
+          GRADLE_OPTS: '-Xmx4g'
+        run: flutter build apk --release --split-per-abi --no-pub
+
+      - name: Build Release AAB
+        env:
+          GRADLE_OPTS: '-Xmx4g'
+        run: flutter build appbundle --release --no-pub
+
+      - name: Upload Release APKs and AAB
+        uses: actions/upload-artifact@v4
         with:
-          name: app-armeabi-v7a-release
-          path: build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+          name: android-release-${{ steps.version.outputs.version }}
+          path: |
+            build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+            build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+            build/app/outputs/flutter-apk/app-x86_64-release.apk
+            build/app/outputs/bundle/release/app-release.aab
           if-no-files-found: error
           retention-days: 14
 
-      - name: Upload arm64-v8a APK
-        if: steps.build-type.outputs.release == 'true'
-        uses: actions/upload-artifact@v7.0.2
-        with:
-          name: app-arm64-v8a-release
-          path: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
-          if-no-files-found: error
-          retention-days: 14
-
-      - name: Upload x86_64 APK
-        if: steps.build-type.outputs.release == 'true'
-        uses: actions/upload-artifact@v7.0.2
-        with:
-          name: app-x86_64-release
-          path: build/app/outputs/flutter-apk/app-x86_64-release.apk
-          if-no-files-found: error
-          retention-days: 14
-
-      - name: Upload AAB
-        if: steps.build-type.outputs.release == 'true'
-        uses: actions/upload-artifact@v7.0.2
-        with:
-          name: app-release-aab
-          path: build/app/outputs/bundle/release/app-release.aab
-          if-no-files-found: error
-          retention-days: 14
-
-      # --------------------------------------------------
-      # CREATE GITHUB RELEASE FOR VERSION TAGS ONLY
-      # --------------------------------------------------
       - name: Create GitHub Release
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
@@ -369,26 +212,17 @@ jobs:
             build/app/outputs/flutter-apk/app-x86_64-release.apk
             build/app/outputs/bundle/release/app-release.aab
 
-      # --------------------------------------------------
-      # SUMMARY
-      # --------------------------------------------------
-      - name: Report Build Summary
+      - name: Build Summary
         if: always()
         env:
           APP_VERSION: ${{ steps.version.outputs.version }}
           BUILD_NUMBER: ${{ steps.version.outputs.build_number }}
-          REF_NAME: ${{ github.ref_name }}
-          EVENT_NAME: ${{ github.event_name }}
-          RELEASE_BUILD: ${{ steps.build-type.outputs.release }}
-        shell: bash
         run: |
           {
-            echo "## Tic Tac Duel Android Build"
+            echo "## Tic Tac Duel Android Release"
             echo ""
-            echo "- Event: $EVENT_NAME"
-            echo "- Ref: $REF_NAME"
-            echo "- Build type: ${RELEASE_BUILD:-unavailable}"
-            echo "- App version: ${APP_VERSION:-unavailable}"
+            echo "- Ref: $GITHUB_REF_NAME"
+            echo "- Version: ${APP_VERSION:-unavailable}"
             echo "- Build number: ${BUILD_NUMBER:-unavailable}"
-            echo "- Run result: ${{ job.status }}"
+            echo "- Result: ${{ job.status }}"
           } >> "$GITHUB_STEP_SUMMARY"
