@@ -76,19 +76,16 @@ class PublicRoomsNotifier extends Notifier<PublicRoomsState> {
         },
         onError: (message) {
           state = state.copyWith(isJoining: false, errorMessage: message);
-
-          PopupUtils.showError(message);
+          PopupUtils.showToast(message);
         },
       );
     } catch (error) {
       final message = error.toString();
-
       state = state.copyWith(
         isJoining: false,
         isFetchingRooms: false,
         errorMessage: message,
       );
-
       PopupUtils.showError(message);
       LoggerUtils.error('Public rooms error: $message');
     }
