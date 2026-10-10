@@ -12,6 +12,10 @@ abstract final class AppRoutes {
   // HOME
   // ===========================================================================
 
+  static const splash = AppRouteModel(
+    name: 'splash',
+    path: '/splash',
+  );
   static const home = AppRouteModel(name: 'home', path: '/');
 
   // ===========================================================================

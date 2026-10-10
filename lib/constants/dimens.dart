@@ -134,7 +134,7 @@ abstract final class Dimens {
   );
   static const EdgeInsets edgeInsets24_12 = EdgeInsets.symmetric(
     horizontal: twentyFour,
-    vertical: 12
+    vertical: 12,
   );
   static const EdgeInsets edgeInsets30_0 = EdgeInsets.symmetric(
     horizontal: thirty,
@@ -460,8 +460,8 @@ abstract final class Dimens {
   static const double elevatedButtonHeight = sixtyFour;
 
   // =============================================================================
-// RESPONSIVE LAYOUT
-// =============================================================================
+  // RESPONSIVE LAYOUT
+  // =============================================================================
 
   static const double mobileBreakpoint = 600;
   static const double tabletBreakpoint = 1024;
@@ -469,4 +469,6 @@ abstract final class Dimens {
   static const double mobileMaxContentWidth = 460;
   static const double tabletMaxContentWidth = 500;
   static const double desktopMaxContentWidth = 640;
+
+  static const double smallScreenWidth = 280;
 }

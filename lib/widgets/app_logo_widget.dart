@@ -9,6 +9,7 @@ class AppLogoWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      key: const ValueKey('app-logo'),
           width: size,
           height: size,
           padding: EdgeInsets.all(size * 0.15),
@@ -18,13 +19,12 @@ class AppLogoWidget extends StatelessWidget {
             border: Border.all(color: AppColors.border, width: 1.5),
             boxShadow: [
               BoxShadow(
-                color: AppColors.neonPurple.withValues(alpha: 0.16),
+                color: AppColors.neonPurple.withValues(alpha: 0.22),
                 blurRadius: 32,
-                spreadRadius: 2,
-
+                spreadRadius: 3,
               ),
               BoxShadow(
-                color: AppColors.neonCyan.withValues(alpha: 0.07),
+                color: AppColors.neonCyan.withValues(alpha: 0.12),
                 blurRadius: 18,
                 spreadRadius: -2,
               ),
@@ -42,6 +42,7 @@ class AppLogoWidget extends StatelessWidget {
                         icon: Icons.close_rounded,
                         color: AppColors.neonCyan,
                         delay: Duration.zero,
+                        rotation: -0.35,
                       ),
                     ),
                     const Expanded(
@@ -49,6 +50,7 @@ class AppLogoWidget extends StatelessWidget {
                         icon: Icons.circle_outlined,
                         color: AppColors.neonPink,
                         delay: AnimationConstants.staggerShort,
+                        rotation: 0.35,
                       ),
                     ),
                   ],
@@ -63,6 +65,7 @@ class AppLogoWidget extends StatelessWidget {
                         icon: Icons.circle_outlined,
                         color: AppColors.neonPink,
                         delay: AnimationConstants.staggerMedium,
+                        rotation: -0.35,
                       ),
                     ),
                     const Expanded(
@@ -70,6 +73,7 @@ class AppLogoWidget extends StatelessWidget {
                         icon: Icons.close_rounded,
                         color: AppColors.neonCyan,
                         delay: AnimationConstants.staggerLong,
+                        rotation: 0.35,
                       ),
                     ),
                   ],
@@ -78,42 +82,34 @@ class AppLogoWidget extends StatelessWidget {
             ],
           ),
         )
-        // Main logo entrance.
+        // Strong entrance: fade, zoom, and overshoot.
         .animate()
-        .fadeIn(
-          duration: AnimationConstants.medium,
-          curve: AnimationConstants.entranceCurve,
-        )
+        .fadeIn(duration: AnimationConstants.medium, curve: Curves.easeOut)
         .scale(
-          begin: const Offset(
-            AnimationConstants.scaleSmall,
-            AnimationConstants.scaleSmall,
-          ),
-          end: const Offset(
-            AnimationConstants.scaleNormal,
-            AnimationConstants.scaleNormal,
-          ),
+          begin: const Offset(0.25, 0.25),
+          end: const Offset(1, 1),
           duration: AnimationConstants.long,
-          curve: AnimationConstants.entranceCurve,
+          curve: Curves.elasticOut,
         )
-        // Gentle floating effect after the entrance.
+        // Pronounced floating motion.
         .then()
         .moveY(
           begin: 0,
-          end: -size * 0.035,
+          end: -size * 0.07,
           duration: AnimationConstants.extraLong,
           curve: Curves.easeInOut,
         )
         .moveY(
-          begin: -size * 0.035,
+          begin: -size * 0.07,
           end: 0,
           duration: AnimationConstants.extraLong,
           curve: Curves.easeInOut,
         )
+        // Repeat the floating cycle.
         .then()
         .shimmer(
-          duration: AnimationConstants.extraLong,
-          color: AppColors.neonCyan.withValues(alpha: 0.16),
+          duration: AnimationConstants.long,
+          color: AppColors.neonCyan.withValues(alpha: 0.35),
         );
   }
 }
@@ -123,44 +119,47 @@ class _LogoCell extends StatelessWidget {
     required this.icon,
     required this.color,
     required this.delay,
+    required this.rotation,
   });
 
   final IconData icon;
   final Color color;
   final Duration delay;
+  final double rotation;
 
   @override
   Widget build(BuildContext context) {
     return Container(
           decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.07),
+            color: color.withValues(alpha: 0.10),
             borderRadius: Dimens.radius10,
-            border: Border.all(color: color.withValues(alpha: 0.12,),),
+            border: Border.all(color: color.withValues(alpha: 0.25)),
             boxShadow: [
-              BoxShadow(color: color.withValues(alpha: 0.08), blurRadius: 10),
+              BoxShadow(
+                color: color.withValues(alpha: 0.16),
+                blurRadius: 14,
+                spreadRadius: 1,
+              ),
             ],
           ),
           child: Center(
             child: Icon(icon, color: color, size: Dimens.iconLg),
           ),
         )
-        // Each cell enters in sequence.
+        // Each cell pops in with a larger rotation.
         .animate(delay: delay)
-        .fadeIn(
-          duration: AnimationConstants.medium,
-          curve: AnimationConstants.entranceCurve,
-        )
+        .fadeIn(duration: AnimationConstants.medium, curve: Curves.easeOut)
         .scale(
-          begin: const Offset(0.4, 0.4),
+          begin: const Offset(0.1, 0.1),
           end: const Offset(1, 1),
-          duration: AnimationConstants.medium,
-          curve: AnimationConstants.entranceCurve,
+          duration: AnimationConstants.long,
+          curve: Curves.elasticOut,
         )
         .rotate(
-          begin: -0.08,
+          begin: rotation,
           end: 0,
-          duration: AnimationConstants.medium,
-          curve: AnimationConstants.entranceCurve,
+          duration: AnimationConstants.long,
+          curve: Curves.elasticOut,
         );
   }
 }
