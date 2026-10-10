@@ -166,43 +166,36 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
+          
           test -n "$VERCEL_TOKEN" || {
             echo "::error::VERCEL_TOKEN secret is missing."
             exit 1
           }
-
+          
           if [[ "$TARGET_BRANCH" == "main" ]]; then
             echo "Deploying main to Vercel Production."
-
+          
             vercel deploy \
               --prod \
               --yes \
-              --token="$VERCEL_TOKEN" \
-              2>&1 | tee "$RUNNER_TEMP/vercel-deploy.log"
+              --token="$VERCEL_TOKEN"
+          
+            DEPLOYMENT_URL="https://tictacduel.vercel.app"
+          
           elif [[ "$TARGET_BRANCH" == "dev" ]]; then
             echo "Deploying dev to Vercel Preview."
-
+          
             vercel deploy \
               --yes \
-              --token="$VERCEL_TOKEN" \
-              2>&1 | tee "$RUNNER_TEMP/vercel-deploy.log"
+              --token="$VERCEL_TOKEN"
+          
+            DEPLOYMENT_URL="https://dev-tictacduel.vercel.app"
+          
           else
             echo "::error::Unsupported deployment branch: $TARGET_BRANCH"
             exit 1
           fi
-
-          DEPLOYMENT_URL="$(
-            grep -Eo 'https://[^[:space:]]+\.vercel\.app' \
-              "$RUNNER_TEMP/vercel-deploy.log" \
-              | tail -n 1 || true
-          )"
-
-          if [[ -z "$DEPLOYMENT_URL" ]]; then
-            echo "::error::Could not extract the Vercel deployment URL."
-            exit 1
-          fi
-
+          
           echo "url=$DEPLOYMENT_URL" >> "$GITHUB_OUTPUT"
 
       # --------------------------------------------------
