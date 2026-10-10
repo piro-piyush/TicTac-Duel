@@ -59,9 +59,14 @@ final roomSocketServiceProvider = Provider<RoomSocketService>((ref) {
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     debugLogDiagnostics: true,
-    initialLocation: AppRoutes.home.path,
+    initialLocation: AppRoutes.splash.path,
     navigatorKey: AppPages.rootNavigatorKey,
     routes: [
+      GoRoute(
+        name: AppRoutes.splash.name,
+        path: AppRoutes.splash.path,
+        builder: (context, state) => const SplashScreen(),
+      ),
       GoRoute(
         name: AppRoutes.home.name,
         path: AppRoutes.home.path,

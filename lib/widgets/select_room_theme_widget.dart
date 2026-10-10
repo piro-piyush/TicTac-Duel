@@ -12,6 +12,8 @@ class SelectRoomThemeWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isCompact =
+        MediaQuery.sizeOf(context).width < Dimens.smallScreenWidth;
     return Column(
       spacing: Dimens.twelve,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -20,19 +22,24 @@ class SelectRoomThemeWidget extends StatelessWidget {
         Row(
           spacing: Dimens.eight,
           children: RoomTheme.values
-              .map((theme) => Expanded(child: _buildThemeCard(theme)))
+              .map(
+                (theme) => Expanded(
+                  child: _buildThemeCard(theme, isCompact: isCompact),
+                ),
+              )
               .toList(),
         ),
-        _buildThemePreview(),
+        _buildThemePreview(isCompact: isCompact),
       ],
     );
   }
 
-  Widget _buildThemeCard(RoomTheme theme) {
+  Widget _buildThemeCard(RoomTheme theme, {required bool isCompact}) {
     final isSelected = selectedTheme == theme;
 
     return Material(
       color: Colors.transparent,
+      borderRadius: Dimens.radius12,
       child: InkWell(
         onTap: () => onThemeChanged(theme),
         borderRadius: Dimens.radius12,
@@ -40,8 +47,11 @@ class SelectRoomThemeWidget extends StatelessWidget {
         highlightColor: theme.primary.withValues(alpha: 0.04),
         child: AnimatedContainer(
           duration: AnimationConstants.fast,
-          height: Dimens.fiftySix,
-          padding: Dimens.edgeInsets12_8,
+          height: isCompact ? 64 : Dimens.fiftySix,
+          padding: EdgeInsets.symmetric(
+            horizontal: isCompact ? Dimens.four : Dimens.eight,
+            vertical: isCompact ? Dimens.eight : 0,
+          ),
           decoration: BoxDecoration(
             color: isSelected
                 ? theme.primary.withValues(alpha: 0.08)
@@ -54,41 +64,68 @@ class SelectRoomThemeWidget extends StatelessWidget {
               width: isSelected ? 1.5 : 1,
             ),
           ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  theme.displayName,
-                  style: TextStyle(
-                    color: isSelected ? theme.primary : AppColors.textPrimary,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              AnimatedSwitcher(
-                duration: AnimationConstants.fast,
-                child: isSelected
-                    ? Icon(
-                        Icons.check_circle_rounded,
-                        key: const ValueKey('selected'),
-                        color: theme.primary,
-                        size: Dimens.iconSm,
-                      )
-                    : const SizedBox(
-                        key: ValueKey('unselected'),
-                        width: Dimens.iconSm,
-                        height: Dimens.iconSm,
+          child: isCompact
+              ? Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  spacing: Dimens.four,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        theme.displayName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: isSelected
+                              ? theme.primary
+                              : AppColors.textPrimary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-              ),
-            ],
-          ),
+                    ),
+                    Icon(
+                      isSelected
+                          ? Icons.check_circle_rounded
+                          : Icons.radio_button_unchecked_rounded,
+                      color: isSelected ? theme.primary : AppColors.disabled,
+                      size: Dimens.iconSm,
+                    ),
+                  ],
+                )
+              : Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        theme.displayName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        softWrap: false,
+                        style: TextStyle(
+                          color: isSelected
+                              ? theme.primary
+                              : AppColors.textPrimary,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: Dimens.four),
+                    Icon(
+                      isSelected
+                          ? Icons.check_circle_rounded
+                          : Icons.radio_button_unchecked_rounded,
+                      color: isSelected ? theme.primary : AppColors.disabled,
+                      size: Dimens.iconSm,
+                    ),
+                  ],
+                ),
         ),
       ),
     );
   }
 
-  Widget _buildThemePreview() {
+  Widget _buildThemePreview({required bool isCompact}) {
     final theme = selectedTheme;
 
     return AnimatedContainer(
@@ -99,60 +136,78 @@ class SelectRoomThemeWidget extends StatelessWidget {
         borderRadius: Dimens.radius16,
         border: Border.all(color: theme.primary.withValues(alpha: 0.22)),
       ),
-      child: Row(
-        spacing: Dimens.twelve,
-        children: [
-          _buildMiniBoard(theme),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: Dimens.four,
+      child: isCompact
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              spacing: Dimens.twelve,
               children: [
-                Text(
-                  theme.displayName,
-                  style: TextStyle(
-                    color: theme.primary,
-                    fontSize: Dimens.sixteen,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                Text(
-                  theme.subtitle,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: Dimens.twelve,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: Dimens.two),
-                Row(
-                  spacing: Dimens.six,
-                  children: [
-                    _buildThemeDot(theme.primary),
-                    Text(
-                      'Primary',
-                      style: TextStyle(
-                        color: theme.primary,
-                        fontSize: Dimens.twelve,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    _buildThemeDot(theme.secondary),
-                    Text(
-                      'Secondary',
-                      style: TextStyle(
-                        color: theme.secondary,
-                        fontSize: Dimens.twelve,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
+                Center(child: _buildMiniBoard(theme)),
+                _buildThemeDetails(theme, isCompact: true),
+              ],
+            )
+          : Row(
+              spacing: Dimens.twelve,
+              children: [
+                _buildMiniBoard(theme),
+                Expanded(child: _buildThemeDetails(theme)),
               ],
             ),
+    );
+  }
+
+  Widget _buildThemeDetails(RoomTheme theme, {bool isCompact = false}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: Dimens.four,
+      children: [
+        Text(
+          theme.displayName,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: theme.primary,
+            fontSize: Dimens.sixteen,
+            fontWeight: FontWeight.w800,
           ),
-        ],
-      ),
+        ),
+        Text(
+          theme.subtitle,
+          maxLines: isCompact ? 3 : 2,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: AppColors.textSecondary,
+            fontSize: Dimens.twelve,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: Dimens.two),
+        Wrap(
+          spacing: Dimens.twelve,
+          runSpacing: Dimens.eight,
+          children: [
+            _buildThemeColorLabel(theme.primary, 'Primary'),
+            _buildThemeColorLabel(theme.secondary, 'Secondary'),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildThemeColorLabel(Color color, String label) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      spacing: Dimens.six,
+      children: [
+        _buildThemeDot(color),
+        Text(
+          label,
+          style: TextStyle(
+            color: color,
+            fontSize: Dimens.twelve,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 

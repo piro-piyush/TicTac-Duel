@@ -3,7 +3,7 @@ import 'package:tictac_duel/lib.dart';
 Future<void> main() async {
   final binding = WidgetsFlutterBinding.ensureInitialized();
 
-  FlutterNativeSplash.preserve(widgetsBinding: binding);
+  // FlutterNativeSplash.preserve(widgetsBinding: binding);
 
   await dotenv.load();
 
@@ -12,7 +12,7 @@ Future<void> main() async {
      container.read(audioProvider.notifier).initialize(),
   ]);
 
-  FlutterNativeSplash.remove();
+  // FlutterNativeSplash.remove();
 
   runApp(UncontrolledProviderScope(container: container, child: const MyApp()));
 }
