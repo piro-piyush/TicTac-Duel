@@ -17,32 +17,30 @@ class PlayerNameWidget extends StatelessWidget {
   final GlobalKey<FormState> formKey;
 
   @override
-  Widget build(BuildContext context) {
-    return Form(
-      key: formKey,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: Dimens.eight,
-        children: [
-          const SectionTitleWidget(title: 'YOUR NAME'),
-          GameTextFormFieldWidget(
-            controller: _playerNameController,
-            focusNode: _playerNameFocusNode,
-            textCapitalization: TextCapitalization.words,
-            validator: ValidatorUtils.gameName,
-            maxLength: GameConstants.maxPlayerNameLength,
-            hintText: 'ENTER YOUR NAME',
-            suffixIcon: IconButton(
-              onPressed: onPressed,
-              tooltip: 'Random name',
-              icon: const Icon(
-                Icons.casino_outlined,
-                color: AppColors.neonPurple,
-              ),
+  Widget build(BuildContext context) => Form(
+    key: formKey,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: Dimens.eight,
+      children: [
+        const SectionTitleWidget(title: 'YOUR NAME'),
+        GameTextFormFieldWidget(
+          controller: _playerNameController,
+          focusNode: _playerNameFocusNode,
+          textCapitalization: TextCapitalization.words,
+          validator: ValidatorUtils.gameName,
+          maxLength: GameConstants.maxPlayerNameLength,
+          hintText: 'ENTER YOUR NAME',
+          suffixIcon: IconButton(
+            onPressed: onPressed,
+            tooltip: 'Random name',
+            icon: const Icon(
+              Icons.casino_outlined,
+              color: AppColors.neonPurple,
             ),
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
 }

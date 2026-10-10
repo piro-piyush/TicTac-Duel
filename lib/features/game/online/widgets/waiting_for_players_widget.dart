@@ -6,7 +6,7 @@ class WaitingForPlayersWidget extends StatefulWidget {
     super.key,
     required this.host,
     required this.guest,
-     this.playerId,
+    this.playerId,
     required this.roomCode,
     required this.status,
     required this.hostReady,
@@ -123,33 +123,29 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildPlayers(),
-            const SizedBox(height: Dimens.spaceBtwSections),
-            _buildStatus(),
-            const SizedBox(height: Dimens.spaceBtwItems),
-            _buildAction(),
-            const SizedBox(height: Dimens.spaceBtwSections),
-            if (_isWaiting && !_hasOpponent) ...[_buildRoomCode()],
-          ],
-        ),
+  Widget build(BuildContext context) => Center(
+    child: SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildPlayers(),
+          const SizedBox(height: Dimens.spaceBtwSections),
+          _buildStatus(),
+          const SizedBox(height: Dimens.spaceBtwItems),
+          _buildAction(),
+          const SizedBox(height: Dimens.spaceBtwSections),
+          if (_isWaiting && !_hasOpponent) ...[_buildRoomCode()],
+        ],
       ),
-    );
-  }
+    ),
+  );
 
-  Widget _buildPlayers() {
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 400),
-      switchInCurve: Curves.easeOutCubic,
-      switchOutCurve: Curves.easeInCubic,
-      child: _hasOpponent ? _buildConnectedPlayers() : _buildWaitingPlayer(),
-    );
-  }
+  Widget _buildPlayers() => AnimatedSwitcher(
+    duration: const Duration(milliseconds: 400),
+    switchInCurve: Curves.easeOutCubic,
+    switchOutCurve: Curves.easeInCubic,
+    child: _hasOpponent ? _buildConnectedPlayers() : _buildWaitingPlayer(),
+  );
 
   Widget _buildConnectedPlayers() {
     final guest = widget.guest;
@@ -169,15 +165,11 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
     );
   }
 
-  Widget _buildWaitingPlayer() {
-    return Column(
-      key: const ValueKey('waiting-player'),
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _buildPlayerColumn(widget.host),
-      ],
-    );
-  }
+  Widget _buildWaitingPlayer() => Column(
+    key: const ValueKey('waiting-player'),
+    mainAxisSize: MainAxisSize.min,
+    children: [_buildPlayerColumn(widget.host)],
+  );
 
   Widget _buildPlayerColumn(PlayerModel player) {
     final isMe = player.id == widget.playerId;
@@ -188,10 +180,7 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        PlayerAvatarWidget(
-          player: player,
-          isMe: isMe,
-        ),
+        PlayerAvatarWidget(player: player, isMe: isMe),
         const SizedBox(height: Dimens.spaceBtwItems),
         _buildPlayerName(player),
         if (_isResult) ...[
@@ -202,18 +191,16 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
     );
   }
 
-  Widget _buildGuestColumn(PlayerModel player) {
-    return FadeTransition(
-      opacity: _opponentFade,
-      child: SlideTransition(
-        position: _opponentSlide,
-        child: ScaleTransition(
-          scale: _opponentScale,
-          child: _buildPlayerColumn(player),
-        ),
+  Widget _buildGuestColumn(PlayerModel player) => FadeTransition(
+    opacity: _opponentFade,
+    child: SlideTransition(
+      position: _opponentSlide,
+      child: ScaleTransition(
+        scale: _opponentScale,
+        child: _buildPlayerColumn(player),
       ),
-    );
-  }
+    ),
+  );
 
   Widget _buildPlayerName(PlayerModel player) {
     final textTheme = Theme.of(context).textTheme;
@@ -242,27 +229,25 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
     );
   }
 
-  Widget _buildReadyStatus(bool isReady) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          isReady ? Icons.check_circle_rounded : Icons.schedule_rounded,
+  Widget _buildReadyStatus(bool isReady) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Icon(
+        isReady ? Icons.check_circle_rounded : Icons.schedule_rounded,
+        color: isReady ? AppColors.neonGreen : AppColors.textSecondary,
+        size: Dimens.iconXs,
+      ),
+      const SizedBox(width: Dimens.four),
+      Text(
+        isReady ? 'READY' : 'NOT READY',
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
           color: isReady ? AppColors.neonGreen : AppColors.textSecondary,
-          size: Dimens.iconXs,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.6,
         ),
-        const SizedBox(width: Dimens.four),
-        Text(
-          isReady ? 'READY' : 'NOT READY',
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            color: isReady ? AppColors.neonGreen : AppColors.textSecondary,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.6,
-          ),
-        ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
 
   Widget _buildStatus() {
     if (_isResult && !_isMyReady) {
@@ -305,27 +290,23 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
     );
   }
 
-  Widget _buildWaitingIndicator() {
-    return SizedBox.square(
-      dimension: Dimens.sixtyFour,
-      child: AnimatedBuilder(
-        animation: _waitingAnimationController,
-        builder: (context, child) {
-          return CustomPaint(
-            painter: WaitingIndicatorPainter(
-              progress: _waitingAnimationController.value,
-            ),
-            child: child,
-          );
-        },
-        child: const Icon(
-          Icons.people_outline_rounded,
-          color: AppColors.neonPurple,
-          size: Dimens.iconMd,
+  Widget _buildWaitingIndicator() => SizedBox.square(
+    dimension: Dimens.sixtyFour,
+    child: AnimatedBuilder(
+      animation: _waitingAnimationController,
+      builder: (context, child) => CustomPaint(
+        painter: WaitingIndicatorPainter(
+          progress: _waitingAnimationController.value,
         ),
+        child: child,
       ),
-    );
-  }
+      child: const Icon(
+        Icons.people_outline_rounded,
+        color: AppColors.neonPurple,
+        size: Dimens.iconMd,
+      ),
+    ),
+  );
 
   Widget _buildAction() {
     if (!_hasOpponent) {
@@ -354,71 +335,67 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
     return _buildWaitingForHost();
   }
 
-  Widget _buildWaitingForOtherPlayer() {
-    return Container(
-      width: double.infinity,
-      padding: Dimens.edgeInsets14,
-      decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: Dimens.radius12,
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.hourglass_top_rounded,
-            color: AppColors.neonCyan,
-            size: Dimens.iconSm,
-          ),
-          const SizedBox(width: Dimens.eight),
-          Flexible(
-            child: Text(
-              'WAITING FOR OTHER PLAYER',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w600,
-              ),
+  Widget _buildWaitingForOtherPlayer() => Container(
+    width: double.infinity,
+    padding: Dimens.edgeInsets14,
+    decoration: BoxDecoration(
+      color: AppColors.card,
+      borderRadius: Dimens.radius12,
+      border: Border.all(color: AppColors.border),
+    ),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(
+          Icons.hourglass_top_rounded,
+          color: AppColors.neonCyan,
+          size: Dimens.iconSm,
+        ),
+        const SizedBox(width: Dimens.eight),
+        Flexible(
+          child: Text(
+            'WAITING FOR OTHER PLAYER',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w600,
             ),
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
 
-  Widget _buildWaitingForHost() {
-    return Container(
-      width: double.infinity,
-      padding: Dimens.edgeInsets14,
-      decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: Dimens.radius12,
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.hourglass_top_rounded,
-            color: AppColors.neonCyan,
-            size: Dimens.iconSm,
-          ),
-          const SizedBox(width: Dimens.eight),
-          Flexible(
-            child: Text(
-              'WAITING FOR HOST TO START',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w600,
-              ),
+  Widget _buildWaitingForHost() => Container(
+    width: double.infinity,
+    padding: Dimens.edgeInsets14,
+    decoration: BoxDecoration(
+      color: AppColors.card,
+      borderRadius: Dimens.radius12,
+      border: Border.all(color: AppColors.border),
+    ),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(
+          Icons.hourglass_top_rounded,
+          color: AppColors.neonCyan,
+          size: Dimens.iconSm,
+        ),
+        const SizedBox(width: Dimens.eight),
+        Flexible(
+          child: Text(
+            'WAITING FOR HOST TO START',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w600,
             ),
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
 
   Widget _buildRoomCode() {
     final textTheme = Theme.of(context).textTheme;
@@ -497,9 +474,8 @@ class _WaitingForPlayersWidgetState extends State<WaitingForPlayersWidget>
         : 'Waiting for the host to start.';
   }
 
-  Color _symbolColor(PlayerSymbol symbol) {
-    return symbol == PlayerSymbol.x ? AppColors.neonCyan : AppColors.neonPink;
-  }
+  Color _symbolColor(PlayerSymbol symbol) =>
+      symbol == PlayerSymbol.x ? AppColors.neonCyan : AppColors.neonPink;
 
   void _copyRoomCode() {
     Clipboard.setData(ClipboardData(text: widget.roomCode));

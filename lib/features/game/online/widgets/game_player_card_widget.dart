@@ -78,18 +78,16 @@ class _GamePlayerCardWidgetState extends State<GamePlayerCardWidget>
 
     return AnimatedBuilder(
       animation: _animationController,
-      builder: (context, child) {
-        return CustomPaint(
-          foregroundPainter: widget.isTurn
-              ? TurnBorderPainter(
-                  progress: _animationController.value,
-                  color: _color,
-                  borderRadius: _borderRadius,
-                )
-              : null,
-          child: child,
-        );
-      },
+      builder: (context, child) => CustomPaint(
+        foregroundPainter: widget.isTurn
+            ? TurnBorderPainter(
+                progress: _animationController.value,
+                color: _color,
+                borderRadius: _borderRadius,
+              )
+            : null,
+        child: child,
+      ),
       child: Container(
         padding: EdgeInsets.symmetric(
           horizontal: widget.compact ? 7 : 10,
@@ -133,192 +131,178 @@ class _GamePlayerCardWidgetState extends State<GamePlayerCardWidget>
     );
   }
 
-  Widget _buildAvatar(double size) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        boxShadow: widget.isTurn
-            ? [
-                BoxShadow(
-                  color: _color.withValues(alpha: 0.35),
-                  blurRadius: 12,
-                  spreadRadius: 1,
-                ),
-              ]
-            : null,
-      ),
-      child: PlayerAvatarWidget(
-        player: widget.player,
-        isMe: _isMe,
-        isTurn: widget.isTurn,
-        size: size,
-      ),
-    );
-  }
+  Widget _buildAvatar(double size) => Container(
+    width: size,
+    height: size,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      boxShadow: widget.isTurn
+          ? [
+              BoxShadow(
+                color: _color.withValues(alpha: 0.35),
+                blurRadius: 12,
+                spreadRadius: 1,
+              ),
+            ]
+          : null,
+    ),
+    child: PlayerAvatarWidget(
+      player: widget.player,
+      isMe: _isMe,
+      isTurn: widget.isTurn,
+      size: size,
+    ),
+  );
 
-  Widget _buildPlayerHeader() {
-    return Row(
-      spacing: Dimens.six,
-      children: [
-        Flexible(
-          child: Text(
-            widget.player.name,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: widget.compact ? Dimens.ten : Dimens.twelve,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-        if (widget.isOnline) _buildPlayerBadge(),
-      ],
-    );
-  }
-
-  Widget _buildPlayerBadge() {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 250),
-      padding: EdgeInsets.symmetric(
-        horizontal: widget.compact ? Dimens.four : Dimens.six,
-        vertical: Dimens.two,
-      ),
-      decoration: BoxDecoration(
-        color: _isMe ? _color.withValues(alpha: 0.12) : AppColors.card,
-        borderRadius: Dimens.radius6,
-        border: Border.all(
-          color: _isMe ? _color.withValues(alpha: 0.30) : AppColors.border,
-        ),
-      ),
-      child: Text(
-        _isMe ? 'YOU' : 'OPPONENT',
-        style: TextStyle(
-          color: _isMe ? _color : AppColors.textSecondary,
-          fontSize: widget.compact ? 6 : 7,
-          fontWeight: FontWeight.w800,
-          letterSpacing: 0.7,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPlayerStatus() {
-    return Row(
-      spacing: Dimens.six,
-      children: [
-        AnimatedDefaultTextStyle(
-          duration: const Duration(milliseconds: 250),
+  Widget _buildPlayerHeader() => Row(
+    spacing: Dimens.six,
+    children: [
+      Flexible(
+        child: Text(
+          widget.player.name,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(
-            color: _color,
-            fontSize: widget.compact ? 8 : 9,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 1.2,
+            color: AppColors.textPrimary,
+            fontSize: widget.compact ? Dimens.ten : Dimens.twelve,
+            fontWeight: FontWeight.w700,
           ),
-          child: Text(widget.player.symbol.value.toUpperCase()),
         ),
-
-        if (widget.isTurn) _buildTurnIndicator(),
-
-        const Spacer(),
-
-        _buildPoints(),
-      ],
-    );
-  }
-
-  Widget _buildTurnIndicator() {
-    return AnimatedBuilder(
-      animation: _animationController,
-      builder: (context, child) {
-        final pulse =
-            0.65 + (math.sin(_animationController.value * math.pi * 2) * 0.35);
-
-        return Opacity(
-          opacity: pulse.clamp(0.45, 1.0),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            spacing: 3,
-            children: [
-              Container(
-                width: 4,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: _color,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: _color.withValues(alpha: 0.8),
-                      blurRadius: 5,
-                    ),
-                  ],
-                ),
-              ),
-              Text(
-                'TURN',
-                style: TextStyle(
-                  color: _color,
-                  fontSize: 8,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildPoints() {
-    return TweenAnimationBuilder<int>(
-      key: ValueKey(widget.points),
-      tween: IntTween(
-        begin: widget.points > 0 ? widget.points - 1 : 0,
-        end: widget.points,
       ),
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.easeOutBack,
-      builder: (context, value, child) {
-        return AnimatedScale(
-          scale: value == widget.points && widget.points > 0 ? 1.0 : 0.88,
-          duration: const Duration(milliseconds: 180),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 250),
-            constraints: BoxConstraints(minWidth: widget.compact ? 22 : 26),
-            padding: EdgeInsets.symmetric(
-              horizontal: widget.compact ? 5 : 6,
-              vertical: widget.compact ? 2 : 3,
-            ),
-            decoration: BoxDecoration(
-              color: _color.withValues(alpha: widget.isTurn ? 0.14 : 0.10),
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(
-                color: _color.withValues(alpha: widget.isTurn ? 0.40 : 0.25),
+      if (widget.isOnline) _buildPlayerBadge(),
+    ],
+  );
+
+  Widget _buildPlayerBadge() => AnimatedContainer(
+    duration: const Duration(milliseconds: 250),
+    padding: EdgeInsets.symmetric(
+      horizontal: widget.compact ? Dimens.four : Dimens.six,
+      vertical: Dimens.two,
+    ),
+    decoration: BoxDecoration(
+      color: _isMe ? _color.withValues(alpha: 0.12) : AppColors.card,
+      borderRadius: Dimens.radius6,
+      border: Border.all(
+        color: _isMe ? _color.withValues(alpha: 0.30) : AppColors.border,
+      ),
+    ),
+    child: Text(
+      _isMe ? 'YOU' : 'OPPONENT',
+      style: TextStyle(
+        color: _isMe ? _color : AppColors.textSecondary,
+        fontSize: widget.compact ? 6 : 7,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 0.7,
+      ),
+    ),
+  );
+
+  Widget _buildPlayerStatus() => Row(
+    spacing: Dimens.six,
+    children: [
+      AnimatedDefaultTextStyle(
+        duration: const Duration(milliseconds: 250),
+        style: TextStyle(
+          color: _color,
+          fontSize: widget.compact ? 8 : 9,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 1.2,
+        ),
+        child: Text(widget.player.symbol.value.toUpperCase()),
+      ),
+
+      if (widget.isTurn) _buildTurnIndicator(),
+
+      const Spacer(),
+
+      _buildPoints(),
+    ],
+  );
+
+  Widget _buildTurnIndicator() => AnimatedBuilder(
+    animation: _animationController,
+    builder: (context, child) {
+      final pulse =
+          0.65 + (math.sin(_animationController.value * math.pi * 2) * 0.35);
+
+      return Opacity(
+        opacity: pulse.clamp(0.45, 1.0),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 3,
+          children: [
+            Container(
+              width: 4,
+              height: 4,
+              decoration: BoxDecoration(
+                color: _color,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: _color.withValues(alpha: 0.8),
+                    blurRadius: 5,
+                  ),
+                ],
               ),
-              boxShadow: widget.isTurn
-                  ? [
-                      BoxShadow(
-                        color: _color.withValues(alpha: 0.12),
-                        blurRadius: 7,
-                      ),
-                    ]
-                  : null,
             ),
-            child: Text(
-              '$value',
-              textAlign: TextAlign.center,
+            Text(
+              'TURN',
               style: TextStyle(
                 color: _color,
-                fontSize: widget.compact ? 10 : 12,
-                fontWeight: FontWeight.w900,
+                fontSize: 8,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1,
               ),
             ),
+          ],
+        ),
+      );
+    },
+  );
+
+  Widget _buildPoints() => TweenAnimationBuilder<int>(
+    key: ValueKey(widget.points),
+    tween: IntTween(
+      begin: widget.points > 0 ? widget.points - 1 : 0,
+      end: widget.points,
+    ),
+    duration: const Duration(milliseconds: 400),
+    curve: Curves.easeOutBack,
+    builder: (context, value, child) => AnimatedScale(
+      scale: value == widget.points && widget.points > 0 ? 1.0 : 0.88,
+      duration: const Duration(milliseconds: 180),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        constraints: BoxConstraints(minWidth: widget.compact ? 22 : 26),
+        padding: EdgeInsets.symmetric(
+          horizontal: widget.compact ? 5 : 6,
+          vertical: widget.compact ? 2 : 3,
+        ),
+        decoration: BoxDecoration(
+          color: _color.withValues(alpha: widget.isTurn ? 0.14 : 0.10),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(
+            color: _color.withValues(alpha: widget.isTurn ? 0.40 : 0.25),
           ),
-        );
-      },
-    );
-  }
+          boxShadow: widget.isTurn
+              ? [
+                  BoxShadow(
+                    color: _color.withValues(alpha: 0.12),
+                    blurRadius: 7,
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          '$value',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: _color,
+            fontSize: widget.compact ? 10 : 12,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ),
+    ),
+  );
 }

@@ -155,112 +155,105 @@ class SelectRoomThemeWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildThemeDetails(RoomTheme theme, {bool isCompact = false}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: Dimens.four,
-      children: [
-        Text(
-          theme.displayName,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: theme.primary,
-            fontSize: Dimens.sixteen,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        Text(
-          theme.subtitle,
-          maxLines: isCompact ? 3 : 2,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: Dimens.twelve,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(height: Dimens.two),
-        Wrap(
-          spacing: Dimens.twelve,
-          runSpacing: Dimens.eight,
-          children: [
-            _buildThemeColorLabel(theme.primary, 'Primary'),
-            _buildThemeColorLabel(theme.secondary, 'Secondary'),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildThemeColorLabel(Color color, String label) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      spacing: Dimens.six,
-      children: [
-        _buildThemeDot(color),
-        Text(
-          label,
-          style: TextStyle(
-            color: color,
-            fontSize: Dimens.twelve,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMiniBoard(RoomTheme theme) {
-    return SizedBox(
-      width: Dimens.eightyEight,
-      height: Dimens.eightyEight,
-      child: GridView.builder(
-        physics: const NeverScrollableScrollPhysics(),
-        padding: EdgeInsets.zero,
-        itemCount: GameConstants.themePreviewSymbols.length,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: GameConstants.boardSize,
-          crossAxisSpacing: Dimens.four,
-          mainAxisSpacing: Dimens.four,
-        ),
-        itemBuilder: (context, index) {
-          final symbol = GameConstants.themePreviewSymbols[index];
-
-          return DecoratedBox(
-            decoration: BoxDecoration(
-              color: AppColors.card,
-              borderRadius: Dimens.radius6,
-              border: Border.all(color: theme.primary.withValues(alpha: 0.08)),
+  Widget _buildThemeDetails(RoomTheme theme, {bool isCompact = false}) =>
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: Dimens.four,
+        children: [
+          Text(
+            theme.displayName,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: theme.primary,
+              fontSize: Dimens.sixteen,
+              fontWeight: FontWeight.w800,
             ),
-            child: symbol == null
-                ? null
-                : Center(
-                    child: Icon(
-                      symbol.icon,
-                      color: symbol == PlayerSymbol.x
-                          ? theme.primary
-                          : theme.secondary,
-                      size: Dimens.iconMd,
-                    ),
-                  ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildThemeDot(Color color) {
-    return Container(
-      width: Dimens.eight,
-      height: Dimens.eight,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color,
-        boxShadow: [
-          BoxShadow(color: color.withValues(alpha: 0.35), blurRadius: 5),
+          ),
+          Text(
+            theme.subtitle,
+            maxLines: isCompact ? 3 : 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: Dimens.twelve,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: Dimens.two),
+          Wrap(
+            spacing: Dimens.twelve,
+            runSpacing: Dimens.eight,
+            children: [
+              _buildThemeColorLabel(theme.primary, 'Primary'),
+              _buildThemeColorLabel(theme.secondary, 'Secondary'),
+            ],
+          ),
         ],
+      );
+
+  Widget _buildThemeColorLabel(Color color, String label) => Row(
+    mainAxisSize: MainAxisSize.min,
+    spacing: Dimens.six,
+    children: [
+      _buildThemeDot(color),
+      Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: Dimens.twelve,
+          fontWeight: FontWeight.w600,
+        ),
       ),
-    );
-  }
+    ],
+  );
+
+  Widget _buildMiniBoard(RoomTheme theme) => SizedBox(
+    width: Dimens.eightyEight,
+    height: Dimens.eightyEight,
+    child: GridView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.zero,
+      itemCount: GameConstants.themePreviewSymbols.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: GameConstants.boardSize,
+        crossAxisSpacing: Dimens.four,
+        mainAxisSpacing: Dimens.four,
+      ),
+      itemBuilder: (context, index) {
+        final symbol = GameConstants.themePreviewSymbols[index];
+
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            color: AppColors.card,
+            borderRadius: Dimens.radius6,
+            border: Border.all(color: theme.primary.withValues(alpha: 0.08)),
+          ),
+          child: symbol == null
+              ? null
+              : Center(
+                  child: Icon(
+                    symbol.icon,
+                    color: symbol == PlayerSymbol.x
+                        ? theme.primary
+                        : theme.secondary,
+                    size: Dimens.iconMd,
+                  ),
+                ),
+        );
+      },
+    ),
+  );
+
+  Widget _buildThemeDot(Color color) => Container(
+    width: Dimens.eight,
+    height: Dimens.eight,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      color: color,
+      boxShadow: [
+        BoxShadow(color: color.withValues(alpha: 0.35), blurRadius: 5),
+      ],
+    ),
+  );
 }

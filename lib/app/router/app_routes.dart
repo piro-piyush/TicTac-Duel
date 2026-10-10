@@ -12,19 +12,16 @@ abstract final class AppRoutes {
   // HOME
   // ===========================================================================
 
-  static const splash = AppRouteModel(
-    name: 'splash',
-    path: '/splash',
-  );
+  static const splash = AppRouteModel(name: 'splash', path: '/splash');
   static const home = AppRouteModel(name: 'home', path: '/');
 
   // ===========================================================================
   // GENERAL
   // ===========================================================================
 
-  static const settings = AppRouteModel(name: 'settings', path: '/settings');
+  static const settings = AppRouteModel(name: 'settings', path: 'settings');
 
-  static const help = AppRouteModel(name: 'help', path: '/help');
+  static const help = AppRouteModel(name: 'help', path: 'help');
 
   // ===========================================================================
   // ROOM
@@ -35,7 +32,7 @@ abstract final class AppRoutes {
     path: '/create-room',
   );
 
-  static const joinRoom = AppRouteModel(name: 'join-room', path: '/join-room');
+  static const joinRoom = AppRouteModel(name: 'join-room', path: 'join-room');
 
   static const publicRooms = AppRouteModel(
     name: 'public-rooms',
@@ -48,7 +45,7 @@ abstract final class AppRoutes {
 
   static const localGame = AppRouteModel(
     name: 'local-game',
-    path: '/local-game',
+    path: 'local-game',
   );
 
   static const localGameBoard = AppRouteModel(
@@ -60,11 +57,11 @@ abstract final class AppRoutes {
   // ONLINE GAME
   // ===========================================================================
 
-  static const game = AppRouteModel(name: 'game', path: '/game');
+  static const game = AppRouteModel(name: 'game', path: 'game');
 
   // ===========================================================================
   // RESULT
   // ===========================================================================
 
-  static const result = AppRouteModel(name: 'result', path: '/result');
+  static const result = AppRouteModel(name: 'result', path: 'result');
 }

@@ -120,9 +120,8 @@ class GameConstants {
     return url.replaceAll(RegExp(r'/+$'), '');
   }
 
-  static String roomJoinUrl(String roomCode) {
-    return '$baseUrl/join-room?code=${Uri.encodeQueryComponent(roomCode)}';
-  }
+  static String roomJoinUrl(String roomCode) =>
+      '$baseUrl/join-room?code=${Uri.encodeQueryComponent(roomCode)}';
 
   static String getRoomShareText(String roomCode) {
     final joinLink = roomJoinUrl(roomCode);

@@ -37,16 +37,8 @@ class ResultScoreCardWidget extends StatelessWidget {
 
   List<({PlayerModel player, int points, bool isMe})> _buildPlayers() {
     final players = [
-      (
-      player: state.host,
-      points: state.hostPoints,
-      isMe: isPlayerOneMe,
-      ),
-      (
-      player: state.guest,
-      points: state.guestPoints,
-      isMe: isPlayerTwoMe,
-      ),
+      (player: state.host, points: state.hostPoints, isMe: isPlayerOneMe),
+      (player: state.guest, points: state.guestPoints, isMe: isPlayerTwoMe),
     ];
 
     final winnerId = state.gameWinner?.id;
@@ -55,37 +47,24 @@ class ResultScoreCardWidget extends StatelessWidget {
       return players;
     }
 
-    players.sort(
-          (a, b) => _winnerFirst(
-        a.player.id,
-        b.player.id,
-        winnerId,
-      ),
-    );
+    players.sort((a, b) => _winnerFirst(a.player.id, b.player.id, winnerId));
 
     return players;
   }
 
-  int _winnerFirst(
-      String firstId,
-      String secondId,
-      String winnerId,
-      ) {
+  int _winnerFirst(String firstId, String secondId, String winnerId) {
     if (firstId == winnerId) return -1;
     if (secondId == winnerId) return 1;
 
     return 0;
   }
 
-  Widget _buildPlayerTile(
-      ({PlayerModel player, int points, bool isMe}) data,
-      ) {
-    return PlayerScoreTileWidget(
-      player: data.player,
-      points: data.points,
-      isWinner: data.player.id == state.gameWinner?.id,
-      isMe: data.isMe,
-      isOnline: isOnline,
-    );
-  }
+  Widget _buildPlayerTile(({PlayerModel player, int points, bool isMe}) data) =>
+      PlayerScoreTileWidget(
+        player: data.player,
+        points: data.points,
+        isWinner: data.player.id == state.gameWinner?.id,
+        isMe: data.isMe,
+        isOnline: isOnline,
+      );
 }

@@ -14,13 +14,12 @@ class HomeActionsWidget extends ConsumerWidget {
         Column(
           spacing: Dimens.fourteen,
           children: [
-
             MenuButtonWidget(
               title: 'Local Game',
               subtitle: 'Play with a friend or challenge the CPU',
               icon: Icons.smartphone_rounded,
               color: AppColors.neonPurple,
-              onTap: navigation.pushLocalGame,
+              onTap: navigation.goToLocalGame,
             ),
             MenuButtonWidget(
               title: 'Public Rooms',
@@ -29,7 +28,7 @@ class HomeActionsWidget extends ConsumerWidget {
               color: AppColors.neonGreen,
               onTap: () => _checkInternetConnection(
                 networkService,
-                navigation.pushPublicRooms,
+                navigation.goToPublicRooms,
               ),
             ),
           ],
@@ -45,7 +44,7 @@ class HomeActionsWidget extends ConsumerWidget {
                 isSmall: true,
                 onPressed: () => _checkInternetConnection(
                   networkService,
-                  navigation.pushCreateRoom,
+                  navigation.goToCreateRoom,
                 ),
               ),
             ),
@@ -56,7 +55,7 @@ class HomeActionsWidget extends ConsumerWidget {
                 isSmall: true,
                 onPressed: () => _checkInternetConnection(
                   networkService,
-                  navigation.pushJoinRoom,
+                  navigation.goToJoinRoom,
                 ),
               ),
             ),

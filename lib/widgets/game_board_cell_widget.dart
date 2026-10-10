@@ -49,12 +49,10 @@ class GameBoardCellWidget extends StatelessWidget {
             duration: const Duration(milliseconds: 200),
             switchInCurve: Curves.easeOutBack,
             switchOutCurve: Curves.easeIn,
-            transitionBuilder: (child, animation) {
-              return ScaleTransition(
-                scale: animation,
-                child: FadeTransition(opacity: animation, child: child),
-              );
-            },
+            transitionBuilder: (child, animation) => ScaleTransition(
+              scale: animation,
+              child: FadeTransition(opacity: animation, child: child),
+            ),
             child: isEmpty
                 ? const SizedBox.shrink()
                 : Icon(

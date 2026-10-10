@@ -26,27 +26,25 @@ class TapEffectWidget extends StatelessWidget {
   final TapEffect effect;
 
   @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: effect.controller,
-      builder: (context, child) {
-        final progress = Curves.easeOutCubic.transform(effect.controller.value);
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: effect.controller,
+    builder: (context, child) {
+      final progress = Curves.easeOutCubic.transform(effect.controller.value);
 
-        final radius = _initialRadius + (progress * _radiusGrowth);
-        final opacity = 1.0 - progress;
+      final radius = _initialRadius + (progress * _radiusGrowth);
+      final opacity = 1.0 - progress;
 
-        return Positioned(
-          left: effect.position.dx - radius,
-          top: effect.position.dy - radius,
-          child: IgnorePointer(
-            child: RepaintBoundary(
-              child: _buildRipple(radius: radius, opacity: opacity),
-            ),
+      return Positioned(
+        left: effect.position.dx - radius,
+        top: effect.position.dy - radius,
+        child: IgnorePointer(
+          child: RepaintBoundary(
+            child: _buildRipple(radius: radius, opacity: opacity),
           ),
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
 
   Widget _buildRipple({required double radius, required double opacity}) {
     final borderColor = effect.color.withValues(

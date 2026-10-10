@@ -6,12 +6,11 @@ class ResultState extends Equatable {
   final ResultModel result;
   final bool showConfetti;
 
-  ResultState copyWith({ResultModel? result, bool? showConfetti}) {
-    return ResultState(
-      result: result ?? this.result,
-      showConfetti: showConfetti ?? this.showConfetti,
-    );
-  }
+  ResultState copyWith({ResultModel? result, bool? showConfetti}) =>
+      ResultState(
+        result: result ?? this.result,
+        showConfetti: showConfetti ?? this.showConfetti,
+      );
 
   @override
   List<Object> get props => [result, showConfetti];

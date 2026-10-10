@@ -50,28 +50,16 @@ class TurnBorderPainter extends CustomPainter {
       }
 
       if (start < 0) {
-        result.addPath(
-          metric.extractPath(0, end),
-          Offset.zero,
-        );
+        result.addPath(metric.extractPath(0, end), Offset.zero);
 
-        result.addPath(
-          metric.extractPath(length + start, length),
-          Offset.zero,
-        );
+        result.addPath(metric.extractPath(length + start, length), Offset.zero);
 
         return result;
       }
 
-      result.addPath(
-        metric.extractPath(start, length),
-        Offset.zero,
-      );
+      result.addPath(metric.extractPath(start, length), Offset.zero);
 
-      result.addPath(
-        metric.extractPath(0, end - length),
-        Offset.zero,
-      );
+      result.addPath(metric.extractPath(0, end - length), Offset.zero);
 
       return result;
     }
@@ -98,10 +86,7 @@ class TurnBorderPainter extends CustomPainter {
       ..strokeWidth = 4
       ..strokeCap = StrokeCap.round
       ..color = color.withValues(alpha: 0.35)
-      ..maskFilter = const MaskFilter.blur(
-        BlurStyle.normal,
-        6,
-      );
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
 
     canvas.drawPath(snakePath, glowPaint);
 
@@ -128,22 +113,14 @@ class TurnBorderPainter extends CustomPainter {
     final headPaint = Paint()
       ..style = PaintingStyle.fill
       ..color = Colors.white
-      ..maskFilter = const MaskFilter.blur(
-        BlurStyle.normal,
-        3,
-      );
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
 
-    canvas.drawCircle(
-      tangent.position,
-      1.8,
-      headPaint,
-    );
+    canvas.drawCircle(tangent.position, 1.8, headPaint);
   }
 
   @override
-  bool shouldRepaint(covariant TurnBorderPainter oldDelegate) {
-    return oldDelegate.progress != progress ||
-        oldDelegate.color != color ||
-        oldDelegate.borderRadius != borderRadius;
-  }
+  bool shouldRepaint(covariant TurnBorderPainter oldDelegate) =>
+      oldDelegate.progress != progress ||
+      oldDelegate.color != color ||
+      oldDelegate.borderRadius != borderRadius;
 }

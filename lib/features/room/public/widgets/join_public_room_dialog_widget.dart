@@ -46,41 +46,36 @@ class _JoinPublicRoomDialogWidgetState
   }
 
   @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('JOIN THE DUEL'),
-      content: Form(
-        key: _formKey,
-        child: GameTextFormFieldWidget(
-          controller: playerNameController,
-          focusNode: playerNameFocusNode,
-          hintText: 'ENTER YOUR NAME',
-          validator: ValidatorUtils.gameName,
-          textCapitalization: TextCapitalization.words,
-          maxLength: GameConstants.maxPlayerNameLength,
-          onFieldSubmitted: (_) => _validateAndJoin(),
-          suffixIcon: IconButton(
-            onPressed: _generateRandomName,
-            tooltip: 'Random name',
-            icon: const Icon(
-              Icons.casino_outlined,
-              color: AppColors.neonPurple,
-            ),
-          ),
+  Widget build(BuildContext context) => AlertDialog(
+    title: const Text('JOIN THE DUEL'),
+    content: Form(
+      key: _formKey,
+      child: GameTextFormFieldWidget(
+        controller: playerNameController,
+        focusNode: playerNameFocusNode,
+        hintText: 'ENTER YOUR NAME',
+        validator: ValidatorUtils.gameName,
+        textCapitalization: TextCapitalization.words,
+        maxLength: GameConstants.maxPlayerNameLength,
+        onFieldSubmitted: (_) => _validateAndJoin(),
+        suffixIcon: IconButton(
+          onPressed: _generateRandomName,
+          tooltip: 'Random name',
+          icon: const Icon(Icons.casino_outlined, color: AppColors.neonPurple),
         ),
       ),
-      actions: [
-        NeonTextButtonWidget(
-          onPressed: () => context.pop(),
-          label: 'CANCEL',
-          isSmall: true,
-        ),
-        NeonElevatedButtonWidget(
-          onPressed: _validateAndJoin,
-          label: 'JOIN',
-          isSmall: true,
-        ),
-      ],
-    );
-  }
+    ),
+    actions: [
+      NeonTextButtonWidget(
+        onPressed: () => context.pop(),
+        label: 'CANCEL',
+        isSmall: true,
+      ),
+      NeonElevatedButtonWidget(
+        onPressed: _validateAndJoin,
+        label: 'JOIN',
+        isSmall: true,
+      ),
+    ],
+  );
 }

@@ -66,9 +66,8 @@ class NetworkService {
     );
   }
 
-  bool _hasConnection(List<ConnectivityResult> result) {
-    return result.any((connection) => connection != ConnectivityResult.none);
-  }
+  bool _hasConnection(List<ConnectivityResult> result) =>
+      result.any((connection) => connection != ConnectivityResult.none);
 
   Future<bool> isConnected() async {
     try {

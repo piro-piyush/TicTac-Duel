@@ -204,22 +204,21 @@ class RoomModel extends GameModel {
   }
 
   @override
-  String toString() {
-    return 'RoomModel('
-        'roomCode: $roomCode, '
-        'host: ${host.id}, '
-        'guest: ${guest?.id}, '
-        'hostPoints: $hostPoints, '
-        'guestPoints: $guestPoints, '
-        'hostReady: $hostReady, '
-        'guestReady: $guestReady, '
-        'turnPlayerId: $turnPlayerId, '
-        'currentRound: $currentRound, '
-        'maxRounds: $maxRounds, '
-        'status: ${status.name}, '
-        'theme: ${theme.name}, '
-        'isPrivate: $isPrivate, '
-        'boardSize: $boardSize'
-        ')';
-  }
+  String toString() =>
+      'RoomModel('
+      'roomCode: $roomCode, '
+      'host: ${host.id}, '
+      'guest: ${guest?.id}, '
+      'hostPoints: $hostPoints, '
+      'guestPoints: $guestPoints, '
+      'hostReady: $hostReady, '
+      'guestReady: $guestReady, '
+      'turnPlayerId: $turnPlayerId, '
+      'currentRound: $currentRound, '
+      'maxRounds: $maxRounds, '
+      'status: ${status.name}, '
+      'theme: ${theme.name}, '
+      'isPrivate: $isPrivate, '
+      'boardSize: $boardSize'
+      ')';
 }

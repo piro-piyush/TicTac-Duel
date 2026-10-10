@@ -8,9 +8,8 @@ extension LocalGameTypeX on LocalGameType {
 
   String get description => switch (this) {
     LocalGameType.friend =>
-    'Play face-to-face with a friend on the same device.',
-    LocalGameType.computer =>
-    'Challenge the CPU and play completely offline.',
+      'Play face-to-face with a friend on the same device.',
+    LocalGameType.computer => 'Challenge the CPU and play completely offline.',
   };
 
   IconData get icon => switch (this) {
@@ -34,11 +33,9 @@ extension CpuDifficultyX on CpuDifficulty {
   String get value => name;
   String get description => switch (this) {
     CpuDifficulty.easy =>
-    'A relaxed opponent that makes occasional random moves.',
-    CpuDifficulty.medium =>
-    'A balanced opponent that can attack and defend.',
-    CpuDifficulty.hard =>
-    'A strategic opponent that plays near-perfect moves.',
+      'A relaxed opponent that makes occasional random moves.',
+    CpuDifficulty.medium => 'A balanced opponent that can attack and defend.',
+    CpuDifficulty.hard => 'A strategic opponent that plays near-perfect moves.',
   };
 
   IconData get icon => switch (this) {

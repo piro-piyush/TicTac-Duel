@@ -79,7 +79,7 @@ class LocalGameNotifier extends Notifier<LocalGameState> {
         ),
       };
 
-      _navigation.pushLocalGameBoard(game: game);
+      _navigation.goToLocalGameBoard(game: game);
     } catch (error, stackTrace) {
       LoggerUtils.error('LocalGameNotifier.startGame', error, stackTrace);
 
@@ -93,9 +93,6 @@ class LocalGameNotifier extends Notifier<LocalGameState> {
   // HELPERS
   // ===========================================================================
 
-  PlayerSymbol get _opponentSymbol {
-    return state.selectedSymbol == PlayerSymbol.x
-        ? PlayerSymbol.o
-        : PlayerSymbol.x;
-  }
+  PlayerSymbol get _opponentSymbol =>
+      state.selectedSymbol == PlayerSymbol.x ? PlayerSymbol.o : PlayerSymbol.x;
 }

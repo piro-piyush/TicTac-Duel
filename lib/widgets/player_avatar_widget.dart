@@ -68,77 +68,71 @@ class _PlayerAvatarWidgetState extends State<PlayerAvatarWidget>
   }
 
   @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _glowController,
-      builder: (context, child) {
-        final pulse = widget.isTurn
-            ? Curves.easeInOut.transform(_glowController.value)
-            : 0.0;
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: _glowController,
+    builder: (context, child) {
+      final pulse = widget.isTurn
+          ? Curves.easeInOut.transform(_glowController.value)
+          : 0.0;
 
-        return Container(
-          width: widget.size,
-          height: widget.size,
-          padding: EdgeInsets.all(padding),
-          decoration: _avatarDecoration(pulse),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(imageRadius),
-            child: SizedBox(width: imageSize, height: imageSize, child: child),
-          ),
-        );
-      },
-      child: _buildAvatar(),
-    );
-  }
-
-  BoxDecoration _avatarDecoration(double pulse) {
-    return BoxDecoration(
-      borderRadius: BorderRadius.circular(radius),
-      border: Border.all(
-        color: color.withValues(alpha: widget.isTurn ? 0.8 : 0.45),
-        width: widget.isTurn ? 2 : 1,
-      ),
-      boxShadow: [
-        BoxShadow(
-          color: color.withValues(
-            alpha: widget.isTurn ? 0.20 + (pulse * 0.25) : 0.20,
-          ),
-          blurRadius: widget.isTurn
-              ? (widget.size * 0.15) + (pulse * widget.size * 0.20)
-              : widget.size * 0.15,
-          spreadRadius: widget.isTurn
-              ? (widget.size * 0.017) + (pulse * widget.size * 0.058)
-              : widget.size * 0.017,
+      return Container(
+        width: widget.size,
+        height: widget.size,
+        padding: EdgeInsets.all(padding),
+        decoration: _avatarDecoration(pulse),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(imageRadius),
+          child: SizedBox(width: imageSize, height: imageSize, child: child),
         ),
-      ],
-    );
-  }
+      );
+    },
+    child: _buildAvatar(),
+  );
 
-  Widget _buildAvatar() {
-    return SvgPicture.network(
-      widget.player.imageUrl,
-      width: imageSize,
-      height: imageSize,
-      placeholderBuilder: (context) => const Center(
-        child: SizedBox(
-          width: Dimens.iconSm,
-          height: Dimens.iconSm,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            color: AppColors.textSecondary,
-          ),
+  BoxDecoration _avatarDecoration(double pulse) => BoxDecoration(
+    borderRadius: BorderRadius.circular(radius),
+    border: Border.all(
+      color: color.withValues(alpha: widget.isTurn ? 0.8 : 0.45),
+      width: widget.isTurn ? 2 : 1,
+    ),
+    boxShadow: [
+      BoxShadow(
+        color: color.withValues(
+          alpha: widget.isTurn ? 0.20 + (pulse * 0.25) : 0.20,
+        ),
+        blurRadius: widget.isTurn
+            ? (widget.size * 0.15) + (pulse * widget.size * 0.20)
+            : widget.size * 0.15,
+        spreadRadius: widget.isTurn
+            ? (widget.size * 0.017) + (pulse * widget.size * 0.058)
+            : widget.size * 0.017,
+      ),
+    ],
+  );
+
+  Widget _buildAvatar() => SvgPicture.network(
+    widget.player.imageUrl,
+    width: imageSize,
+    height: imageSize,
+    placeholderBuilder: (context) => const Center(
+      child: SizedBox(
+        width: Dimens.iconSm,
+        height: Dimens.iconSm,
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          color: AppColors.textSecondary,
         ),
       ),
-      errorBuilder: (context, error, stackTrace) => Container(
-        decoration: const BoxDecoration(color: AppColors.surface),
-        child: const Center(
-          child: Icon(
-            Icons.person_rounded,
-            size: Dimens.iconLg,
-            color: AppColors.textSecondary,
-          ),
+    ),
+    errorBuilder: (context, error, stackTrace) => Container(
+      decoration: const BoxDecoration(color: AppColors.surface),
+      child: const Center(
+        child: Icon(
+          Icons.person_rounded,
+          size: Dimens.iconLg,
+          color: AppColors.textSecondary,
         ),
       ),
-    );
-  }
+    ),
+  );
 }

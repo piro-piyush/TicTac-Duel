@@ -11,24 +11,24 @@ class RoomStateWidget extends StatelessWidget {
   });
 
   const RoomStateWidget.connecting({Key? key})
-      : this._(key: key, state: RoomState.connecting);
+    : this._(key: key, state: RoomState.connecting);
 
   const RoomStateWidget.notFound({Key? key})
-      : this._(key: key, state: RoomState.notFound);
+    : this._(key: key, state: RoomState.notFound);
 
   const RoomStateWidget.playerNotFound({Key? key})
-      : this._(key: key, state: RoomState.playerNotFound);
+    : this._(key: key, state: RoomState.playerNotFound);
 
   const RoomStateWidget.error({
     Key? key,
     String? message,
     VoidCallback? onRetry,
   }) : this._(
-    key: key,
-    state: RoomState.error,
-    message: message,
-    onRetry: onRetry,
-  );
+         key: key,
+         state: RoomState.error,
+         message: message,
+         onRetry: onRetry,
+       );
 
   final RoomState state;
   final String? message;

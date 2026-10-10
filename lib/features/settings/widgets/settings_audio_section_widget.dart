@@ -29,36 +29,34 @@ class SettingsAudioSectionWidget extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return SectionTitleAndOptionsWidget(
-      title: 'Audio & Feedback',
-      children: [
+  Widget build(BuildContext context) => SectionTitleAndOptionsWidget(
+    title: 'Audio & Feedback',
+    children: [
+      SectionTileWidget.withSwitch(
+        icon: Icons.music_note_rounded,
+        title: 'Background Music',
+        subtitle: 'Play music while you play',
+        value: musicEnabled,
+        color: AppColors.neonPurple,
+        onChanged: onMusicChanged,
+      ),
+      SectionTileWidget.withSwitch(
+        icon: Icons.volume_up_rounded,
+        title: 'Sound Effects',
+        subtitle: 'Play sounds during the game',
+        value: soundEnabled,
+        color: AppColors.neonCyan,
+        onChanged: onSoundChanged,
+      ),
+      if (_supportsVibration)
         SectionTileWidget.withSwitch(
-          icon: Icons.music_note_rounded,
-          title: 'Background Music',
-          subtitle: 'Play music while you play',
-          value: musicEnabled,
-          color: AppColors.neonPurple,
-          onChanged: onMusicChanged,
+          icon: Icons.vibration_rounded,
+          title: 'Vibration',
+          subtitle: 'Vibrate when making a move',
+          value: vibrationEnabled,
+          color: AppColors.neonPink,
+          onChanged: onVibrationChanged,
         ),
-        SectionTileWidget.withSwitch(
-          icon: Icons.volume_up_rounded,
-          title: 'Sound Effects',
-          subtitle: 'Play sounds during the game',
-          value: soundEnabled,
-          color: AppColors.neonCyan,
-          onChanged: onSoundChanged,
-        ),
-        if (_supportsVibration)
-          SectionTileWidget.withSwitch(
-            icon: Icons.vibration_rounded,
-            title: 'Vibration',
-            subtitle: 'Vibrate when making a move',
-            value: vibrationEnabled,
-            color: AppColors.neonPink,
-            onChanged: onVibrationChanged,
-          ),
-      ],
-    );
-  }
+    ],
+  );
 }

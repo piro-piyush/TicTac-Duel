@@ -61,135 +61,131 @@ class TicTacToeGameWidget extends StatelessWidget {
   final ValueChanged<int> onCellTap;
 
   @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final width = constraints.maxWidth;
-        final height = constraints.maxHeight;
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final width = constraints.maxWidth;
+      final height = constraints.maxHeight;
 
-        final isCompact = width < 380;
-        final isWide = width >= 600;
+      final isCompact = width < 380;
+      final isWide = width >= 600;
 
-        final horizontalPadding = isCompact ? 4.0 : 12.0;
+      final horizontalPadding = isCompact ? 4.0 : 12.0;
 
-        final availableBoardSize = math.min(
-          isWide ? 460.0 : 420.0,
-          width - (horizontalPadding * 2),
-        );
+      final availableBoardSize = math.min(
+        isWide ? 460.0 : 420.0,
+        width - (horizontalPadding * 2),
+      );
 
-        // Reserve space for both player cards and spacing.
-        final reservedHeight = isCompact ? 150.0 : 180.0;
+      // Reserve space for both player cards and spacing.
+      final reservedHeight = isCompact ? 150.0 : 180.0;
 
-        final boardSize = math.min(
-          availableBoardSize,
-          math.max(180.0, height - reservedHeight),
-        );
+      final boardSize = math.min(
+        availableBoardSize,
+        math.max(180.0, height - reservedHeight),
+      );
 
-        final sectionSpacing = boardSize < 300
-            ? 6.0
-            : isCompact
-            ? 10.0
-            : 16.0;
+      final sectionSpacing = boardSize < 300
+          ? 6.0
+          : isCompact
+          ? 10.0
+          : 16.0;
 
-        final meIsPlayerOne = host.id == playerId;
+      final meIsPlayerOne = host.id == playerId;
 
-        final me = meIsPlayerOne ? host : guest;
-        final opponent = meIsPlayerOne ? guest : host;
+      final me = meIsPlayerOne ? host : guest;
+      final opponent = meIsPlayerOne ? guest : host;
 
-        final mePoints = meIsPlayerOne ? hostPoints : guestPoints;
-        final opponentPoints = meIsPlayerOne ? guestPoints : hostPoints;
+      final mePoints = meIsPlayerOne ? hostPoints : guestPoints;
+      final opponentPoints = meIsPlayerOne ? guestPoints : hostPoints;
 
-        final meIsTurn = turnPlayerId == playerId;
-        final opponentIsTurn = turnPlayerId != null && turnPlayerId != playerId;
+      final meIsTurn = turnPlayerId == playerId;
+      final opponentIsTurn = turnPlayerId != null && turnPlayerId != playerId;
 
-        return Padding(
-          padding: EdgeInsets.fromLTRB(
-            horizontalPadding,
-            Dimens.eight,
-            horizontalPadding,
-            Dimens.sixteen,
-          ),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                spacing: sectionSpacing,
-                children: [
-                  Align(
-                        alignment: Alignment.centerRight,
-                        child: _buildPlayerCard(
-                          player: opponent,
-                          points: opponentPoints,
-                          isTurn: opponentIsTurn,
-                          compact: isCompact,
-                        ),
-                      )
-                      .animate()
-                      .fadeIn(duration: AnimationConstants.medium)
-                      .slideX(
-                        begin: -AnimationConstants.slideLarge,
-                        end: 0,
-                        duration: AnimationConstants.medium,
-                        curve: AnimationConstants.defaultCurve,
+      return Padding(
+        padding: EdgeInsets.fromLTRB(
+          horizontalPadding,
+          Dimens.eight,
+          horizontalPadding,
+          Dimens.sixteen,
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              spacing: sectionSpacing,
+              children: [
+                Align(
+                      alignment: Alignment.centerRight,
+                      child: _buildPlayerCard(
+                        player: opponent,
+                        points: opponentPoints,
+                        isTurn: opponentIsTurn,
+                        compact: isCompact,
                       ),
+                    )
+                    .animate()
+                    .fadeIn(duration: AnimationConstants.medium)
+                    .slideX(
+                      begin: -AnimationConstants.slideLarge,
+                      end: 0,
+                      duration: AnimationConstants.medium,
+                      curve: AnimationConstants.defaultCurve,
+                    ),
 
-                  _buildBoard(isWide),
+                _buildBoard(isWide),
 
-                  Align(
-                        alignment: Alignment.centerLeft,
-                        child: _buildPlayerCard(
-                          player: me,
-                          points: mePoints,
-                          isTurn: meIsTurn,
-                          compact: isCompact,
-                        ),
-                      )
-                      .animate()
-                      .fadeIn(
-                        delay: AnimationConstants.staggerShort,
-                        duration: AnimationConstants.medium,
-                      )
-                      .slideX(
-                        begin: AnimationConstants.slideLarge,
-                        end: 0,
-                        delay: AnimationConstants.staggerShort,
-                        duration: AnimationConstants.medium,
-                        curve: AnimationConstants.defaultCurve,
+                Align(
+                      alignment: Alignment.centerLeft,
+                      child: _buildPlayerCard(
+                        player: me,
+                        points: mePoints,
+                        isTurn: meIsTurn,
+                        compact: isCompact,
                       ),
-                ],
+                    )
+                    .animate()
+                    .fadeIn(
+                      delay: AnimationConstants.staggerShort,
+                      duration: AnimationConstants.medium,
+                    )
+                    .slideX(
+                      begin: AnimationConstants.slideLarge,
+                      end: 0,
+                      delay: AnimationConstants.staggerShort,
+                      duration: AnimationConstants.medium,
+                      curve: AnimationConstants.defaultCurve,
+                    ),
+              ],
+            ),
+
+            if (reactionEvent != null)
+              Positioned.fill(
+                child: IgnorePointer(child: _buildReaction(reactionEvent!)),
               ),
-
-              if (reactionEvent != null)
-                Positioned.fill(
-                  child: IgnorePointer(child: _buildReaction(reactionEvent!)),
-                ),
-            ],
-          ),
-        );
-      },
-    );
-  }
+          ],
+        ),
+      );
+    },
+  );
 
   Widget _buildPlayerCard({
     required PlayerModel player,
     required int points,
     required bool isTurn,
     required bool compact,
-  }) {
-    return ConstrainedBox(
-      constraints: BoxConstraints(maxWidth: compact ? 190 : 230),
-      child: GamePlayerCardWidget(
-        player: player,
-        points: points,
-        isMe: _isMe,
-        isTurn: isTurn,
-        theme: theme,
-        compact: compact,
-        isOnline: isOnline,
-      ),
-    );
-  }
+  }) => ConstrainedBox(
+    constraints: BoxConstraints(maxWidth: compact ? 190 : 230),
+    child: GamePlayerCardWidget(
+      player: player,
+      points: points,
+      isMe: _isMe,
+      isTurn: isTurn,
+      theme: theme,
+      compact: compact,
+      isOnline: isOnline,
+    ),
+  );
 
   Widget _buildReaction(ReactionReceivedResponse event) {
     final isMeSender = event.senderId == playerId;
@@ -257,28 +253,24 @@ class TicTacToeGameWidget extends StatelessWidget {
     );
   }
 
-  bool _isMe(String id) {
-    return playerId == id;
-  }
+  bool _isMe(String id) => playerId == id;
 
-  Widget _buildBoard(bool isWide) {
-    return AbsorbPointer(
-      absorbing: showRoundAnimation,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: isWide ? Dimens.fourHundredSixty : Dimens.threeHundredForty,
-        ),
-        child: AspectRatio(
-          aspectRatio: 1,
-          child: TicTacToeBoardWidget(
-            roomTheme: theme,
-            values: board,
-            isMyTurn: isMyTurn,
-            winningIndexes: winningIndexes,
-            onCellTap: onCellTap,
-          ),
+  Widget _buildBoard(bool isWide) => AbsorbPointer(
+    absorbing: showRoundAnimation,
+    child: ConstrainedBox(
+      constraints: BoxConstraints(
+        maxWidth: isWide ? Dimens.fourHundredSixty : Dimens.threeHundredForty,
+      ),
+      child: AspectRatio(
+        aspectRatio: 1,
+        child: TicTacToeBoardWidget(
+          roomTheme: theme,
+          values: board,
+          isMyTurn: isMyTurn,
+          winningIndexes: winningIndexes,
+          onCellTap: onCellTap,
         ),
       ),
-    );
-  }
+    ),
+  );
 }

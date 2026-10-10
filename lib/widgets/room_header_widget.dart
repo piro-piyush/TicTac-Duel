@@ -19,20 +19,11 @@ class RoomHeaderWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          eyebrow,
-          style: textTheme.labelSmall,
-        ),
+        Text(eyebrow, style: textTheme.labelSmall),
         const SizedBox(height: Dimens.six),
-        Text(
-          title,
-          style: textTheme.headlineSmall,
-        ),
+        Text(title, style: textTheme.headlineSmall),
         const SizedBox(height: Dimens.twelve),
-        Text(
-          description,
-          style: textTheme.bodyMedium,
-        ),
+        Text(description, style: textTheme.bodyMedium),
       ],
     );
   }

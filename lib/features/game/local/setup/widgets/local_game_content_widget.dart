@@ -26,18 +26,16 @@ class LocalGameContentWidget extends StatelessWidget {
   final ValueChanged<int> onRoundsChanged;
   final ValueChanged<CpuDifficulty> onDifficultyChanged;
 
-  Widget _animateSection(Widget child, Duration delay) {
-    return child
-        .animate()
-        .fadeIn(delay: delay, duration: AnimationConstants.medium)
-        .slideY(
-          begin: AnimationConstants.slideSmall,
-          end: 0,
-          delay: delay,
-          duration: AnimationConstants.medium,
-          curve: AnimationConstants.defaultCurve,
-        );
-  }
+  Widget _animateSection(Widget child, Duration delay) => child
+      .animate()
+      .fadeIn(delay: delay, duration: AnimationConstants.medium)
+      .slideY(
+        begin: AnimationConstants.slideSmall,
+        end: 0,
+        delay: delay,
+        duration: AnimationConstants.medium,
+        curve: AnimationConstants.defaultCurve,
+      );
 
   @override
   Widget build(BuildContext context) {

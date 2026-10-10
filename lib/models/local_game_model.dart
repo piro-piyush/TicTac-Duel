@@ -8,8 +8,8 @@ class LocalGameModel extends GameModel {
     required super.maxRounds,
     super.boardSize = GameConstants.boardSize,
   }) : gameType = LocalGameType.friend,
-        difficulty = null,
-        super();
+       difficulty = null,
+       super();
 
   factory LocalGameModel.computer({
     required PlayerModel playerOne,

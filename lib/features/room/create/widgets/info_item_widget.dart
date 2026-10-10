@@ -15,29 +15,21 @@ class InfoItemWidget extends StatelessWidget {
   final TextTheme textTheme;
 
   @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      minTileHeight: 0,
-      horizontalTitleGap: Dimens.twelve,
-      leading: Icon(
-        icon,
-        color: AppColors.textSecondary,
-        size: Dimens.iconMd,
+  Widget build(BuildContext context) => ListTile(
+    contentPadding: EdgeInsets.zero,
+    minTileHeight: 0,
+    horizontalTitleGap: Dimens.twelve,
+    leading: Icon(icon, color: AppColors.textSecondary, size: Dimens.iconMd),
+    title: Text(
+      title,
+      style: textTheme.bodySmall?.copyWith(
+        color: AppColors.textPrimary,
+        fontWeight: FontWeight.w600,
       ),
-      title: Text(
-        title,
-        style: textTheme.bodySmall?.copyWith(
-          color: AppColors.textPrimary,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: textTheme.labelSmall?.copyWith(
-          color: AppColors.textSecondary,
-        ),
-      ),
-    );
-  }
+    ),
+    subtitle: Text(
+      subtitle,
+      style: textTheme.labelSmall?.copyWith(color: AppColors.textSecondary),
+    ),
+  );
 }

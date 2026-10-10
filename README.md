@@ -2,11 +2,14 @@
 
 **YOUR MOVE. YOUR GLORY.**
 
-A futuristic neon Tic Tac Toe game built with Flutter, featuring local multiplayer, CPU battles, and real-time online gameplay.
+A futuristic neon Tic Tac Toe game built with Flutter, featuring local multiplayer, CPU battles, and
+real-time online gameplay.
 
 <div align="center">
 
 <img src="./assets/screens/header_new.png" alt="Tic Tac Duel — Your Move. Your Glory." width="100%">
+
+**🌐 [Play Tic Tac Duel — Live Dev Demo](https://tictacduel.vercel.app)**
 
 </div>
 
@@ -57,8 +60,10 @@ A futuristic neon Tic Tac Toe game built with Flutter, featuring local multiplay
 - [Flutter](https://flutter.dev/) & Dart
 - [Riverpod](https://riverpod.dev/) for state management
 - [Socket.IO](https://socket.io/) for real-time multiplayer
-- Flutter Secure Storage
-- just_audio, Lottie, and Flutter Confetti
+- [Flutter Secure Storage](https://pub.dev/packages/flutter_secure_storage) for secure local storage
+- [just_audio](https://pub.dev/packages/just_audio), [Lottie](https://pub.dev/packages/lottie),
+  and [Flutter Confetti](https://pub.dev/packages/flutter_confetti) for audio, animations, and
+  effects
 
 ## 🚀 Getting Started
 
@@ -91,7 +96,8 @@ flutter test
 
 ## 📦 Release — v2.0.0
 
-Version **2.0.0** brings online multiplayer alongside local and CPU gameplay, with room sharing, app link handling, animations, and enhanced game interactions.
+Version **2.0.0** brings online multiplayer alongside local and CPU gameplay, with room sharing, app
+link handling, animations, and enhanced game interactions.
 
 **Downloads:** [Tic Tac Duel v2.0.0 — GitHub Release](https://github.com/piro-piyush/TicTac-Duel/releases/tag/v2.0.0)
 
@@ -102,13 +108,14 @@ Version **2.0.0** brings online multiplayer alongside local and CPU gameplay, wi
 | `app-x86_64-release.apk`      | Compatible x86-64 devices and emulators |
 | `app-release.aab`             | Google Play distribution                |
 
-For most modern Android phones, choose **`app-arm64-v8a-release.apk`**.
+For most modern Android phones, choose `app-arm64-v8a-release.apk`.
 
 ## 👨‍💻 Developer
 
 **Piyush Vishwakarma**
 
-If you like Tic Tac Duel, consider giving the repository a ⭐ on GitHub.
+If you like Tic Tac Duel, consider giving the repository a ⭐
+on [GitHub](https://github.com/piro-piyush/TicTac-Duel).
 
 ---
 

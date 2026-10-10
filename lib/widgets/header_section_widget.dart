@@ -13,31 +13,29 @@ class HeaderSectionWidget extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    return Row(
-      spacing: Dimens.fourteen,
-      children: [
-        Container(
-          width: Dimens.fortyEight,
-          height: Dimens.fortyEight,
-          decoration: BoxDecoration(
-            color: AppColors.neonCyan.withValues(alpha: 0.08),
-            borderRadius: Dimens.radius14,
-            border: Border.all(color: AppColors.neonCyan.withValues(alpha: 0.18)),
-          ),
-          child: Icon(icon, color: AppColors.neonCyan),
+  Widget build(BuildContext context) => Row(
+    spacing: Dimens.fourteen,
+    children: [
+      Container(
+        width: Dimens.fortyEight,
+        height: Dimens.fortyEight,
+        decoration: BoxDecoration(
+          color: AppColors.neonCyan.withValues(alpha: 0.08),
+          borderRadius: Dimens.radius14,
+          border: Border.all(color: AppColors.neonCyan.withValues(alpha: 0.18)),
         ),
-        Expanded(
-          child: Column(
-            spacing: Dimens.two,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: Theme.of(context).textTheme.titleLarge),
-              Text(subtitle, style: Theme.of(context).textTheme.bodyMedium),
-            ],
-          ),
+        child: Icon(icon, color: AppColors.neonCyan),
+      ),
+      Expanded(
+        child: Column(
+          spacing: Dimens.two,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: Theme.of(context).textTheme.titleLarge),
+            Text(subtitle, style: Theme.of(context).textTheme.bodyMedium),
+          ],
         ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
 }

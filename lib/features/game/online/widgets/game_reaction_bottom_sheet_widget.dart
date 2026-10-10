@@ -44,46 +44,40 @@ class GameReactionBottomSheetWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildHandle(ThemeData theme) {
-    return Container(
-      width: Dimens.forty,
-      height: Dimens.four,
-      decoration: BoxDecoration(
-        color: theme.colorScheme.onSurface.withValues(alpha: 0.25),
-        borderRadius: Dimens.radius10,
-      ),
-    );
-  }
+  Widget _buildHandle(ThemeData theme) => Container(
+    width: Dimens.forty,
+    height: Dimens.four,
+    decoration: BoxDecoration(
+      color: theme.colorScheme.onSurface.withValues(alpha: 0.25),
+      borderRadius: Dimens.radius10,
+    ),
+  );
 
-  Widget _buildTitle(ThemeData theme) {
-    return Text(
-      'SEND A REACTION',
-      style: theme.textTheme.labelLarge?.copyWith(
-        fontWeight: FontWeight.w700,
-        letterSpacing: 1.2,
-      ),
-    );
-  }
+  Widget _buildTitle(ThemeData theme) => Text(
+    'SEND A REACTION',
+    style: theme.textTheme.labelLarge?.copyWith(
+      fontWeight: FontWeight.w700,
+      letterSpacing: 1.2,
+    ),
+  );
 
-  Widget _buildReactionGrid(BuildContext context) {
-    return Flexible(
-      child: GridView.builder(
-        shrinkWrap: true,
-        padding: EdgeInsets.zero,
-        itemCount: GameReaction.values.length,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 5,
-          mainAxisSpacing: Dimens.spaceBtwItems,
-          crossAxisSpacing: Dimens.spaceBtwItems,
-        ),
-        itemBuilder: (context, index) {
-          final reaction = GameReaction.values[index];
-
-          return _buildReactionButton(context, reaction);
-        },
+  Widget _buildReactionGrid(BuildContext context) => Flexible(
+    child: GridView.builder(
+      shrinkWrap: true,
+      padding: EdgeInsets.zero,
+      itemCount: GameReaction.values.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 5,
+        mainAxisSpacing: Dimens.spaceBtwItems,
+        crossAxisSpacing: Dimens.spaceBtwItems,
       ),
-    );
-  }
+      itemBuilder: (context, index) {
+        final reaction = GameReaction.values[index];
+
+        return _buildReactionButton(context, reaction);
+      },
+    ),
+  );
 
   Widget _buildReactionButton(BuildContext context, GameReaction reaction) {
     final theme = Theme.of(context);

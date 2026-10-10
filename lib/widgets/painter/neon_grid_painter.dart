@@ -31,7 +31,6 @@ class NeonGridPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant NeonGridPainter oldDelegate) {
-    return spacing != oldDelegate.spacing;
-  }
+  bool shouldRepaint(covariant NeonGridPainter oldDelegate) =>
+      spacing != oldDelegate.spacing;
 }

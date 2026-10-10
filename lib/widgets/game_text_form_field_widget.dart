@@ -35,20 +35,18 @@ class GameTextFormFieldWidget extends StatelessWidget {
   final List<TextInputFormatter>? inputFormatters;
 
   @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      focusNode: focusNode,
-      autofocus: autofocus,
-      textCapitalization: textCapitalization,
-      textInputAction: textInputAction,
-      keyboardType: keyboardType,
-      maxLength: maxLength,
-      validator: validator,
-      inputFormatters: inputFormatters,
-      onChanged: onChanged,
-      onFieldSubmitted: onFieldSubmitted,
-      decoration: InputDecoration(hintText: hintText, suffixIcon: suffixIcon),
-    );
-  }
+  Widget build(BuildContext context) => TextFormField(
+    controller: controller,
+    focusNode: focusNode,
+    autofocus: autofocus,
+    textCapitalization: textCapitalization,
+    textInputAction: textInputAction,
+    keyboardType: keyboardType,
+    maxLength: maxLength,
+    validator: validator,
+    inputFormatters: inputFormatters,
+    onChanged: onChanged,
+    onFieldSubmitted: onFieldSubmitted,
+    decoration: InputDecoration(hintText: hintText, suffixIcon: suffixIcon),
+  );
 }

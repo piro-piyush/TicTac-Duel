@@ -24,16 +24,14 @@ class LocalGameState extends Equatable {
     int? selectedMaxRounds,
     CpuDifficulty? selectedDifficulty,
     bool? isStarting,
-  }) {
-    return LocalGameState(
-      gameType: gameType ?? this.gameType,
-      selectedSymbol: selectedSymbol ?? this.selectedSymbol,
-      selectedTheme: selectedTheme ?? this.selectedTheme,
-      selectedMaxRounds: selectedMaxRounds ?? this.selectedMaxRounds,
-      selectedDifficulty: selectedDifficulty ?? this.selectedDifficulty,
-      isStarting: isStarting ?? this.isStarting,
-    );
-  }
+  }) => LocalGameState(
+    gameType: gameType ?? this.gameType,
+    selectedSymbol: selectedSymbol ?? this.selectedSymbol,
+    selectedTheme: selectedTheme ?? this.selectedTheme,
+    selectedMaxRounds: selectedMaxRounds ?? this.selectedMaxRounds,
+    selectedDifficulty: selectedDifficulty ?? this.selectedDifficulty,
+    isStarting: isStarting ?? this.isStarting,
+  );
 
   @override
   List<Object> get props => [

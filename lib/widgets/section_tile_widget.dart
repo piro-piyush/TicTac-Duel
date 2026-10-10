@@ -14,7 +14,8 @@ class SectionTileWidget extends StatelessWidget {
     this.borderColor,
   }) : _type = SectionTileType.normal,
        value = false,
-       isSelected = false, actionIcon  = null,
+       isSelected = false,
+       actionIcon = null,
        onChanged = null;
 
   const SectionTileWidget.withSwitch({
@@ -29,7 +30,8 @@ class SectionTileWidget extends StatelessWidget {
     this.borderRadius,
     this.borderColor,
   }) : _type = SectionTileType.switchTile,
-       trailing = null, actionIcon  = null,
+       trailing = null,
+       actionIcon = null,
        isSelected = false,
        onTap = null;
 
@@ -64,7 +66,7 @@ class SectionTileWidget extends StatelessWidget {
   }) : _type = SectionTileType.select,
        value = false,
        trailing = null,
-        actionIcon  = null,
+       actionIcon = null,
        onChanged = null;
 
   final IconData icon;
@@ -161,10 +163,7 @@ class SectionTileWidget extends StatelessWidget {
         );
 
       case SectionTileType.action:
-        return Icon(
-          actionIcon ?? Icons.chevron_right_rounded,
-          color: color,
-        );
+        return Icon(actionIcon ?? Icons.chevron_right_rounded, color: color);
 
       case SectionTileType.select:
         return _SelectionIndicator(color: color, isSelected: isSelected);
@@ -179,42 +178,40 @@ class _SelectionIndicator extends StatelessWidget {
   final bool isSelected;
 
   @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 180),
-      curve: Curves.easeOut,
-      width: Dimens.iconLg,
-      height: Dimens.iconLg,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: isSelected ? color : Colors.transparent,
-        border: Border.all(
-          color: isSelected ? color : AppColors.border,
-          width: 1.5,
-        ),
-        boxShadow: isSelected
-            ? [
-                BoxShadow(
-                  color: color.withValues(alpha: 0.3),
-                  blurRadius: 10,
-                  spreadRadius: -2,
-                ),
-              ]
-            : null,
+  Widget build(BuildContext context) => AnimatedContainer(
+    duration: const Duration(milliseconds: 180),
+    curve: Curves.easeOut,
+    width: Dimens.iconLg,
+    height: Dimens.iconLg,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      color: isSelected ? color : Colors.transparent,
+      border: Border.all(
+        color: isSelected ? color : AppColors.border,
+        width: 1.5,
       ),
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 150),
-        child: isSelected
-            ? const Icon(
-                Icons.check_rounded,
-                key: ValueKey('selected'),
-                size: 16,
-                color: Colors.white,
-              )
-            : const SizedBox(key: ValueKey('unselected')),
-      ),
-    );
-  }
+      boxShadow: isSelected
+          ? [
+              BoxShadow(
+                color: color.withValues(alpha: 0.3),
+                blurRadius: 10,
+                spreadRadius: -2,
+              ),
+            ]
+          : null,
+    ),
+    child: AnimatedSwitcher(
+      duration: const Duration(milliseconds: 150),
+      child: isSelected
+          ? const Icon(
+              Icons.check_rounded,
+              key: ValueKey('selected'),
+              size: 16,
+              color: Colors.white,
+            )
+          : const SizedBox(key: ValueKey('unselected')),
+    ),
+  );
 }
 
 enum SectionTileType { normal, switchTile, action, select }

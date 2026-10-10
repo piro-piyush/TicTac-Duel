@@ -10,6 +10,6 @@ class JoinRoomState extends Equatable {
 
   @override
   List<Object?> get props => [isJoining];
-  
+
   static JoinRoomState initial() => const JoinRoomState();
 }

@@ -17,13 +17,11 @@ class MenuButtonWidget extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
-    return SectionTileWidget(
-      icon: icon,
-      title: title,
-      subtitle: subtitle,
-      color: color,
-      onTap: onTap,
-    );
-  }
+  Widget build(BuildContext context) => SectionTileWidget(
+    icon: icon,
+    title: title,
+    subtitle: subtitle,
+    color: color,
+    onTap: onTap,
+  );
 }

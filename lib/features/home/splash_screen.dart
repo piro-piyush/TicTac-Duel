@@ -21,7 +21,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
     if (!mounted) return;
 
-    context.goNamed(AppRoutes.settings.name);
+    context.goNamed(AppRoutes.home.name);
   }
 
   @override
@@ -120,28 +120,26 @@ class _SplashLoadingIndicator extends StatelessWidget {
   const _SplashLoadingIndicator();
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      spacing: Dimens.twelve,
-      children: [
-        const SizedBox(
-          width: Dimens.oneHundred,
-          child: ClipRRect(
-            borderRadius: Dimens.radius20,
-            child: LinearProgressIndicator(
-              minHeight: Dimens.four,
-              backgroundColor: AppColors.surface,
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.neonCyan),
-            ),
+  Widget build(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
+    spacing: Dimens.twelve,
+    children: [
+      const SizedBox(
+        width: Dimens.oneHundred,
+        child: ClipRRect(
+          borderRadius: Dimens.radius20,
+          child: LinearProgressIndicator(
+            minHeight: Dimens.four,
+            backgroundColor: AppColors.surface,
+            valueColor: AlwaysStoppedAnimation<Color>(AppColors.neonCyan),
           ),
         ),
-        Text(
-          'PREPARING YOUR DUEL',
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.labelMedium,
-        ),
-      ],
-    );
-  }
+      ),
+      Text(
+        'PREPARING YOUR DUEL',
+        textAlign: TextAlign.center,
+        style: Theme.of(context).textTheme.labelMedium,
+      ),
+    ],
+  );
 }

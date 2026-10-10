@@ -1,48 +1,18 @@
-enum GameMode {
-  classic,
-  blitz,
-}
+enum GameMode { classic, blitz }
 
-enum GameResult {
-  xWins,
-  oWins,
-  draw,
-  inProgress,
-}
+enum GameResult { xWins, oWins, draw, inProgress }
 
-enum LocalGameType {
-  friend,
-  computer,
-}
+enum LocalGameType { friend, computer }
 
-enum CpuDifficulty {
-  easy,
-  medium,
-  hard,
-}
+enum CpuDifficulty { easy, medium, hard }
 
-enum PlayerSymbol {
-  x,
-  o,
-}
+enum PlayerSymbol { x, o }
 
-enum RoomTheme {
-  classic,
-  inferno,
-  cyber,
-}
+enum RoomTheme { classic, inferno, cyber }
 
-enum RoomStatus {
-  waiting,
-  playing,
-  result,
-  finished,
-}
+enum RoomStatus { waiting, playing, result, finished }
 
-enum GameDismissReason {
-  opponentDisconnected,
-  opponentQuit,
-}
+enum GameDismissReason { opponentDisconnected, opponentQuit }
 
 enum GameReaction {
   // Emotions

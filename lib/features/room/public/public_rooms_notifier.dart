@@ -72,7 +72,7 @@ class PublicRoomsNotifier extends Notifier<PublicRoomsState> {
         name: name,
         onJoined: (response) {
           state = state.copyWith(isJoining: false);
-          _navigation.pushGame(response.room);
+          _navigation.goToGame(response.room);
         },
         onError: (message) {
           state = state.copyWith(isJoining: false, errorMessage: message);

@@ -10,7 +10,11 @@ class PrivacyPolicyDialog extends StatelessWidget {
       child: Text(GameConstants.privacyPolicyText),
     ),
     actions: [
-      NeonTextButtonWidget(onPressed: context.pop, label: 'CLOSE', isSmall: true),
+      NeonTextButtonWidget(
+        onPressed: context.pop,
+        label: 'CLOSE',
+        isSmall: true,
+      ),
     ],
   );
 }

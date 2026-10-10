@@ -1,4 +1,5 @@
 import 'package:tictac_duel/lib.dart';
+
 import 'dart:math' as math;
 
 class TicTacToeWinningLinePainter extends CustomPainter {
@@ -58,19 +59,11 @@ class TicTacToeWinningLinePainter extends CustomPainter {
     // The Tic Tac Toe board is square.
     final boardHeight = boardWidth;
 
-    final cellSize = _calculateCellSize(
-      boardWidth,
-    );
+    final cellSize = _calculateCellSize(boardWidth);
 
-    final firstCenter = _cellCenter(
-      index: firstIndex,
-      cellSize: cellSize,
-    );
+    final firstCenter = _cellCenter(index: firstIndex, cellSize: cellSize);
 
-    final lastCenter = _cellCenter(
-      index: lastIndex,
-      cellSize: cellSize,
-    );
+    final lastCenter = _cellCenter(index: lastIndex, cellSize: cellSize);
 
     final direction = lastCenter - firstCenter;
     final distance = direction.distance;
@@ -103,21 +96,15 @@ class TicTacToeWinningLinePainter extends CustomPainter {
     // Extend beyond both board edges.
     // -------------------------------------------------------------------------
 
-    final start =
-        boardStart - unitDirection * boardExtension;
+    final start = boardStart - unitDirection * boardExtension;
 
-    final end =
-        boardEnd + unitDirection * boardExtension;
+    final end = boardEnd + unitDirection * boardExtension;
 
     // -------------------------------------------------------------------------
     // Animate.
     // -------------------------------------------------------------------------
 
-    final animatedEnd = Offset.lerp(
-      start,
-      end,
-      progress.clamp(0.0, 1.0),
-    );
+    final animatedEnd = Offset.lerp(start, end, progress.clamp(0.0, 1.0));
 
     if (animatedEnd == null) {
       return;
@@ -127,56 +114,36 @@ class TicTacToeWinningLinePainter extends CustomPainter {
     // Draw.
     // -------------------------------------------------------------------------
 
-    _drawGlow(
-      canvas,
-      start,
-      animatedEnd,
-    );
+    _drawGlow(canvas, start, animatedEnd);
 
-    _drawLine(
-      canvas,
-      start,
-      animatedEnd,
-    );
+    _drawLine(canvas, start, animatedEnd);
 
-    _drawLeadingGlow(
-      canvas,
-      animatedEnd,
-    );
+    _drawLeadingGlow(canvas, animatedEnd);
   }
 
   // ===========================================================================
   // VALIDATION
   // ===========================================================================
 
-  bool _isValidIndex(int index) {
-    return index >= 0 &&
-        index < boardSize * boardSize;
-  }
+  bool _isValidIndex(int index) => index >= 0 && index < boardSize * boardSize;
 
   // ===========================================================================
   // GEOMETRY
   // ===========================================================================
 
   double _calculateCellSize(double width) {
-    final totalSpacing =
-        gridSpacing * (boardSize - 1);
+    final totalSpacing = gridSpacing * (boardSize - 1);
 
     return (width - totalSpacing) / boardSize;
   }
 
-  Offset _cellCenter({
-    required int index,
-    required double cellSize,
-  }) {
+  Offset _cellCenter({required int index, required double cellSize}) {
     final row = index ~/ boardSize;
     final column = index % boardSize;
 
     return Offset(
-      column * (cellSize + gridSpacing) +
-          cellSize / 2,
-      row * (cellSize + gridSpacing) +
-          cellSize / 2,
+      column * (cellSize + gridSpacing) + cellSize / 2,
+      row * (cellSize + gridSpacing) + cellSize / 2,
     );
   }
 
@@ -200,9 +167,7 @@ class TicTacToeWinningLinePainter extends CustomPainter {
         final y = point.dy + direction.dy * t;
 
         if (y >= 0 && y <= height) {
-          candidates.add(
-            Offset(0, y),
-          );
+          candidates.add(Offset(0, y));
         }
       }
     }
@@ -215,9 +180,7 @@ class TicTacToeWinningLinePainter extends CustomPainter {
         final x = point.dx + direction.dx * t;
 
         if (x >= 0 && x <= width) {
-          candidates.add(
-            Offset(x, 0),
-          );
+          candidates.add(Offset(x, 0));
         }
       }
     }
@@ -227,11 +190,7 @@ class TicTacToeWinningLinePainter extends CustomPainter {
     }
 
     return candidates.reduce(
-          (a, b) =>
-      _distanceSquared(a, point) >
-          _distanceSquared(b, point)
-          ? a
-          : b,
+      (a, b) => _distanceSquared(a, point) > _distanceSquared(b, point) ? a : b,
     );
   }
 
@@ -245,34 +204,26 @@ class TicTacToeWinningLinePainter extends CustomPainter {
 
     // Right edge.
     if (direction.dx != 0) {
-      final t =
-          (width - point.dx) / direction.dx;
+      final t = (width - point.dx) / direction.dx;
 
       if (t > 0) {
-        final y =
-            point.dy + direction.dy * t;
+        final y = point.dy + direction.dy * t;
 
         if (y >= 0 && y <= height) {
-          candidates.add(
-            Offset(width, y),
-          );
+          candidates.add(Offset(width, y));
         }
       }
     }
 
     // Bottom edge.
     if (direction.dy != 0) {
-      final t =
-          (height - point.dy) / direction.dy;
+      final t = (height - point.dy) / direction.dy;
 
       if (t > 0) {
-        final x =
-            point.dx + direction.dx * t;
+        final x = point.dx + direction.dx * t;
 
         if (x >= 0 && x <= width) {
-          candidates.add(
-            Offset(x, height),
-          );
+          candidates.add(Offset(x, height));
         }
       }
     }
@@ -282,18 +233,11 @@ class TicTacToeWinningLinePainter extends CustomPainter {
     }
 
     return candidates.reduce(
-          (a, b) =>
-      _distanceSquared(a, point) >
-          _distanceSquared(b, point)
-          ? a
-          : b,
+      (a, b) => _distanceSquared(a, point) > _distanceSquared(b, point) ? a : b,
     );
   }
 
-  double _distanceSquared(
-      Offset a,
-      Offset b,
-      ) {
+  double _distanceSquared(Offset a, Offset b) {
     final dx = a.dx - b.dx;
     final dy = a.dy - b.dy;
 
@@ -304,80 +248,48 @@ class TicTacToeWinningLinePainter extends CustomPainter {
   // LINE
   // ===========================================================================
 
-  void _drawLine(
-      Canvas canvas,
-      Offset start,
-      Offset end,
-      ) {
+  void _drawLine(Canvas canvas, Offset start, Offset end) {
     final paint = Paint()
       ..color = color
       ..strokeWidth = _lineWidth
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
 
-    canvas.drawLine(
-      start,
-      end,
-      paint,
-    );
+    canvas.drawLine(start, end, paint);
   }
 
   // ===========================================================================
   // GLOW
   // ===========================================================================
 
-  void _drawGlow(
-      Canvas canvas,
-      Offset start,
-      Offset end,
-      ) {
+  void _drawGlow(Canvas canvas, Offset start, Offset end) {
     final paint = Paint()
       ..color = color.withValues(alpha: 0.40)
       ..strokeWidth = _glowWidth
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke
-      ..maskFilter = const MaskFilter.blur(
-        BlurStyle.normal,
-        _glowBlur,
-      );
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, _glowBlur);
 
-    canvas.drawLine(
-      start,
-      end,
-      paint,
-    );
+    canvas.drawLine(start, end, paint);
   }
 
   // ===========================================================================
   // LEADING GLOW
   // ===========================================================================
 
-  void _drawLeadingGlow(
-      Canvas canvas,
-      Offset position,
-      ) {
+  void _drawLeadingGlow(Canvas canvas, Offset position) {
     if (progress <= 0.05 || progress >= 1.0) {
       return;
     }
 
-    final pulse =
-    math.sin(progress * math.pi);
+    final pulse = math.sin(progress * math.pi);
 
     final paint = Paint()
-      ..color = color.withValues(
-        alpha: 0.55 * pulse,
-      )
+      ..color = color.withValues(alpha: 0.55 * pulse)
       ..style = PaintingStyle.fill
-      ..maskFilter = const MaskFilter.blur(
-        BlurStyle.normal,
-        7,
-      );
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 7);
 
-    canvas.drawCircle(
-      position,
-      7,
-      paint,
-    );
+    canvas.drawCircle(position, 7, paint);
   }
 
   // ===========================================================================
@@ -385,18 +297,13 @@ class TicTacToeWinningLinePainter extends CustomPainter {
   // ===========================================================================
 
   @override
-  bool shouldRepaint(
-      covariant TicTacToeWinningLinePainter oldDelegate,
-      ) {
-    return oldDelegate.winningIndexes !=
-        winningIndexes ||
-        oldDelegate.color != color ||
-        oldDelegate.boardSize != boardSize ||
-        oldDelegate.gridSpacing != gridSpacing ||
-        oldDelegate.progress != progress ||
-        oldDelegate.boardWidth != boardWidth ||
-        oldDelegate.borderRadius != borderRadius ||
-        oldDelegate.boardExtension !=
-            boardExtension;
-  }
+  bool shouldRepaint(covariant TicTacToeWinningLinePainter oldDelegate) =>
+      oldDelegate.winningIndexes != winningIndexes ||
+      oldDelegate.color != color ||
+      oldDelegate.boardSize != boardSize ||
+      oldDelegate.gridSpacing != gridSpacing ||
+      oldDelegate.progress != progress ||
+      oldDelegate.boardWidth != boardWidth ||
+      oldDelegate.borderRadius != borderRadius ||
+      oldDelegate.boardExtension != boardExtension;
 }

@@ -96,7 +96,7 @@ class CreateRoomNotifier extends Notifier<CreateRoomState> {
     _roomSocketService.offCreateRoomListeners();
     state = CreateRoomState.initial();
     playerNameController.clear();
-    _navigation.pushGame(response.room);
+    _navigation.goToGame(response.room);
   }
 
   void onCreateRoomError(String error) {

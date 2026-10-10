@@ -1,4 +1,3 @@
-
 import 'package:flutter/animation.dart';
 
 abstract final class AnimationConstants {
@@ -6,11 +5,9 @@ abstract final class AnimationConstants {
   // ANIMATION ASSETS
   // ===========================================================================
 
-  static const String trophyAnimation =
-      'assets/animations/trophy.json';
+  static const String trophyAnimation = 'assets/animations/trophy.json';
 
-  static const String loseAnimation =
-      'assets/animations/lose.json';
+  static const String loseAnimation = 'assets/animations/lose.json';
 
   // ===========================================================================
   // DURATIONS
@@ -32,7 +29,6 @@ abstract final class AnimationConstants {
   static const Duration staggerShort = Duration(milliseconds: 150);
   static const Duration staggerMedium = Duration(milliseconds: 300);
   static const Duration staggerLong = Duration(milliseconds: 450);
-
 
   // ===========================================================================
   // SLIDE DISTANCES

@@ -21,15 +21,13 @@ class AudioState extends Equatable {
     bool? vibrationEnabled,
     bool? isInitialized,
     bool? isPlaying,
-  }) {
-    return AudioState(
-      isEnabled: isEnabled ?? this.isEnabled,
-      effectsEnabled: effectsEnabled ?? this.effectsEnabled,
-      vibrationEnabled: vibrationEnabled ?? this.vibrationEnabled,
-      isInitialized: isInitialized ?? this.isInitialized,
-      isPlaying: isPlaying ?? this.isPlaying,
-    );
-  }
+  }) => AudioState(
+    isEnabled: isEnabled ?? this.isEnabled,
+    effectsEnabled: effectsEnabled ?? this.effectsEnabled,
+    vibrationEnabled: vibrationEnabled ?? this.vibrationEnabled,
+    isInitialized: isInitialized ?? this.isInitialized,
+    isPlaying: isPlaying ?? this.isPlaying,
+  );
 
   @override
   List<Object> get props => [

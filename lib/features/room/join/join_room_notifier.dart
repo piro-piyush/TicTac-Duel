@@ -105,7 +105,7 @@ class JoinRoomNotifier extends Notifier<JoinRoomState> {
     _roomSocketService.offJoinRoomListeners();
     state = JoinRoomState.initial();
     playerNameController.clear();
-    _navigation.pushGame(response.room);
+    _navigation.goToGame(response.room);
   }
 
   void onJoinRoomError(String error) {

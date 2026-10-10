@@ -45,23 +45,21 @@ class LocalGameBoardState extends Equatable {
     int? guestPoints,
     ReactionReceivedResponse? reactionEvent,
     bool clearReactionEvent = false,
-  }) {
-    return LocalGameBoardState(
-      game: game ?? this.game,
-      board: board ?? this.board,
-      winningIndexes: winningIndexes ?? this.winningIndexes,
-      turnPlayerId: turnPlayerId ?? this.turnPlayerId,
-      currentRound: currentRound ?? this.currentRound,
-      isRoundFinished: isRoundFinished ?? this.isRoundFinished,
-      showRoundAnimation: showRoundAnimation ?? this.showRoundAnimation,
-      animatedRound: animatedRound ?? this.animatedRound,
-      hostPoints: hostPoints ?? this.hostPoints,
-      guestPoints: guestPoints ?? this.guestPoints,
-      reactionEvent: clearReactionEvent
-          ? null
-          : reactionEvent ?? this.reactionEvent,
-    );
-  }
+  }) => LocalGameBoardState(
+    game: game ?? this.game,
+    board: board ?? this.board,
+    winningIndexes: winningIndexes ?? this.winningIndexes,
+    turnPlayerId: turnPlayerId ?? this.turnPlayerId,
+    currentRound: currentRound ?? this.currentRound,
+    isRoundFinished: isRoundFinished ?? this.isRoundFinished,
+    showRoundAnimation: showRoundAnimation ?? this.showRoundAnimation,
+    animatedRound: animatedRound ?? this.animatedRound,
+    hostPoints: hostPoints ?? this.hostPoints,
+    guestPoints: guestPoints ?? this.guestPoints,
+    reactionEvent: clearReactionEvent
+        ? null
+        : reactionEvent ?? this.reactionEvent,
+  );
 
   PlayerModel get currentPlayer =>
       turnPlayerId == game.host.id ? game.host : game.guest;
@@ -73,13 +71,10 @@ class LocalGameBoardState extends Equatable {
 
   bool get isBoardFull => !board.contains(null);
 
-  bool get isCpuTurn {
-    return game.isComputerGame && currentPlayer.id == game.guest.id;
-  }
+  bool get isCpuTurn =>
+      game.isComputerGame && currentPlayer.id == game.guest.id;
 
-  bool get canMakeMove {
-    return !isBoardFull && !isRoundFinished && !isCpuTurn;
-  }
+  bool get canMakeMove => !isBoardFull && !isRoundFinished && !isCpuTurn;
 
   bool get isFinalRound => currentRound >= game.maxRounds;
 

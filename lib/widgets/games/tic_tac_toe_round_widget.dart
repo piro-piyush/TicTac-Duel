@@ -67,18 +67,16 @@ class TicTacToeRoundWidget extends StatelessWidget
                         duration: AnimationConstants.fast,
                         switchInCurve: AnimationConstants.entranceCurve,
                         switchOutCurve: AnimationConstants.exitCurve,
-                        transitionBuilder: (child, animation) {
-                          return FadeTransition(
-                            opacity: animation,
-                            child: ScaleTransition(
-                              scale: Tween<double>(
-                                begin: 0.75,
-                                end: 1,
-                              ).animate(animation),
-                              child: child,
-                            ),
-                          );
-                        },
+                        transitionBuilder: (child, animation) => FadeTransition(
+                          opacity: animation,
+                          child: ScaleTransition(
+                            scale: Tween<double>(
+                              begin: 0.75,
+                              end: 1,
+                            ).animate(animation),
+                            child: child,
+                          ),
+                        ),
                         child: Text(
                           '$currentRound',
                           key: ValueKey(currentRound),

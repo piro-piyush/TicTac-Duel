@@ -4,29 +4,27 @@ class QuitDialog extends StatelessWidget {
   const QuitDialog({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Quit Game?'),
-      content: const Text('Are you sure you want to quit the current game?'),
-      actions: [
-        Row(
-          spacing: Dimens.twelve,
-          children: [
-            Expanded(
-              child: NeonOutlinedButtonWidget(
-                onPressed: () => context.pop(),
-                label: 'CANCEL',
-              ),
+  Widget build(BuildContext context) => AlertDialog(
+    title: const Text('Quit Game?'),
+    content: const Text('Are you sure you want to quit the current game?'),
+    actions: [
+      Row(
+        spacing: Dimens.twelve,
+        children: [
+          Expanded(
+            child: NeonOutlinedButtonWidget(
+              onPressed: () => context.pop(),
+              label: 'CANCEL',
             ),
-            Expanded(
-              child: NeonElevatedButtonWidget(
-                onPressed: () => context.pop(true),
-                label: 'QUIT',
-              ),
+          ),
+          Expanded(
+            child: NeonElevatedButtonWidget(
+              onPressed: () => context.pop(true),
+              label: 'QUIT',
             ),
-          ],
-        ),
-      ],
-    );
-  }
+          ),
+        ],
+      ),
+    ],
+  );
 }

@@ -20,7 +20,7 @@ class HomeScreen extends ConsumerWidget {
                     child: NeonTextButtonWidget.icon(
                       icon: Icons.settings_rounded,
                       label: 'Settings',
-                      onPressed: navigation.pushSettings,
+                      onPressed: navigation.goToSettings,
                       isSmall: true,
                     ),
                   ),
@@ -28,7 +28,7 @@ class HomeScreen extends ConsumerWidget {
                     child: NeonTextButtonWidget.icon(
                       icon: Icons.help_outline_rounded,
                       label: 'Help',
-                      onPressed: navigation.pushHelp,
+                      onPressed: navigation.goToHelp,
                       isSmall: true,
                     ),
                   ),
@@ -53,49 +53,58 @@ class HomeScreen extends ConsumerWidget {
           Column(
             spacing: Dimens.twentyTwo,
             children: [
-              const AppLogoWidget().animate()
+              const AppLogoWidget()
+                  .animate()
                   .fadeIn(duration: AnimationConstants.medium)
                   .rotate(
-                begin: AnimationConstants.logoEntranceRotation,
-                end: AnimationConstants.logoRestingRotation,
-                duration: AnimationConstants.medium,
-                curve: AnimationConstants.entranceCurve,
-              )
+                    begin: AnimationConstants.logoEntranceRotation,
+                    end: AnimationConstants.logoRestingRotation,
+                    duration: AnimationConstants.medium,
+                    curve: AnimationConstants.entranceCurve,
+                  )
                   .scale(
-                begin: AnimationConstants.scaleBegin,
-                end: AnimationConstants.scaleEnd,
-                duration: AnimationConstants.medium,
-                curve: AnimationConstants.entranceCurve,
-              ),
+                    begin: AnimationConstants.scaleBegin,
+                    end: AnimationConstants.scaleEnd,
+                    duration: AnimationConstants.medium,
+                    curve: AnimationConstants.entranceCurve,
+                  ),
               Column(
                 spacing: Dimens.eight,
                 children: [
-                  Text(GameConstants.appName, style: textTheme.headlineLarge,textAlign: TextAlign.center,)
+                  Text(
+                        GameConstants.appName,
+                        style: textTheme.headlineLarge,
+                        textAlign: TextAlign.center,
+                      )
                       .animate()
                       .fadeIn(
-                    delay: AnimationConstants.homeTitleDelay,
-                    duration: AnimationConstants.medium,
-                  )
+                        delay: AnimationConstants.homeTitleDelay,
+                        duration: AnimationConstants.medium,
+                      )
                       .slideY(
-                    begin: AnimationConstants.slideLarge,
-                    end: 0,
-                    delay: AnimationConstants.homeTitleDelay,
-                    duration: AnimationConstants.medium,
-                    curve: AnimationConstants.defaultCurve,
-                  ),
-                  Text(GameConstants.appSlogan, style: textTheme.labelSmall,textAlign: TextAlign.center)
+                        begin: AnimationConstants.slideLarge,
+                        end: 0,
+                        delay: AnimationConstants.homeTitleDelay,
+                        duration: AnimationConstants.medium,
+                        curve: AnimationConstants.defaultCurve,
+                      ),
+                  Text(
+                        GameConstants.appSlogan,
+                        style: textTheme.labelSmall,
+                        textAlign: TextAlign.center,
+                      )
                       .animate()
                       .fadeIn(
-                    delay: AnimationConstants.homeSloganDelay,
-                    duration: AnimationConstants.medium,
-                  )
+                        delay: AnimationConstants.homeSloganDelay,
+                        duration: AnimationConstants.medium,
+                      )
                       .slideY(
-                    begin: AnimationConstants.slideMedium,
-                    end: 0,
-                    delay: AnimationConstants.homeSloganDelay,
-                    duration: AnimationConstants.medium,
-                    curve: AnimationConstants.defaultCurve,
-                  ),
+                        begin: AnimationConstants.slideMedium,
+                        end: 0,
+                        delay: AnimationConstants.homeSloganDelay,
+                        duration: AnimationConstants.medium,
+                        curve: AnimationConstants.defaultCurve,
+                      ),
                 ],
               ),
             ],

@@ -30,16 +30,18 @@ class RoundSelectorWidget extends StatelessWidget {
               ),
               child: Row(
                 spacing: Dimens.six,
-                children: roundOptions.map((rounds) {
-                  return Expanded(
-                    child: _RoundOption(
-                      rounds: rounds,
-                      isSelected: rounds == selectedRounds,
-                      textTheme: textTheme,
-                      onTap: () => onRoundChanged(rounds),
-                    ),
-                  );
-                }).toList(),
+                children: roundOptions
+                    .map(
+                      (rounds) => Expanded(
+                        child: _RoundOption(
+                          rounds: rounds,
+                          isSelected: rounds == selectedRounds,
+                          textTheme: textTheme,
+                          onTap: () => onRoundChanged(rounds),
+                        ),
+                      ),
+                    )
+                    .toList(),
               ),
             )
             .animate()
@@ -69,64 +71,62 @@ class _RoundOption extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: Dimens.radius12,
-        splashColor: AppColors.neonPurple.withValues(alpha: 0.08),
-        highlightColor: AppColors.neonPurple.withValues(alpha: 0.04),
-        child: AnimatedContainer(
-          duration: AnimationConstants.fast,
-          height: 68,
-          decoration: BoxDecoration(
+  Widget build(BuildContext context) => Material(
+    color: Colors.transparent,
+    child: InkWell(
+      onTap: onTap,
+      borderRadius: Dimens.radius12,
+      splashColor: AppColors.neonPurple.withValues(alpha: 0.08),
+      highlightColor: AppColors.neonPurple.withValues(alpha: 0.04),
+      child: AnimatedContainer(
+        duration: AnimationConstants.fast,
+        height: 68,
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.neonPurple.withValues(alpha: 0.14)
+              : AppColors.surface,
+          borderRadius: Dimens.radius12,
+          border: Border.all(
             color: isSelected
-                ? AppColors.neonPurple.withValues(alpha: 0.14)
-                : AppColors.surface,
-            borderRadius: Dimens.radius12,
-            border: Border.all(
-              color: isSelected
-                  ? AppColors.neonPurple.withValues(alpha: 0.75)
-                  : AppColors.border,
-              width: isSelected ? 1.5 : 1,
+                ? AppColors.neonPurple.withValues(alpha: 0.75)
+                : AppColors.border,
+            width: isSelected ? 1.5 : 1,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppColors.neonPurple.withValues(alpha: 0.10),
+                    blurRadius: 12,
+                  ),
+                ]
+              : null,
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          spacing: Dimens.two,
+          children: [
+            Text(
+              '$rounds',
+              style: textTheme.titleLarge?.copyWith(
+                color: isSelected
+                    ? AppColors.textPrimary
+                    : AppColors.textSecondary,
+                fontWeight: FontWeight.w900,
+              ),
             ),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: AppColors.neonPurple.withValues(alpha: 0.10),
-                      blurRadius: 12,
-                    ),
-                  ]
-                : null,
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            spacing: Dimens.two,
-            children: [
-              Text(
-                '$rounds',
-                style: textTheme.titleLarge?.copyWith(
-                  color: isSelected
-                      ? AppColors.textPrimary
-                      : AppColors.textSecondary,
-                  fontWeight: FontWeight.w900,
-                ),
+            Text(
+              rounds == 1 ? 'ROUND' : 'ROUNDS',
+              style: textTheme.labelSmall?.copyWith(
+                color: isSelected
+                    ? AppColors.neonPurple
+                    : AppColors.textSecondary,
+                letterSpacing: 0.8,
+                fontWeight: FontWeight.w700,
               ),
-              Text(
-                rounds == 1 ? 'ROUND' : 'ROUNDS',
-                style: textTheme.labelSmall?.copyWith(
-                  color: isSelected
-                      ? AppColors.neonPurple
-                      : AppColors.textSecondary,
-                  letterSpacing: 0.8,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
 }

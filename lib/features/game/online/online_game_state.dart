@@ -27,27 +27,23 @@ class OnlineGameState extends Equatable {
     bool clearError = false,
     bool clearRoundAnimation = false,
     bool clearReactionEvent = false,
-  }) {
-    return OnlineGameState(
-      room: room ?? this.room,
-      board: board ?? this.board,
-      winningIndexes: winningIndexes ?? this.winningIndexes,
-      errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
-      showRoundAnimation: clearRoundAnimation
-          ? false
-          : showRoundAnimation ?? this.showRoundAnimation,
-      reactionEvent: clearReactionEvent
-          ? null
-          : reactionEvent ?? this.reactionEvent,
-    );
-  }
+  }) => OnlineGameState(
+    room: room ?? this.room,
+    board: board ?? this.board,
+    winningIndexes: winningIndexes ?? this.winningIndexes,
+    errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
+    showRoundAnimation: clearRoundAnimation
+        ? false
+        : showRoundAnimation ?? this.showRoundAnimation,
+    reactionEvent: clearReactionEvent
+        ? null
+        : reactionEvent ?? this.reactionEvent,
+  );
 
-  factory OnlineGameState.initial(RoomModel room) {
-    return OnlineGameState(
-      room: room,
-      board: List<PlayerSymbol?>.filled(GameConstants.totalCells, null),
-    );
-  }
+  factory OnlineGameState.initial(RoomModel room) => OnlineGameState(
+    room: room,
+    board: List<PlayerSymbol?>.filled(GameConstants.totalCells, null),
+  );
 
   @override
   List<Object?> get props => [

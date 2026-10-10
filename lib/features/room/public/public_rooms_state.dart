@@ -16,20 +16,12 @@ class PublicRoomsState extends Equatable {
     bool? isFetchingRooms,
     bool? isJoining,
     String? errorMessage,
-  }) {
-    return PublicRoomsState(
-      rooms: rooms ?? this.rooms,
-      isFetchingRooms: isFetchingRooms ?? this.isFetchingRooms,
-      isJoining: isJoining ?? this.isJoining,
-
-    );
-  }
+  }) => PublicRoomsState(
+    rooms: rooms ?? this.rooms,
+    isFetchingRooms: isFetchingRooms ?? this.isFetchingRooms,
+    isJoining: isJoining ?? this.isJoining,
+  );
 
   @override
-  List<Object?> get props => [
-    rooms,
-    isFetchingRooms,
-    isJoining,
-
-  ];
+  List<Object?> get props => [rooms, isFetchingRooms, isJoining];
 }

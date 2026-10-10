@@ -60,15 +60,13 @@ class TicTacToeBoardWidget extends StatelessWidget {
                               crossAxisSpacing: gridSpacing,
                               mainAxisSpacing: gridSpacing,
                             ),
-                        itemBuilder: (context, index) {
-                          return GameBoardCellWidget(
-                            index: index,
-                            symbol: values[index],
-                            theme: roomTheme,
-                            isMyTurn: isMyTurn,
-                            onCellTap: onCellTap,
-                          );
-                        },
+                        itemBuilder: (context, index) => GameBoardCellWidget(
+                          index: index,
+                          symbol: values[index],
+                          theme: roomTheme,
+                          isMyTurn: isMyTurn,
+                          onCellTap: onCellTap,
+                        ),
                       ),
                       if (winningIndexes.isNotEmpty)
                         TicTacToeWinningLineWidget(

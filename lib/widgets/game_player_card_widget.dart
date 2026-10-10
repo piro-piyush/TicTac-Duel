@@ -71,89 +71,82 @@ class GamePlayerCardWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildPlayerHeader(Color color) {
-    return Row(
-      spacing: 5,
-      children: [
+  Widget _buildPlayerHeader(Color color) => Row(
+    spacing: 5,
+    children: [
+      Flexible(
+        child: Text(
+          player.name,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: compact ? 10 : 12,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+      if (isOnline) _buildPlayerBadge(color),
+    ],
+  );
+
+  Widget _buildPlayerBadge(Color color) => Container(
+    padding: EdgeInsets.symmetric(horizontal: compact ? 4 : 5, vertical: 2),
+    decoration: BoxDecoration(
+      color: isMe ? color.withValues(alpha: 0.12) : AppColors.card,
+      borderRadius: BorderRadius.circular(5),
+      border: Border.all(
+        color: isMe ? color.withValues(alpha: 0.25) : AppColors.border,
+      ),
+    ),
+    child: Text(
+      isMe ? 'YOU' : 'OPPONENT',
+      style: TextStyle(
+        color: isMe ? color : AppColors.textSecondary,
+        fontSize: compact ? 6 : 7,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 0.7,
+      ),
+    ),
+  );
+
+  Widget _buildPlayerStatus(Color color) => Row(
+    spacing: 5,
+    children: [
+      Text(
+        player.symbol.value.toUpperCase(),
+        style: TextStyle(
+          color: color,
+          fontSize: compact ? 8 : 9,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 1.2,
+        ),
+      ),
+      if (isTurn)
         Flexible(
           child: Text(
-            player.name,
-            maxLines: 1,
+            'TURN',
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: compact ? 10 : 12,
+              color: color.withValues(alpha: 0.8),
+              fontSize: 8,
               fontWeight: FontWeight.w700,
+              letterSpacing: 1,
             ),
           ),
         ),
-        if (isOnline) _buildPlayerBadge(color),
-      ],
-    );
-  }
+      const Spacer(),
+      _buildPoints(color: color, compact: compact),
+    ],
+  );
 
-  Widget _buildPlayerBadge(Color color) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: compact ? 4 : 5, vertical: 2),
-      decoration: BoxDecoration(
-        color: isMe ? color.withValues(alpha: 0.12) : AppColors.card,
-        borderRadius: BorderRadius.circular(5),
-        border: Border.all(
-          color: isMe ? color.withValues(alpha: 0.25) : AppColors.border,
-        ),
-      ),
-      child: Text(
-        isMe ? 'YOU' : 'OPPONENT',
-        style: TextStyle(
-          color: isMe ? color : AppColors.textSecondary,
-          fontSize: compact ? 6 : 7,
-          fontWeight: FontWeight.w800,
-          letterSpacing: 0.7,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPlayerStatus(Color color) {
-    return Row(
-      spacing: 5,
-      children: [
-        Text(
-          player.symbol.value.toUpperCase(),
-          style: TextStyle(
-            color: color,
-            fontSize: compact ? 8 : 9,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 1.2,
-          ),
-        ),
-        if (isTurn)
-          Flexible(
-            child: Text(
-              'TURN',
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: color.withValues(alpha: 0.8),
-                fontSize: 8,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1,
-              ),
-            ),
-          ),
-        const Spacer(),
-        _buildPoints(color: color, compact: compact),
-      ],
-    );
-  }
-
-  Widget _buildPoints({required Color color, required bool compact}) {
-    return TweenAnimationBuilder<int>(
-      key: ValueKey(points),
-      tween: IntTween(begin: points > 0 ? points - 1 : 0, end: points),
-      duration: const Duration(milliseconds: 350),
-      curve: Curves.easeOutBack,
-      builder: (context, value, child) {
-        return AnimatedScale(
+  Widget _buildPoints({required Color color, required bool compact}) =>
+      TweenAnimationBuilder<int>(
+        key: ValueKey(points),
+        tween: IntTween(begin: points > 0 ? points - 1 : 0, end: points),
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeOutBack,
+        builder: (context, value, child) => AnimatedScale(
           scale: value == points && points > 0 ? 1.0 : 0.9,
           duration: const Duration(milliseconds: 180),
           child: Container(
@@ -177,8 +170,6 @@ class GamePlayerCardWidget extends StatelessWidget {
               ),
             ),
           ),
-        );
-      },
-    );
-  }
+        ),
+      );
 }

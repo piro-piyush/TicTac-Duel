@@ -68,17 +68,15 @@ class _StatusIndicator extends StatelessWidget {
   final bool isOnline;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: Dimens.six,
-      height: Dimens.six,
-      decoration: BoxDecoration(
-        color: isOnline ? color : AppColors.textSecondary,
-        shape: BoxShape.circle,
-        boxShadow: isOnline
-            ? [BoxShadow(color: color.withValues(alpha: 0.6), blurRadius: 7)]
-            : null,
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Container(
+    width: Dimens.six,
+    height: Dimens.six,
+    decoration: BoxDecoration(
+      color: isOnline ? color : AppColors.textSecondary,
+      shape: BoxShape.circle,
+      boxShadow: isOnline
+          ? [BoxShadow(color: color.withValues(alpha: 0.6), blurRadius: 7)]
+          : null,
+    ),
+  );
 }

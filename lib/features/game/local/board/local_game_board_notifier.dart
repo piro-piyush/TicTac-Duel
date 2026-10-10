@@ -1,11 +1,9 @@
 import 'package:tictac_duel/lib.dart';
 
-final localGameBoardProvider =
-    NotifierProvider.autoDispose.family<
-      LocalGameBoardNotifier,
-      LocalGameBoardState,
-      LocalGameModel
-    >(LocalGameBoardNotifier.new);
+final localGameBoardProvider = NotifierProvider.autoDispose
+    .family<LocalGameBoardNotifier, LocalGameBoardState, LocalGameModel>(
+      LocalGameBoardNotifier.new,
+    );
 
 class LocalGameBoardNotifier extends Notifier<LocalGameBoardState> {
   LocalGameBoardNotifier(this.game);
@@ -284,7 +282,9 @@ class LocalGameBoardNotifier extends Notifier<LocalGameBoardState> {
 
     state = state.copyWith(
       currentRound: state.currentRound + 1,
-      turnPlayerId: startingSymbol == state.game.host.symbol ? state.game.host.id : state.game.guest.id,
+      turnPlayerId: startingSymbol == state.game.host.symbol
+          ? state.game.host.id
+          : state.game.guest.id,
     );
 
     _audioNotifier.playRoundStart();
@@ -357,8 +357,6 @@ class LocalGameBoardNotifier extends Notifier<LocalGameBoardState> {
     );
   }
 
-
-
   // ===========================================================================
   // GAME LIFECYCLE
   // ===========================================================================
@@ -377,11 +375,7 @@ class LocalGameBoardNotifier extends Notifier<LocalGameBoardState> {
       return;
     }
 
-    state = state.copyWith(
-      hostPoints: 0,
-      guestPoints: 0,
-      currentRound: 0,
-    );
+    state = state.copyWith(hostPoints: 0, guestPoints: 0, currentRound: 0);
 
     startNextRound(state.game.host.symbol);
   }

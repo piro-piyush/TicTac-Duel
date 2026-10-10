@@ -34,7 +34,6 @@ class WaitingIndicatorPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant WaitingIndicatorPainter oldDelegate) {
-    return oldDelegate.progress != progress;
-  }
+  bool shouldRepaint(covariant WaitingIndicatorPainter oldDelegate) =>
+      oldDelegate.progress != progress;
 }

@@ -32,7 +32,7 @@ class NeonParticlePainter extends CustomPainter {
 
     return List.generate(
       count,
-          (_) => _Particle(
+      (_) => _Particle(
         x: random.nextDouble(),
         y: random.nextDouble(),
         radius: 0.5 + random.nextDouble() * 1.2,
@@ -78,15 +78,14 @@ class NeonParticlePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant NeonParticlePainter oldDelegate) {
-    return oldDelegate.colors != colors ||
-        oldDelegate.particleCount != particleCount ||
-        oldDelegate.minRadius != minRadius ||
-        oldDelegate.maxRadius != maxRadius ||
-        oldDelegate.minOpacity != minOpacity ||
-        oldDelegate.maxOpacity != maxOpacity ||
-        oldDelegate.seed != seed;
-  }
+  bool shouldRepaint(covariant NeonParticlePainter oldDelegate) =>
+      oldDelegate.colors != colors ||
+      oldDelegate.particleCount != particleCount ||
+      oldDelegate.minRadius != minRadius ||
+      oldDelegate.maxRadius != maxRadius ||
+      oldDelegate.minOpacity != minOpacity ||
+      oldDelegate.maxOpacity != maxOpacity ||
+      oldDelegate.seed != seed;
 
   static double _normalize(double value, double min, double max) {
     if (max == min) {
@@ -96,9 +95,8 @@ class NeonParticlePainter extends CustomPainter {
     return ((value - min) / (max - min)).clamp(0.0, 1.0);
   }
 
-  static double _lerp(double min, double max, double value) {
-    return min + ((max - min) * value);
-  }
+  static double _lerp(double min, double max, double value) =>
+      min + ((max - min) * value);
 }
 
 class _Particle {

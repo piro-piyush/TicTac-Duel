@@ -105,9 +105,7 @@ class ResultNotifier extends Notifier<ResultModel> {
 
   bool isMe(PlayerModel player) => _socketService.id == player.id;
 
-  bool isWinner(PlayerModel player) {
-    return state.gameWinner?.id == player.id;
-  }
+  bool isWinner(PlayerModel player) => state.gameWinner?.id == player.id;
 
   // ===========================================================================
   // NAVIGATION
@@ -119,7 +117,7 @@ class ResultNotifier extends Notifier<ResultModel> {
 
   void newGame() {
     if (state.isLocal) {
-      _navigation.pushLocalGame();
+      _navigation.goToLocalGame();
       return;
     }
 

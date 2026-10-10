@@ -32,8 +32,7 @@ class TicTacToeWinningLineWidget extends StatefulWidget {
       _TicTacToeWinningLineWidgetState();
 }
 
-class _TicTacToeWinningLineWidgetState
-    extends State<TicTacToeWinningLineWidget>
+class _TicTacToeWinningLineWidgetState extends State<TicTacToeWinningLineWidget>
     with SingleTickerProviderStateMixin {
   // ===========================================================================
   // CONFIG
@@ -68,16 +67,13 @@ class _TicTacToeWinningLineWidgetState
   }
 
   @override
-  void didUpdateWidget(
-      covariant TicTacToeWinningLineWidget oldWidget,
-      ) {
+  void didUpdateWidget(covariant TicTacToeWinningLineWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     final winningIndexesChanged =
         oldWidget.winningIndexes != widget.winningIndexes;
 
-    final colorChanged =
-        oldWidget.color != widget.color;
+    final colorChanged = oldWidget.color != widget.color;
 
     if (winningIndexesChanged || colorChanged) {
       _controller
@@ -97,27 +93,23 @@ class _TicTacToeWinningLineWidgetState
   // ===========================================================================
 
   @override
-  Widget build(BuildContext context) {
-    return Positioned.fill(
-      child: IgnorePointer(
-        child: AnimatedBuilder(
-          animation: _progress,
-          builder: (context, child) {
-            return CustomPaint(
-              painter: TicTacToeWinningLinePainter(
-                winningIndexes: widget.winningIndexes,
-                color: widget.color,
-                boardSize: widget.boardSize,
-                gridSpacing: widget.gridSpacing,
-                progress: _progress.value,
-                boardWidth: widget.boardWidth,
-                borderRadius: widget.borderRadius,
-                boardExtension: widget.boardExtension,
-              ),
-            );
-          },
+  Widget build(BuildContext context) => Positioned.fill(
+    child: IgnorePointer(
+      child: AnimatedBuilder(
+        animation: _progress,
+        builder: (context, child) => CustomPaint(
+          painter: TicTacToeWinningLinePainter(
+            winningIndexes: widget.winningIndexes,
+            color: widget.color,
+            boardSize: widget.boardSize,
+            gridSpacing: widget.gridSpacing,
+            progress: _progress.value,
+            boardWidth: widget.boardWidth,
+            borderRadius: widget.borderRadius,
+            boardExtension: widget.boardExtension,
+          ),
         ),
       ),
-    );
-  }
+    ),
+  );
 }

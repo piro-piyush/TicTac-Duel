@@ -143,46 +143,44 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
   // ===========================================================================
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      resizeToAvoidBottomInset: true,
-      floatingActionButton: widget.floatingActionButton,
-      body: Listener(
-        behavior: HitTestBehavior.translucent,
-        onPointerDown: _handlePointerDown,
-        child: SizedBox.expand(
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              const _BackgroundBase(),
-              const _AmbientGlows(),
+  Widget build(BuildContext context) => Scaffold(
+    backgroundColor: AppColors.background,
+    resizeToAvoidBottomInset: true,
+    floatingActionButton: widget.floatingActionButton,
+    body: Listener(
+      behavior: HitTestBehavior.translucent,
+      onPointerDown: _handlePointerDown,
+      child: SizedBox.expand(
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            const _BackgroundBase(),
+            const _AmbientGlows(),
 
-              if (widget.showGrid) const _GridLayer(),
-              if (widget.showParticles) const _ParticleLayer(),
+            if (widget.showGrid) const _GridLayer(),
+            if (widget.showParticles) const _ParticleLayer(),
 
-              if (widget.showTapEffects && _tapEffects.isNotEmpty)
-                _TapEffectsLayer(effects: _tapEffects),
+            if (widget.showTapEffects && _tapEffects.isNotEmpty)
+              _TapEffectsLayer(effects: _tapEffects),
 
-              if (widget.showVignette) const _VignetteLayer(),
+            if (widget.showVignette) const _VignetteLayer(),
 
-              _ForegroundLayer(
-                title: widget.title,
-                bottom: widget.bottom,
-                actions: widget.actions,
-                padding: widget.padding,
-                bottomNavigationBar: widget.bottomNavigationBar,
-                needScroll: widget.needScroll,
-                keyboardAware: widget.keyboardAware,
-                maxWidth: widget.maxWidth,
-                child: widget.child,
-              ),
-            ],
-          ),
+            _ForegroundLayer(
+              title: widget.title,
+              bottom: widget.bottom,
+              actions: widget.actions,
+              padding: widget.padding,
+              bottomNavigationBar: widget.bottomNavigationBar,
+              needScroll: widget.needScroll,
+              keyboardAware: widget.keyboardAware,
+              maxWidth: widget.maxWidth,
+              child: widget.child,
+            ),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
 }
 
 // =============================================================================
@@ -193,9 +191,8 @@ class _BackgroundBase extends StatelessWidget {
   const _BackgroundBase();
 
   @override
-  Widget build(BuildContext context) {
-    return const ColoredBox(color: AppColors.background);
-  }
+  Widget build(BuildContext context) =>
+      const ColoredBox(color: AppColors.background);
 }
 
 // =============================================================================
@@ -206,42 +203,40 @@ class _AmbientGlows extends StatelessWidget {
   const _AmbientGlows();
 
   @override
-  Widget build(BuildContext context) {
-    return const Stack(
-      fit: StackFit.expand,
-      children: [
-        Positioned(
-          top: -150,
-          right: -110,
-          child: NeonGlowWidget(
-            color: AppColors.neonPurple,
-            size: 320,
-            opacity: 0.075,
-            blurRadius: 130,
-          ),
+  Widget build(BuildContext context) => const Stack(
+    fit: StackFit.expand,
+    children: [
+      Positioned(
+        top: -150,
+        right: -110,
+        child: NeonGlowWidget(
+          color: AppColors.neonPurple,
+          size: 320,
+          opacity: 0.075,
+          blurRadius: 130,
         ),
-        Positioned(
-          bottom: -170,
-          left: -130,
-          child: NeonGlowWidget(
-            color: AppColors.neonCyan,
-            size: 340,
-            opacity: 0.065,
-            blurRadius: 140,
-          ),
+      ),
+      Positioned(
+        bottom: -170,
+        left: -130,
+        child: NeonGlowWidget(
+          color: AppColors.neonCyan,
+          size: 340,
+          opacity: 0.065,
+          blurRadius: 140,
         ),
-        Positioned(
-          top: 250,
-          left: -190,
-          child: NeonGlowWidget(
-            color: AppColors.neonPink,
-            size: 280,
-            opacity: 0.025,
-          ),
+      ),
+      Positioned(
+        top: 250,
+        left: -190,
+        child: NeonGlowWidget(
+          color: AppColors.neonPink,
+          size: 280,
+          opacity: 0.025,
         ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
 }
 
 // =============================================================================
@@ -252,19 +247,17 @@ class _GridLayer extends StatelessWidget {
   const _GridLayer();
 
   @override
-  Widget build(BuildContext context) {
-    return Positioned.fill(
-      child: IgnorePointer(
-        child: RepaintBoundary(
-          child: CustomPaint(
-            painter: NeonGridPainter(
-              spacing: _NeonBackgroundWidgetState._gridSpacing,
-            ),
+  Widget build(BuildContext context) => Positioned.fill(
+    child: IgnorePointer(
+      child: RepaintBoundary(
+        child: CustomPaint(
+          painter: NeonGridPainter(
+            spacing: _NeonBackgroundWidgetState._gridSpacing,
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
 }
 
 // =============================================================================
@@ -275,17 +268,15 @@ class _ParticleLayer extends StatelessWidget {
   const _ParticleLayer();
 
   @override
-  Widget build(BuildContext context) {
-    return Positioned.fill(
-      child: IgnorePointer(
-        child: RepaintBoundary(
-          child: CustomPaint(
-            painter: NeonParticlePainter(colors: AppColors.neonColors),
-          ),
+  Widget build(BuildContext context) => Positioned.fill(
+    child: IgnorePointer(
+      child: RepaintBoundary(
+        child: CustomPaint(
+          painter: NeonParticlePainter(colors: AppColors.neonColors),
         ),
       ),
-    );
-  }
+    ),
+  );
 }
 
 // =============================================================================
@@ -298,19 +289,17 @@ class _TapEffectsLayer extends StatelessWidget {
   final List<TapEffect> effects;
 
   @override
-  Widget build(BuildContext context) {
-    return Positioned.fill(
-      child: IgnorePointer(
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            for (final effect in effects)
-              TapEffectWidget(key: ObjectKey(effect), effect: effect),
-          ],
-        ),
+  Widget build(BuildContext context) => Positioned.fill(
+    child: IgnorePointer(
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          for (final effect in effects)
+            TapEffectWidget(key: ObjectKey(effect), effect: effect),
+        ],
       ),
-    );
-  }
+    ),
+  );
 }
 
 // =============================================================================
@@ -321,25 +310,19 @@ class _VignetteLayer extends StatelessWidget {
   const _VignetteLayer();
 
   @override
-  Widget build(BuildContext context) {
-    return const Positioned.fill(
-      child: IgnorePointer(
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: RadialGradient(
-              radius: 0.9,
-              colors: [
-                Colors.transparent,
-                Color(0x18000000),
-                Color(0x52000000),
-              ],
-              stops: [0.45, 0.76, 1.0],
-            ),
+  Widget build(BuildContext context) => const Positioned.fill(
+    child: IgnorePointer(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: RadialGradient(
+            radius: 0.9,
+            colors: [Colors.transparent, Color(0x18000000), Color(0x52000000)],
+            stops: [0.45, 0.76, 1.0],
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
 }
 
 // =============================================================================
@@ -395,39 +378,33 @@ class _ForegroundLayer extends StatelessWidget {
         left: false,
         right: false,
         child: LayoutBuilder(
-          builder: (context, constraints) {
-            return Center(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: contentMaxWidth),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: constraints.maxHeight,
-                  child: Column(
-                    children: [
-                      _NeonAppBar(
-                        title: title,
-                        bottom: bottom,
-                        actions: actions,
+          builder: (context, constraints) => Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: contentMaxWidth),
+              child: SizedBox(
+                width: double.infinity,
+                height: constraints.maxHeight,
+                child: Column(
+                  children: [
+                    _NeonAppBar(title: title, bottom: bottom, actions: actions),
+                    Expanded(
+                      child: _NeonContent(
+                        padding: padding,
+                        needScroll: needScroll,
+                        keyboardAware: keyboardAware,
+                        child: child,
                       ),
-                      Expanded(
-                        child: _NeonContent(
-                          padding: padding,
-                          needScroll: needScroll,
-                          keyboardAware: keyboardAware,
-                          child: child,
-                        ),
+                    ),
+                    if (bottomNavigationBar != null)
+                      _NeonBottomNavigation(
+                        navigationBar: bottomNavigationBar!,
+                        padding: padding,
                       ),
-                      if (bottomNavigationBar != null)
-                        _NeonBottomNavigation(
-                          navigationBar: bottomNavigationBar!,
-                          padding: padding,
-                        ),
-                    ],
-                  ),
+                  ],
                 ),
               ),
-            );
-          },
+            ),
+          ),
         ),
       ),
     );
@@ -445,33 +422,32 @@ class _NeonAppBar extends StatelessWidget {
   final PreferredSizeWidget? bottom;
 
   @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-          height: kToolbarHeight + (bottom?.preferredSize.height ?? 0),
-          child: AppBar(
-            title: title != null
-                ? Text(title!, maxLines: 1, overflow: TextOverflow.ellipsis)
-                : null,
-            actions: actions,
-            bottom: bottom,
-            backgroundColor: Colors.transparent,
-            surfaceTintColor: Colors.transparent,
-            elevation: 0,
-            scrolledUnderElevation: 0,
-          ),
-        )
-        .animate()
-        .fadeIn(
-          duration: AnimationConstants.medium,
-          curve: AnimationConstants.entranceCurve,
-        )
-        .slideY(
-          begin: -AnimationConstants.slideSmall,
-          end: 0,
-          duration: AnimationConstants.medium,
-          curve: AnimationConstants.entranceCurve,
-        );
-  }
+  Widget build(BuildContext context) =>
+      SizedBox(
+            height: kToolbarHeight + (bottom?.preferredSize.height ?? 0),
+            child: AppBar(
+              title: title != null
+                  ? Text(title!, maxLines: 1, overflow: TextOverflow.ellipsis)
+                  : null,
+              actions: actions,
+              bottom: bottom,
+              backgroundColor: Colors.transparent,
+              surfaceTintColor: Colors.transparent,
+              elevation: 0,
+              scrolledUnderElevation: 0,
+            ),
+          )
+          .animate()
+          .fadeIn(
+            duration: AnimationConstants.medium,
+            curve: AnimationConstants.entranceCurve,
+          )
+          .slideY(
+            begin: -AnimationConstants.slideSmall,
+            end: 0,
+            duration: AnimationConstants.medium,
+            curve: AnimationConstants.entranceCurve,
+          );
 }
 // =============================================================================
 // CONTENT
@@ -490,9 +466,7 @@ class _NeonContent extends StatelessWidget {
   final bool needScroll;
   final bool keyboardAware;
 
-  EdgeInsets get _contentPadding {
-    return padding ?? Dimens.defaultPadding;
-  }
+  EdgeInsets get _contentPadding => padding ?? Dimens.defaultPadding;
 
   @override
   Widget build(BuildContext context) {
@@ -505,34 +479,30 @@ class _NeonContent extends StatelessWidget {
     }
 
     return LayoutBuilder(
-      builder: (context, constraints) {
-        return SingleChildScrollView(
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          physics: const BouncingScrollPhysics(
-            parent: AlwaysScrollableScrollPhysics(),
+      builder: (context, constraints) => SingleChildScrollView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        physics: const BouncingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
+        ),
+        padding: _contentPadding,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: constraints.maxHeight - _contentPadding.vertical,
           ),
-          padding: _contentPadding,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight: constraints.maxHeight - _contentPadding.vertical,
-            ),
-            child: child,
-          ),
-        );
-      },
+          child: child,
+        ),
+      ),
     );
   }
 
-  Widget _buildScrollableContent() {
-    return SingleChildScrollView(
-      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-      physics: const BouncingScrollPhysics(
-        parent: AlwaysScrollableScrollPhysics(),
-      ),
-      padding: _contentPadding,
-      child: child,
-    );
-  }
+  Widget _buildScrollableContent() => SingleChildScrollView(
+    keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+    physics: const BouncingScrollPhysics(
+      parent: AlwaysScrollableScrollPhysics(),
+    ),
+    padding: _contentPadding,
+    child: child,
+  );
 }
 // =============================================================================
 // BOTTOM NAVIGATION

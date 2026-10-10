@@ -1,7 +1,8 @@
 import 'package:tictac_duel/lib.dart';
 
 class NeonGlowWidget extends StatelessWidget {
-  const NeonGlowWidget({super.key,
+  const NeonGlowWidget({
+    super.key,
     required this.color,
     required this.size,
     this.opacity = 0.07,

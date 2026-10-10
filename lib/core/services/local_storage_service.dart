@@ -9,9 +9,7 @@ class LocalStorageService {
     accessibility: KeychainAccessibility.first_unlock,
   );
 
-  static const _androidOptions = AndroidOptions(
-
-  );
+  static const _androidOptions = AndroidOptions();
 
   Future<String?> getString(String key) async {
     try {
@@ -55,11 +53,7 @@ class LocalStorageService {
 
       return value.toLowerCase() == 'true';
     } catch (error, stackTrace) {
-      LoggerUtils.error(
-        'Failed to get bool: $key',
-        error,
-        stackTrace,
-      );
+      LoggerUtils.error('Failed to get bool: $key', error, stackTrace);
       return null;
     }
   }

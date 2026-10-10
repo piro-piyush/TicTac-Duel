@@ -106,13 +106,15 @@ class _LocalGameScreenState extends ConsumerState<LocalGameScreen>
         unselectedLabelStyle: Theme.of(context).textTheme.labelLarge
             ?.copyWith(fontWeight: FontWeight.w600),
         splashBorderRadius: Dimens.radius16,
-        tabs: LocalGameType.values.map((type) {
-          return Tab(
-            height: Dimens.eighty,
-            text: type.displayName,
-            icon: Icon(type.icon),
-          );
-        }).toList(),
+        tabs: LocalGameType.values
+            .map(
+              (type) => Tab(
+                height: Dimens.eighty,
+                text: type.displayName,
+                icon: Icon(type.icon),
+              ),
+            )
+            .toList(),
       ),
 
       child: LocalGameContentWidget(

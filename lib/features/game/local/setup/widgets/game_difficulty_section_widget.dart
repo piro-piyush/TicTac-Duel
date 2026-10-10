@@ -11,20 +11,18 @@ class GameDifficultySectionWidget extends StatelessWidget {
   final ValueChanged<CpuDifficulty> onDifficultyChanged;
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: Dimens.spaceBtwItems,
-      children: [
-        const SectionTitleWidget(title: 'DIFFICULTY'),
-        ...CpuDifficulty.values.map(
-          (difficulty) => SelectionCardWidget(
-            difficulty: difficulty,
-            isSelected: difficulty == selectedDifficulty,
-            onDifficultyChanged: onDifficultyChanged,
-          ),
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    spacing: Dimens.spaceBtwItems,
+    children: [
+      const SectionTitleWidget(title: 'DIFFICULTY'),
+      ...CpuDifficulty.values.map(
+        (difficulty) => SelectionCardWidget(
+          difficulty: difficulty,
+          isSelected: difficulty == selectedDifficulty,
+          onDifficultyChanged: onDifficultyChanged,
         ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
 }

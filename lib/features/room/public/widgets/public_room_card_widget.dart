@@ -11,22 +11,20 @@ class PublicRoomCardWidget extends StatelessWidget {
   final VoidCallback onJoin;
 
   @override
-  Widget build(BuildContext context) {
-    return SectionTileWidget(
-      icon: Icons.sports_esports_rounded,
-      title: room.host.name,
-      subtitle:
-          '${room.theme.displayName} • '
-          '${room.maxRounds} '
-          '${room.maxRounds == 1 ? 'Round' : 'Rounds'}',
-      color: room.theme.primary,
-      onTap: onJoin,
-      trailing: TextButton.icon(
-        onPressed: onJoin,
-        iconAlignment: IconAlignment.end,
-        icon: const Icon(Icons.arrow_forward_rounded),
-        label: const Text('JOIN'),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => SectionTileWidget(
+    icon: Icons.sports_esports_rounded,
+    title: room.host.name,
+    subtitle:
+        '${room.theme.displayName} • '
+        '${room.maxRounds} '
+        '${room.maxRounds == 1 ? 'Round' : 'Rounds'}',
+    color: room.theme.primary,
+    onTap: onJoin,
+    trailing: TextButton.icon(
+      onPressed: onJoin,
+      iconAlignment: IconAlignment.end,
+      icon: const Icon(Icons.arrow_forward_rounded),
+      label: const Text('JOIN'),
+    ),
+  );
 }

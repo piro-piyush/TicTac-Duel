@@ -47,84 +47,82 @@ class ResultScreen extends ConsumerWidget {
     BuildContext context,
     ResultModel state,
     ResultNotifier notifier,
-  ) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      spacing: Dimens.spaceBtwSections,
-      children: [
-        Column(
-          spacing: Dimens.spaceBtwSections,
-          children: [
-            _buildResultAnimation(state)
-                .animate()
-                .fadeIn(
-                  duration: AnimationConstants.medium,
-                  curve: AnimationConstants.entranceCurve,
-                )
-                .scale(
-                  begin: const Offset(
-                    AnimationConstants.scaleSmall,
-                    AnimationConstants.scaleSmall,
-                  ),
-                  end: const Offset(
-                    AnimationConstants.scaleNormal,
-                    AnimationConstants.scaleNormal,
-                  ),
-                  duration: AnimationConstants.long,
-                  curve: AnimationConstants.entranceCurve,
+  ) => Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    spacing: Dimens.spaceBtwSections,
+    children: [
+      Column(
+        spacing: Dimens.spaceBtwSections,
+        children: [
+          _buildResultAnimation(state)
+              .animate()
+              .fadeIn(
+                duration: AnimationConstants.medium,
+                curve: AnimationConstants.entranceCurve,
+              )
+              .scale(
+                begin: const Offset(
+                  AnimationConstants.scaleSmall,
+                  AnimationConstants.scaleSmall,
                 ),
-
-            _buildResultHeader(context, state)
-                .animate()
-                .fadeIn(
-                  delay: AnimationConstants.staggerShort,
-                  duration: AnimationConstants.medium,
-                )
-                .slideY(
-                  begin: AnimationConstants.slideSmall,
-                  end: 0,
-                  delay: AnimationConstants.staggerShort,
-                  duration: AnimationConstants.medium,
-                  curve: AnimationConstants.entranceCurve,
+                end: const Offset(
+                  AnimationConstants.scaleNormal,
+                  AnimationConstants.scaleNormal,
                 ),
-          ],
-        ),
+                duration: AnimationConstants.long,
+                curve: AnimationConstants.entranceCurve,
+              ),
 
-        ResultScoreCardWidget(
-              state: state,
-              isPlayerOneMe: notifier.isMe(state.host),
-              isPlayerTwoMe: notifier.isMe(state.guest),
-              isOnline: state.isOnline,
-            )
-            .animate()
-            .fadeIn(
-              delay: AnimationConstants.staggerMedium,
-              duration: AnimationConstants.medium,
-            )
-            .slideY(
-              begin: AnimationConstants.slideSmall,
-              end: 0,
-              delay: AnimationConstants.staggerMedium,
-              duration: AnimationConstants.medium,
-              curve: AnimationConstants.entranceCurve,
-            ),
+          _buildResultHeader(context, state)
+              .animate()
+              .fadeIn(
+                delay: AnimationConstants.staggerShort,
+                duration: AnimationConstants.medium,
+              )
+              .slideY(
+                begin: AnimationConstants.slideSmall,
+                end: 0,
+                delay: AnimationConstants.staggerShort,
+                duration: AnimationConstants.medium,
+                curve: AnimationConstants.entranceCurve,
+              ),
+        ],
+      ),
 
-        _buildRoundLabel(context, state)
-            .animate()
-            .fadeIn(
-              delay: AnimationConstants.staggerLong,
-              duration: AnimationConstants.medium,
-            )
-            .slideY(
-              begin: AnimationConstants.slideSmall,
-              end: 0,
-              delay: AnimationConstants.staggerLong,
-              duration: AnimationConstants.medium,
-              curve: AnimationConstants.entranceCurve,
-            ),
-      ],
-    );
-  }
+      ResultScoreCardWidget(
+            state: state,
+            isPlayerOneMe: notifier.isMe(state.host),
+            isPlayerTwoMe: notifier.isMe(state.guest),
+            isOnline: state.isOnline,
+          )
+          .animate()
+          .fadeIn(
+            delay: AnimationConstants.staggerMedium,
+            duration: AnimationConstants.medium,
+          )
+          .slideY(
+            begin: AnimationConstants.slideSmall,
+            end: 0,
+            delay: AnimationConstants.staggerMedium,
+            duration: AnimationConstants.medium,
+            curve: AnimationConstants.entranceCurve,
+          ),
+
+      _buildRoundLabel(context, state)
+          .animate()
+          .fadeIn(
+            delay: AnimationConstants.staggerLong,
+            duration: AnimationConstants.medium,
+          )
+          .slideY(
+            begin: AnimationConstants.slideSmall,
+            end: 0,
+            delay: AnimationConstants.staggerLong,
+            duration: AnimationConstants.medium,
+            curve: AnimationConstants.entranceCurve,
+          ),
+    ],
+  );
 
   // ===========================================================================
   // RESULT ANIMATION
@@ -203,12 +201,10 @@ class ResultScreen extends ConsumerWidget {
   // ROUND
   // ===========================================================================
 
-  Widget _buildRoundLabel(BuildContext context, ResultModel state) {
-    return Text(
-      'ROUND ${state.currentRound} / ${state.maxRounds}',
-      style: Theme.of(context).textTheme.bodyMedium,
-    );
-  }
+  Widget _buildRoundLabel(BuildContext context, ResultModel state) => Text(
+    'ROUND ${state.currentRound} / ${state.maxRounds}',
+    style: Theme.of(context).textTheme.bodyMedium,
+  );
 
   // ===========================================================================
   // CONFETTI
