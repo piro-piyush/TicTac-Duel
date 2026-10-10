@@ -151,47 +151,45 @@ jobs:
                 --scope="$VERCEL_SCOPE" \
                 --token="$VERCEL_TOKEN"
               ;;
+          dev)
+            echo "Deploying dev to preview..."
+            if DEPLOY_OUTPUT="$(
+            vercel deploy \
+            --cwd build/web \
+            --yes \
+            --scope="$VERCEL_SCOPE" \
+            --token="$VERCEL_TOKEN" \
+            --debug 2>&1
+            )"; then
+            printf '%s\n' "$DEPLOY_OUTPUT"
+            else
+            DEPLOY_STATUS=$?
+            printf '%s\n' "$DEPLOY_OUTPUT"
+            echo "::error::Vercel preview deployment failed with exit code $DEPLOY_STATUS."
+            exit "$DEPLOY_STATUS"
+            fi
           
-            dev)
-              echo "Deploying dev to preview..."
+            DEPLOYMENT_URL="$(
+            printf '%s\n' "$DEPLOY_OUTPUT" |
+            grep -Eo 'https://[^[:space:]]+\.vercel\.app' |
+            tail -n 1 || true
+            )"
           
-              DEPLOY_OUTPUT="$(
-                vercel deploy \
-                  --cwd build/web \
-                  --yes \
-                  --scope="$VERCEL_SCOPE" \
-                  --token="$VERCEL_TOKEN" 2>&1
-              )"
+            if [[ -z "$DEPLOYMENT_URL" ]]; then
+            echo "::error::Could not determine the preview deployment URL."
+            exit 1
+            fi
           
-              printf '%s\n' "$DEPLOY_OUTPUT"
+            echo "Assigning dev preview domain..."
           
-              DEPLOYMENT_URL="$(
-                printf '%s\n' "$DEPLOY_OUTPUT" |
-                  grep -Eo 'https://[^[:space:]]+\.vercel\.app' |
-                  grep -v 'vercel\.com/' |
-                  tail -n 1 || true
-              )"
+            vercel alias set \
+            "$DEPLOYMENT_URL" \
+            dev-tictacduel.vercel.app \
+            --scope="$VERCEL_SCOPE" \
+            --token="$VERCEL_TOKEN"
           
-              if [[ -z "$DEPLOYMENT_URL" ]]; then
-                echo "::error::Could not determine the preview deployment URL."
-                exit 1
-              fi
-          
-              echo "Assigning dev preview domain..."
-          
-              vercel alias set \
-                "$DEPLOYMENT_URL" \
-                dev-tictacduel.vercel.app \
-                --scope="$VERCEL_SCOPE" \
-                --token="$VERCEL_TOKEN"
-          
-              echo "Dev deployment completed."
-              echo "Preview URL: $DEPLOYMENT_URL"
-              echo "Stable URL: https://dev-tictacduel.vercel.app/"
-              ;;
-          
-            *)
-              echo "::error::Unsupported branch: $TARGET_BRANCH"
-              exit 1
-              ;;
+            echo "Dev deployment completed."
+          echo "Preview URL: $DEPLOYMENT_URL"
+          echo "Stable URL: https://dev-tictacduel.vercel.app/"
+            ;;
           esac
