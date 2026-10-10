@@ -1,3 +1,4 @@
+
 name: Build Flutter Android
 
 on:
@@ -26,10 +27,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Java
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '17'
@@ -48,7 +49,9 @@ jobs:
       - name: Configure Environment
         env:
           BASE_URL: ${{ secrets.BASE_URL }}
+        shell: bash
         run: |
+          set -euo pipefail
           printf 'BASE_URL=%s\n' \
             "${BASE_URL:-https://example.invalid}" > .env
 
@@ -61,7 +64,7 @@ jobs:
 
       - name: Upload Debug APK
         if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/dev')
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: app-debug-apk
           path: build/app/outputs/flutter-apk/app-debug.apk
@@ -82,15 +85,16 @@ jobs:
       github.ref == 'refs/heads/main')
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+
     permissions:
       contents: write
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Java
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '17'
@@ -109,6 +113,7 @@ jobs:
       - name: Configure Environment
         env:
           BASE_URL: ${{ secrets.BASE_URL }}
+        shell: bash
         run: |
           set -euo pipefail
           test -n "$BASE_URL" || {
@@ -122,18 +127,22 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+
           VERSION=$(awk '/^version:/ { print $2; exit }' pubspec.yaml)
-          
+
           if [[ "$VERSION" != *"+"* ]]; then
             echo "::error::Expected version+build format in pubspec.yaml."
             exit 1
           fi
-          
+
           APP_VERSION="${VERSION%%+*}"
           BUILD_NUMBER="${VERSION##*+}"
-          
-          [[ -n "$APP_VERSION" && -n "$BUILD_NUMBER" ]] || exit 1
-          
+
+          [[ -n "$APP_VERSION" && -n "$BUILD_NUMBER" ]] || {
+            echo "::error::Invalid version in pubspec.yaml."
+            exit 1
+          }
+
           echo "version=$APP_VERSION" >> "$GITHUB_OUTPUT"
           echo "build_number=$BUILD_NUMBER" >> "$GITHUB_OUTPUT"
 
@@ -142,15 +151,19 @@ jobs:
         env:
           TAG_NAME: ${{ github.ref_name }}
           APP_VERSION: ${{ steps.version.outputs.version }}
+        shell: bash
         run: |
+          set -euo pipefail
           if [[ "$TAG_NAME" != "v$APP_VERSION" ]]; then
             echo "::error::Tag must match pubspec version: v$APP_VERSION"
             exit 1
           fi
+
       - name: Validate Tag Is On Main
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
         env:
           TAG_NAME: ${{ github.ref_name }}
+        shell: bash
         run: |
           set -euo pipefail
 
@@ -165,15 +178,22 @@ jobs:
             echo "::error::Release tags must point to a commit contained in main."
             exit 1
           fi
+
       - name: Restore Keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        shell: bash
         run: |
           set -euo pipefail
-          test -n "$KEYSTORE_BASE64"
+          test -n "$KEYSTORE_BASE64" || {
+            echo "::error::KEYSTORE_BASE64 secret is missing."
+            exit 1
+          }
+
           mkdir -p android/app
           printf '%s' "$KEYSTORE_BASE64" |
             base64 --decode > android/app/upload-keystore.jks
+
           test -s android/app/upload-keystore.jks
 
       - name: Configure Android Signing
@@ -181,12 +201,13 @@ jobs:
           STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        shell: bash
         run: |
           set -euo pipefail
           test -n "$STORE_PASSWORD"
           test -n "$KEY_PASSWORD"
           test -n "$KEY_ALIAS"
-          
+
           cat > android/key.properties <<EOF
           storePassword=$STORE_PASSWORD
           keyPassword=$KEY_PASSWORD
@@ -205,7 +226,7 @@ jobs:
         run: flutter build appbundle --release --no-pub
 
       - name: Upload Release APKs and AAB
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: android-release-${{ steps.version.outputs.version }}
           path: |
@@ -218,7 +239,7 @@ jobs:
 
       - name: Create GitHub Release
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ github.ref_name }}
           name: Tic Tac Duel ${{ github.ref_name }}
@@ -235,6 +256,7 @@ jobs:
         env:
           APP_VERSION: ${{ steps.version.outputs.version }}
           BUILD_NUMBER: ${{ steps.version.outputs.build_number }}
+        shell: bash
         run: |
           {
             echo "## Tic Tac Duel Android Release"
