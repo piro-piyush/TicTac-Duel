@@ -2,15 +2,9 @@ name: Deploy Flutter Web
 
 on:
   pull_request:
-    branches:
-      - dev
-      - main
-
+    branches: [dev, main]
   push:
-    branches:
-      - dev
-      - main
-
+    branches: [dev, main]
   workflow_dispatch:
 
 permissions:
@@ -24,7 +18,12 @@ jobs:
   build:
     name: Build and Deploy Web
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 25
+
+    # GitHub displays your custom domain on the deployment page.
+    environment:
+      name: ${{ github.event_name == 'pull_request' && 'Validation' || (github.ref_name == 'main' && 'Production' || 'Preview') }}
+      url: ${{ github.event_name == 'pull_request' && '' || (github.ref_name == 'main' && 'https://tictacduel.vercel.app/' || 'https://dev-tictacduel.vercel.app/') }}
 
     steps:
       - name: Checkout Repository
@@ -43,6 +42,7 @@ jobs:
       - name: Configure Environment
         env:
           BASE_URL: ${{ secrets.BASE_URL }}
+        shell: bash
         run: |
           set -euo pipefail
           
@@ -63,6 +63,7 @@ jobs:
         run: flutter build web --release
 
       - name: Prepare Web Files
+        shell: bash
         run: |
           set -euo pipefail
           
@@ -71,11 +72,25 @@ jobs:
           test -s web/vercel.json
           
           mkdir -p build/web/.well-known
-          
           cp web/.well-known/assetlinks.json \
             build/web/.well-known/assetlinks.json
-          
           cp web/vercel.json build/web/vercel.json
+
+      - name: Skip Deployment for Pull Requests
+        if: github.event_name == 'pull_request'
+        run: echo "Pull request validated; deployment skipped."
+
+      - name: Setup Node.js
+        if: github.event_name != 'pull_request'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Vercel CLI
+        if: github.event_name != 'pull_request'
+        run: |
+          npm install --global vercel
+          vercel --version
 
       - name: Deploy to Vercel
         if: github.event_name != 'pull_request'
@@ -90,67 +105,87 @@ jobs:
         run: |
           set -euo pipefail
           
-          test -n "$VERCEL_TOKEN" || {
-            echo "::error::VERCEL_TOKEN secret is missing."
-            exit 1
-          }
+          for secret_name in \
+            VERCEL_TOKEN \
+            VERCEL_ORG_ID \
+            VERCEL_PROJECT_ID; do
+            if [[ -z "${!secret_name:-}" ]]; then
+              echo "::error::$secret_name secret is missing."
+              exit 1
+            fi
+          done
           
-          test -n "$VERCEL_ORG_ID" || {
-            echo "::error::VERCEL_ORG_ID secret is missing."
-            exit 1
-          }
-          
-          test -n "$VERCEL_PROJECT_ID" || {
-            echo "::error::VERCEL_PROJECT_ID secret is missing."
-            exit 1
-          }
+          case "$TARGET_BRANCH" in
+            main)
+              APP_URL="https://tictacduel.vercel.app/"
+              DEPLOY_ARGS=(--prod)
+              ;;
+            dev)
+              APP_URL="https://dev-tictacduel.vercel.app/"
+              DEPLOY_ARGS=()
+              ;;
+            *)
+              echo "::error::Unsupported deployment branch: $TARGET_BRANCH"
+              exit 1
+              ;;
+          esac
           
           mkdir -p .vercel
-          
           printf '{"orgId":"%s","projectId":"%s"}\n' \
             "$VERCEL_ORG_ID" "$VERCEL_PROJECT_ID" \
             > .vercel/project.json
           
-          if [[ "$TARGET_BRANCH" == "main" ]]; then
-            vercel deploy --prod --yes --token="$VERCEL_TOKEN" \
-              > /tmp/vercel-deploy.log 2>&1
-          elif [[ "$TARGET_BRANCH" == "dev" ]]; then
-            vercel deploy --yes --token="$VERCEL_TOKEN" \
-              > /tmp/vercel-deploy.log 2>&1
-          else
-            echo "::error::Unsupported deployment branch: $TARGET_BRANCH"
+          # Keep the original error output if deployment fails.
+          if ! vercel deploy "${DEPLOY_ARGS[@]}" \
+            --yes --token="$VERCEL_TOKEN" \
+            > /tmp/vercel-deploy.log 2>&1; then
+            cat /tmp/vercel-deploy.log
+            echo "::error::Vercel deployment failed."
             exit 1
           fi
           
           cat /tmp/vercel-deploy.log
           
+          # Find the generated Vercel deployment URL.
           DEPLOYMENT_URL=$(
-            grep -Eo 'https://[^[:space:]]+' /tmp/vercel-deploy.log |
-            grep 'vercel.app' |
-            tail -n 1 || true
+            grep -Eo 'https://[^[:space:]]+\.vercel\.app/?' \
+              /tmp/vercel-deploy.log |
+              tail -n 1 || true
           )
           
           if [[ -z "$DEPLOYMENT_URL" ]]; then
-            echo "::error::Could not determine the deployment URL."
+            echo "::error::Could not determine the generated Vercel URL."
             exit 1
           fi
           
+          echo "app_url=$APP_URL" >> "$GITHUB_OUTPUT"
           echo "url=$DEPLOYMENT_URL" >> "$GITHUB_OUTPUT"
 
       - name: Report Deployment
         if: always()
         env:
+          APP_URL: ${{ steps.deploy.outputs.app_url }}
           DEPLOYMENT_URL: ${{ steps.deploy.outputs.url }}
           TARGET_BRANCH: ${{ github.ref_name }}
           EVENT_NAME: ${{ github.event_name }}
+          JOB_STATUS: ${{ job.status }}
+        shell: bash
         run: |
           {
             echo "## Tic Tac Duel Web"
             echo ""
             echo "- Event: $EVENT_NAME"
             echo "- Branch: $TARGET_BRANCH"
-            echo "- Deployment: ${DEPLOYMENT_URL:-Not deployed}"
-            if [[ -n "$DEPLOYMENT_URL" ]]; then
-              echo "- App Links: $DEPLOYMENT_URL/.well-known/assetlinks.json"
+            echo "- Job status: $JOB_STATUS"
+          
+            if [[ "$EVENT_NAME" == "pull_request" ]]; then
+              echo "- Deployment: Skipped for pull requests"
+            else
+              echo "- Custom app URL: ${APP_URL:-Unavailable}"
+              echo "- Vercel deployment URL: ${DEPLOYMENT_URL:-Unavailable}"
+          
+              if [[ -n "$APP_URL" ]]; then
+                echo "- Asset Links: ${APP_URL%/}/.well-known/assetlinks.json"
+              fi
             fi
           } >> "$GITHUB_STEP_SUMMARY"
