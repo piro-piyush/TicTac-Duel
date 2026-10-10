@@ -17,8 +17,9 @@ on:
 permissions:
   contents: write
 
+# Cancel an older run when a newer run starts for the same ref.
 concurrency:
-  group: build-android-${{ github.ref }}
+  group: build-android-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -26,7 +27,6 @@ jobs:
     name: Build Android
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    environment: production
 
     steps:
       # --------------------------------------------------
@@ -59,27 +59,84 @@ jobs:
         run: yes | flutter doctor --android-licenses || true
 
       # --------------------------------------------------
+      # DEPENDENCIES
+      # --------------------------------------------------
+      - name: Get Dependencies
+        run: flutter pub get
+
+      # --------------------------------------------------
+      # ENVIRONMENT
+      # --------------------------------------------------
+      - name: Create Environment File
+        env:
+          BASE_URL: ${{ secrets.BASE_URL }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "$GITHUB_EVENT_NAME" != "pull_request" ]]; then
+            test -n "$BASE_URL" || {
+              echo "::error::BASE_URL secret is missing."
+              exit 1
+            }
+          fi
+
+          # Forked PRs may not have access to repository secrets.
+          # The placeholder is only for PR validation builds.
+          printf 'BASE_URL=%s\n' \
+            "${BASE_URL:-https://example.invalid}" > .env
+
+          echo "Environment file created."
+
+      # --------------------------------------------------
       # ANDROID SIGNING
+      # Only required for release builds, not PR validation.
       # --------------------------------------------------
       - name: Restore Android Keystore
+        if: github.event_name != 'pull_request'
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        shell: bash
         run: |
-          test -n "$KEYSTORE_BASE64"
+          set -euo pipefail
+
+          test -n "$KEYSTORE_BASE64" || {
+            echo "::error::KEYSTORE_BASE64 secret is missing."
+            exit 1
+          }
+
           mkdir -p android/app
+
           printf '%s' "$KEYSTORE_BASE64" \
             | base64 --decode > android/app/upload-keystore.jks
+
           test -s android/app/upload-keystore.jks
+          echo "Android keystore restored."
 
       - name: Create key.properties
+        if: github.event_name != 'pull_request'
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        shell: bash
         run: |
-          test -n "$KEYSTORE_PASSWORD"
-          test -n "$KEY_PASSWORD"
-          test -n "$KEY_ALIAS"
+          set -euo pipefail
+
+          test -n "$KEYSTORE_PASSWORD" || {
+            echo "::error::KEYSTORE_PASSWORD secret is missing."
+            exit 1
+          }
+
+          test -n "$KEY_PASSWORD" || {
+            echo "::error::KEY_PASSWORD secret is missing."
+            exit 1
+          }
+
+          test -n "$KEY_ALIAS" || {
+            echo "::error::KEY_ALIAS secret is missing."
+            exit 1
+          }
 
           cat > android/key.properties <<EOF
           storePassword=$KEYSTORE_PASSWORD
@@ -89,30 +146,12 @@ jobs:
           EOF
 
       - name: Verify Signing Files
+        if: github.event_name != 'pull_request'
         run: |
+          set -euo pipefail
           test -s android/app/upload-keystore.jks
           test -s android/key.properties
-          echo "Android signing files restored successfully."
-
-      # --------------------------------------------------
-      # DEPENDENCIES
-      # --------------------------------------------------
-      - name: Clean Project
-        run: |
-          flutter clean
-          rm -rf .dart_tool
-          rm -rf build
-
-      - name: Get Dependencies
-        run: flutter pub get
-
-      - name: Create Environment File
-        env:
-          BASE_URL: ${{ secrets.BASE_URL }}
-        run: |
-          test -n "$BASE_URL"
-          printf 'BASE_URL=%s\n' "$BASE_URL" > .env
-          echo "Environment file created successfully."
+          echo "Android signing files verified."
 
       # --------------------------------------------------
       # DIAGNOSE KOTLIN MAVEN RESOLUTION
@@ -120,6 +159,8 @@ jobs:
       - name: Check Kotlin Maven Artifact
         shell: bash
         run: |
+          set -euo pipefail
+
           URL="https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-gradle-plugins-bom/2.2.0/kotlin-gradle-plugins-bom-2.2.0.pom"
 
           STATUS=$(curl \
@@ -134,8 +175,8 @@ jobs:
 
           echo "Kotlin BOM HTTP status: ${STATUS:-connection failed}"
 
-          if [ "$STATUS" != "200" ]; then
-            echo "::error::Kotlin BOM is not reachable from the GitHub Actions runner."
+          if [[ "$STATUS" != "200" ]]; then
+            echo "::error::Kotlin BOM is not reachable from the runner."
             exit 1
           fi
 
@@ -148,6 +189,8 @@ jobs:
         id: version
         shell: bash
         run: |
+          set -euo pipefail
+
           VERSION=$(awk '/^version:/ { print $2; exit }' pubspec.yaml)
 
           if [[ "$VERSION" != *"+"* ]]; then
@@ -158,6 +201,11 @@ jobs:
           APP_VERSION="${VERSION%%+*}"
           BUILD_NUMBER="${VERSION##*+}"
 
+          if [[ -z "$APP_VERSION" || -z "$BUILD_NUMBER" ]]; then
+            echo "::error::Invalid app version: $VERSION"
+            exit 1
+          fi
+
           echo "version=$APP_VERSION" >> "$GITHUB_OUTPUT"
           echo "build_number=$BUILD_NUMBER" >> "$GITHUB_OUTPUT"
 
@@ -167,13 +215,32 @@ jobs:
       # --------------------------------------------------
       # VALIDATION
       # --------------------------------------------------
-      - name: Analyze
+      - name: Analyze Flutter Code
         run: flutter analyze
 
       # --------------------------------------------------
-      # BUILD APKs AND AAB
+      # PULL REQUEST VALIDATION BUILD
+      # No signing secrets needed.
+      # --------------------------------------------------
+      - name: Build Debug APK
+        if: github.event_name == 'pull_request'
+        run: flutter build apk --debug
+
+      - name: Upload Debug APK
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v5
+        with:
+          name: app-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7
+
+      # --------------------------------------------------
+      # SIGNED RELEASE BUILDS
+      # Used for branch pushes, tags and manual runs.
       # --------------------------------------------------
       - name: Build Split Release APKs
+        if: github.event_name != 'pull_request'
         env:
           GRADLE_OPTS: "-Xmx4g"
         run: |
@@ -183,6 +250,7 @@ jobs:
             --no-pub
 
       - name: Build Release AAB
+        if: github.event_name != 'pull_request'
         env:
           GRADLE_OPTS: "-Xmx4g"
         run: |
@@ -195,18 +263,22 @@ jobs:
       # --------------------------------------------------
       - name: List Build Outputs
         if: always()
+        shell: bash
         run: |
-          echo "===== APK ====="
-          find build/app/outputs/flutter-apk -name "*.apk" -print || true
+          echo "===== APK OUTPUTS ====="
+          find build/app/outputs/flutter-apk \
+            -name "*.apk" -print 2>/dev/null || true
 
           echo ""
-          echo "===== AAB ====="
-          find build/app/outputs/bundle/release -name "*.aab" -print || true
+          echo "===== AAB OUTPUTS ====="
+          find build/app/outputs/bundle/release \
+            -name "*.aab" -print 2>/dev/null || true
 
       # --------------------------------------------------
-      # UPLOAD ARTIFACTS
+      # UPLOAD SIGNED RELEASE ARTIFACTS
       # --------------------------------------------------
       - name: Upload armeabi-v7a APK
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v5
         with:
           name: app-armeabi-v7a-release
@@ -215,6 +287,7 @@ jobs:
           retention-days: 14
 
       - name: Upload arm64-v8a APK
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v5
         with:
           name: app-arm64-v8a-release
@@ -223,6 +296,7 @@ jobs:
           retention-days: 14
 
       - name: Upload x86_64 APK
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v5
         with:
           name: app-x86_64-release
@@ -231,6 +305,7 @@ jobs:
           retention-days: 14
 
       - name: Upload AAB
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v5
         with:
           name: app-release-aab
@@ -239,10 +314,10 @@ jobs:
           retention-days: 14
 
       # --------------------------------------------------
-      # CREATE RELEASE ONLY FOR VERSION TAGS
+      # CREATE GITHUB RELEASE FOR VERSION TAGS ONLY
       # --------------------------------------------------
       - name: Create GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v') && github.event_name == 'push'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
@@ -254,3 +329,24 @@ jobs:
             build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
             build/app/outputs/flutter-apk/app-x86_64-release.apk
             build/app/outputs/bundle/release/app-release.aab
+
+      # --------------------------------------------------
+      # SUMMARY
+      # --------------------------------------------------
+      - name: Report Build Summary
+        if: always()
+        env:
+          APP_VERSION: ${{ steps.version.outputs.version }}
+          BUILD_NUMBER: ${{ steps.version.outputs.build_number }}
+          REF_NAME: ${{ github.ref_name }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          {
+            echo "## Tic Tac Duel Android Build"
+            echo ""
+            echo "- Event: $EVENT_NAME"
+            echo "- Ref: $REF_NAME"
+            echo "- App version: ${APP_VERSION:-unavailable}"
+            echo "- Build number: ${BUILD_NUMBER:-unavailable}"
+            echo "- Run result: ${{ job.status }}"
+          } >> "$GITHUB_STEP_SUMMARY"
