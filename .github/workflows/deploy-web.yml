@@ -154,29 +154,33 @@ jobs:
                 --token="$VERCEL_TOKEN"
               ;;
           
+    
             dev)
-              echo "Deploying dev to preview..."
-            
-              DEPLOYMENT_URL="$(
-              vercel deploy \
-              --cwd build/web \
-              --yes \
-              --token="$VERCEL_TOKEN"
-              )"
-            
-              printf 'Preview deployment: %s\n' "$DEPLOYMENT_URL"
-            
-              if [[ ! "$DEPLOYMENT_URL" =~ ^https://[^[:space:]]+\.vercel\.app$ ]]; then
-              echo "::error::Vercel did not return a valid deployment URL."
-              exit 1
-              fi
-            
-              vercel alias set \
-              "$DEPLOYMENT_URL" \
-              dev-tictacduel.vercel.app \
-              --cwd build/web \
-              --token="$VERCEL_TOKEN"
-            
-              echo "Dev deployment completed."
-              ;;
+            echo "Deploying dev to preview..."
+          
+            DEPLOY_OUTPUT="$(
+            vercel deploy \
+            --cwd build/web \
+            --yes \
+            --token="$VERCEL_TOKEN" 2>&1
+            )"
+          
+            printf '%s\n' "$DEPLOY_OUTPUT"
+          
+            DEPLOYMENT_URL="$(
+            printf '%s\n' "$DEPLOY_OUTPUT" |
+            grep -Eo 'https://[^[:space:]]+\.vercel\.app' |
+            grep -v 'vercel\.com/' |
+            tail -n 1
+            )"
+          
+            if [[ -z "$DEPLOYMENT_URL" ]]; then
+            echo "::error::Could not determine the preview deployment URL."
+            exit 1
+            fi
+          
+            echo "Dev deployment completed."
+          echo "Preview URL: $DEPLOYMENT_URL"
+            ;;
+  
           esac
