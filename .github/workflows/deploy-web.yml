@@ -24,7 +24,7 @@ concurrency:
 jobs:
   build:
     name: Build and Deploy Web
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
 
     steps:
@@ -40,7 +40,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.47.2"
+          flutter-version: "3.47.7"
           channel: stable
           cache: true
 
