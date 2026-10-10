@@ -156,42 +156,27 @@ jobs:
           
             dev)
               echo "Deploying dev to preview..."
-          
-              DEPLOY_OUTPUT="$(
-                vercel deploy \
-                  --cwd build/web \
-                  --yes \
-                  --token="$VERCEL_TOKEN" 2>&1
-              )"
-          
-              printf '%s\n' "$DEPLOY_OUTPUT"
-          
+            
               DEPLOYMENT_URL="$(
-                printf '%s\n' "$DEPLOY_OUTPUT" |
-                  grep -Eo 'https://[^[:space:]]+\.vercel\.app' |
-                  grep -v 'dev-tictacduel\.vercel\.app' |
-                  tail -n 1
+              vercel deploy \
+              --cwd build/web \
+              --yes \
+              --token="$VERCEL_TOKEN"
               )"
-          
-              test -n "$DEPLOYMENT_URL" || {
-                echo "::error::Could not determine the preview deployment URL."
-                exit 1
-              }
-          
-              echo "Assigning $DEPLOYMENT_URL to dev-tictacduel.vercel.app"
-          
-              vercel alias set \
-                "$DEPLOYMENT_URL" \
-                dev-tictacduel.vercel.app \
-                --cwd build/web \
-                --token="$VERCEL_TOKEN"
-          
-              echo "Dev deployment completed."
-              echo "https://dev-tictacduel.vercel.app/"
-              ;;
-          
-            *)
-              echo "::error::Unsupported branch: $TARGET_BRANCH"
+            
+              printf 'Preview deployment: %s\n' "$DEPLOYMENT_URL"
+            
+              if [[ ! "$DEPLOYMENT_URL" =~ ^https://[^[:space:]]+\.vercel\.app$ ]]; then
+              echo "::error::Vercel did not return a valid deployment URL."
               exit 1
+              fi
+            
+              vercel alias set \
+              "$DEPLOYMENT_URL" \
+              dev-tictacduel.vercel.app \
+              --cwd build/web \
+              --token="$VERCEL_TOKEN"
+            
+              echo "Dev deployment completed."
               ;;
           esac
