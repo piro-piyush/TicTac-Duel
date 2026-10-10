@@ -116,7 +116,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: AppRoutes.publicRooms.path,
             builder: (context, state) => const PublicRoomsScreen(),
           ),
-
           // -------------------------------------------------------------------
           // LOCAL GAME
           // -------------------------------------------------------------------
@@ -136,6 +135,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
+          // -----------------------------------------------------------------------
+          // RESULT
+          // -----------------------------------------------------------------------
+          GoRoute(
+            name: AppRoutes.result.name,
+            path: AppRoutes.result.path,
+            builder: (context, state) {
+              final result = state.extra as ResultModel;
+
+              return ResultScreen(result: result);
+            },
+          ),
         ],
       ),
 
@@ -152,18 +163,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         },
       ),
 
-      // -----------------------------------------------------------------------
-      // RESULT
-      // -----------------------------------------------------------------------
-      GoRoute(
-        name: AppRoutes.result.name,
-        path: AppRoutes.result.path,
-        builder: (context, state) {
-          final result = state.extra as ResultModel;
 
-          return ResultScreen(result: result);
-        },
-      ),
     ],
   );
 });
