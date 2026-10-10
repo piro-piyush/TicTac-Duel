@@ -1,4 +1,6 @@
+
 name: Build Flutter Android
+
 on:
   pull_request:
     branches:
@@ -11,38 +13,51 @@ on:
     tags:
       - "v*.*.*"
   workflow_dispatch:
+
 permissions:
   contents: write
+
 concurrency:
   group: build-android-${{ github.ref }}
   cancel-in-progress: true
+
 jobs:
   build-android:
     name: Build Android
     runs-on: ubuntu-latest
     timeout-minutes: 30
     environment: production
+
     steps:
+      # --------------------------------------------------
+      # CHECKOUT AND TOOLCHAIN
+      # --------------------------------------------------
       - name: Checkout Repository
         uses: actions/checkout@v6
+
       - name: Setup Java
         uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "17"
           cache: gradle
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: "3.47.2"
           channel: stable
           cache: true
+
       - name: Flutter Version
         run: flutter --version
+
       - name: Flutter Doctor
         run: flutter doctor -v
+
       - name: Accept Android Licenses
         run: yes | flutter doctor --android-licenses || true
+
       # --------------------------------------------------
       # ANDROID SIGNING
       # --------------------------------------------------
@@ -55,6 +70,7 @@ jobs:
           printf '%s' "$KEYSTORE_BASE64" \
             | base64 --decode > android/app/upload-keystore.jks
           test -s android/app/upload-keystore.jks
+
       - name: Create key.properties
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
@@ -64,17 +80,20 @@ jobs:
           test -n "$KEYSTORE_PASSWORD"
           test -n "$KEY_PASSWORD"
           test -n "$KEY_ALIAS"
+
           cat > android/key.properties <<EOF
           storePassword=$KEYSTORE_PASSWORD
           keyPassword=$KEY_PASSWORD
           keyAlias=$KEY_ALIAS
           storeFile=upload-keystore.jks
           EOF
+
       - name: Verify Signing Files
         run: |
-          test -f android/app/upload-keystore.jks
-          test -f android/key.properties
+          test -s android/app/upload-keystore.jks
+          test -s android/key.properties
           echo "Android signing files restored successfully."
+
       # --------------------------------------------------
       # DEPENDENCIES
       # --------------------------------------------------
@@ -83,8 +102,10 @@ jobs:
           flutter clean
           rm -rf .dart_tool
           rm -rf build
+
       - name: Get Dependencies
         run: flutter pub get
+
       - name: Create Environment File
         env:
           BASE_URL: ${{ secrets.BASE_URL }}
@@ -92,6 +113,34 @@ jobs:
           test -n "$BASE_URL"
           printf 'BASE_URL=%s\n' "$BASE_URL" > .env
           echo "Environment file created successfully."
+
+      # --------------------------------------------------
+      # DIAGNOSE KOTLIN MAVEN RESOLUTION
+      # --------------------------------------------------
+      - name: Check Kotlin Maven Artifact
+        shell: bash
+        run: |
+          URL="https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-gradle-plugins-bom/2.2.0/kotlin-gradle-plugins-bom-2.2.0.pom"
+
+          STATUS=$(curl \
+            --silent \
+            --show-error \
+            --location \
+            --retry 3 \
+            --retry-delay 2 \
+            --output /tmp/kotlin-bom.pom \
+            --write-out "%{http_code}" \
+            "$URL") || true
+
+          echo "Kotlin BOM HTTP status: ${STATUS:-connection failed}"
+
+          if [ "$STATUS" != "200" ]; then
+            echo "::error::Kotlin BOM is not reachable from the GitHub Actions runner."
+            exit 1
+          fi
+
+          echo "Kotlin BOM is reachable."
+
       # --------------------------------------------------
       # VERSION
       # --------------------------------------------------
@@ -99,18 +148,28 @@ jobs:
         id: version
         shell: bash
         run: |
-          VERSION=$(sed -n 's/^version: *//p' pubspec.yaml | head -n 1)
+          VERSION=$(awk '/^version:/ { print $2; exit }' pubspec.yaml)
+
+          if [[ "$VERSION" != *"+"* ]]; then
+            echo "::error::Expected pubspec.yaml version in version+build format."
+            exit 1
+          fi
+
           APP_VERSION="${VERSION%%+*}"
           BUILD_NUMBER="${VERSION##*+}"
+
           echo "version=$APP_VERSION" >> "$GITHUB_OUTPUT"
           echo "build_number=$BUILD_NUMBER" >> "$GITHUB_OUTPUT"
+
           echo "App Version: $APP_VERSION"
           echo "Build Number: $BUILD_NUMBER"
+
       # --------------------------------------------------
       # VALIDATION
       # --------------------------------------------------
       - name: Analyze
         run: flutter analyze
+
       # --------------------------------------------------
       # BUILD APKs AND AAB
       # --------------------------------------------------
@@ -122,6 +181,7 @@ jobs:
             --release \
             --split-per-abi \
             --no-pub
+
       - name: Build Release AAB
         env:
           GRADLE_OPTS: "-Xmx4g"
@@ -129,14 +189,20 @@ jobs:
           flutter build appbundle \
             --release \
             --no-pub
+
+      # --------------------------------------------------
+      # LIST BUILD OUTPUTS
+      # --------------------------------------------------
       - name: List Build Outputs
         if: always()
         run: |
           echo "===== APK ====="
           find build/app/outputs/flutter-apk -name "*.apk" -print || true
+
           echo ""
           echo "===== AAB ====="
           find build/app/outputs/bundle/release -name "*.aab" -print || true
+
       # --------------------------------------------------
       # UPLOAD ARTIFACTS
       # --------------------------------------------------
@@ -147,6 +213,7 @@ jobs:
           path: build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
           if-no-files-found: error
           retention-days: 14
+
       - name: Upload arm64-v8a APK
         uses: actions/upload-artifact@v5
         with:
@@ -154,6 +221,7 @@ jobs:
           path: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
           if-no-files-found: error
           retention-days: 14
+
       - name: Upload x86_64 APK
         uses: actions/upload-artifact@v5
         with:
@@ -161,6 +229,7 @@ jobs:
           path: build/app/outputs/flutter-apk/app-x86_64-release.apk
           if-no-files-found: error
           retention-days: 14
+
       - name: Upload AAB
         uses: actions/upload-artifact@v5
         with:
@@ -168,6 +237,7 @@ jobs:
           path: build/app/outputs/bundle/release/app-release.aab
           if-no-files-found: error
           retention-days: 14
+
       # --------------------------------------------------
       # CREATE RELEASE ONLY FOR VERSION TAGS
       # --------------------------------------------------
