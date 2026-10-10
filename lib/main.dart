@@ -9,6 +9,7 @@ Future<void> main() async {
   await container.read(audioProvider.notifier).initialize();
   container.read(appRouterProvider);
   runApp(UncontrolledProviderScope(container: container, child: const MyApp()));
+
 }
 
 // =============================================================================
