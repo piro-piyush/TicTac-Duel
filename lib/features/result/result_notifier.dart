@@ -123,6 +123,6 @@ class ResultNotifier extends Notifier<ResultModel> {
       return;
     }
 
-    _navigation.replaceCreateRoom();
+    _navigation.goToCreateRoom();
   }
 }

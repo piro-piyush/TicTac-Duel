@@ -42,7 +42,7 @@ class CreateRoomScreen extends ConsumerWidget {
         onRoundsChanged: notifier.setSelectedMaxRounds,
         onPrivateRoomChanged: notifier.setIsPrivateRoom,
         onGenerateRandomName: notifier.generateRandomName,
-        onBrowsePublicRooms: ref.read(appNavigationProvider).replacePublicRooms,
+        onBrowsePublicRooms: ref.read(appNavigationProvider).goToPublicRooms,
       ),
     );
   }

@@ -40,7 +40,7 @@ class JoinRoomScreen extends ConsumerWidget {
         onGenerateRandomName: notifier.generateRandomName,
         onPasteCode: notifier.pasteRoomCode,
         onJoinRoom: notifier.joinRoom,
-        onCreateRoom: ref.read(appNavigationProvider).replaceCreateRoom,
+        onCreateRoom: ref.read(appNavigationProvider).goToCreateRoom,
       ),
     );
   }

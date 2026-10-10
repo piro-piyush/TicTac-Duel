@@ -12,9 +12,10 @@ class AudioConstants {
   static const String comedySound = 'assets/audio/comedy.mp3';
   static const String swordSound = 'assets/audio/sword.mp3';
   static const String drawSound = 'assets/audio/draw.mp3';
+
   // static const String moveSound = 'assets/audio/move.mp3';
 
-  static const double defaultBackgroundVolume = 0.3;
+  static const double defaultBackgroundVolume = 0.1;
   static const double defaultTouchVolume = 1;
   static const double defaultEffectVolume = 1;
 
