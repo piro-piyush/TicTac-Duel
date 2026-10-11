@@ -435,6 +435,7 @@ class _NeonAppBar extends StatelessWidget {
               surfaceTintColor: Colors.transparent,
               elevation: 0,
               scrolledUnderElevation: 0,
+
             ),
           )
           .animate()
