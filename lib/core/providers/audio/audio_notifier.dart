@@ -126,7 +126,9 @@ class AudioNotifier extends Notifier<AudioState> {
         return;
       }
 
-      state = state.copyWith(isPlaying: true);
+      state = state.copyWith(
+        isPlaying: _backgroundPlayer.playing,
+      );
     } catch (error, stackTrace) {
       dev.log(
         'Failed to play music',

@@ -40,33 +40,54 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          
+
           if [[ "$GITHUB_EVENT_NAME" != "pull_request" ]]; then
             test -n "$BASE_URL" || {
               echo "::error::BASE_URL secret is missing."
               exit 1
             }
           fi
-          
+
           printf 'BASE_URL=%s\n' \
             "${BASE_URL:-https://example.invalid}" > .env
 
+      # Development uses the debug certificate fingerprint.
+      - name: Generate Development Asset Links
+        if: github.event_name != 'pull_request' && github.ref_name == 'dev'
+        env:
+          ANDROID_SHA256: ${{ secrets.DEV_ANDROID_SHA256 }}
+        run: node web/scripts/generate-assetlinks.mjs
+
+      # Production uses the production app-signing certificate fingerprint.
+      - name: Generate Production Asset Links
+        if: github.event_name != 'pull_request' && github.ref_name == 'main'
+        env:
+          ANDROID_SHA256: ${{ secrets.PROD_ANDROID_SHA256 }}
+        run: node web/scripts/generate-assetlinks.mjs
+
       - name: Analyze and Build
         run: |
+          set -euo pipefail
           flutter analyze
           flutter build web --release
 
       - name: Prepare Web Files
+        shell: bash
         run: |
           set -euo pipefail
-          
+
           test -s build/web/index.html
           test -s web/.well-known/assetlinks.json
           test -s web/vercel.json
-          
+
           mkdir -p build/web/.well-known
-          cp web/.well-known/assetlinks.json build/web/.well-known/
-          cp web/vercel.json build/web/
+
+          cp web/.well-known/assetlinks.json \
+            build/web/.well-known/assetlinks.json
+
+          cp web/vercel.json build/web/vercel.json
+
+          test -s build/web/.well-known/assetlinks.json
 
       - name: Upload Build
         if: github.event_name != 'pull_request'
@@ -111,18 +132,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          
+
           if [[ -z "$VERCEL_TOKEN" ]]; then
             echo "::error::VERCEL_TOKEN secret is missing or unavailable."
             exit 1
           fi
-          
+
           echo "Checking Vercel token authentication..."
-          
+
           if vercel whoami --token="$VERCEL_TOKEN"; then
             echo "Vercel authentication successful."
           else
-            echo "::error::Vercel authentication failed. Check that VERCEL_TOKEN is valid and belongs to the correct Vercel account."
+            echo "::error::Vercel authentication failed. Check VERCEL_TOKEN."
             exit 1
           fi
 
@@ -135,7 +156,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          
+
           for name in \
             VERCEL_TOKEN \
             VERCEL_ORG_ID \
@@ -160,23 +181,28 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          
+
           test -s build/web/index.html || {
             echo "::error::Flutter web index.html is missing."
             exit 1
           }
-          
+
+          test -s build/web/.well-known/assetlinks.json || {
+            echo "::error::Generated assetlinks.json is missing."
+            exit 1
+          }
+
           mkdir -p build/web/.vercel
-          
+
           printf '{"orgId":"%s","projectId":"%s"}\n' \
             "$VERCEL_ORG_ID" \
             "$VERCEL_PROJECT_ID" \
             > build/web/.vercel/project.json
-          
+
           case "$TARGET_BRANCH" in
             main)
               echo "Deploying main to production..."
-          
+
               vercel deploy \
                 --cwd build/web \
                 --prod \
@@ -184,10 +210,10 @@ jobs:
                 --scope="$VERCEL_SCOPE" \
                 --token="$VERCEL_TOKEN"
               ;;
-          
+
             dev)
               echo "Deploying dev to preview..."
-          
+
               if DEPLOY_OUTPUT="$(
                 vercel deploy \
                   --cwd build/web \
@@ -203,31 +229,31 @@ jobs:
                 echo "::error::Vercel preview deployment failed with exit code $DEPLOY_STATUS."
                 exit "$DEPLOY_STATUS"
               fi
-          
+
               DEPLOYMENT_URL="$(
                 printf '%s\n' "$DEPLOY_OUTPUT" |
                 grep -Eo 'https://[^[:space:]]+\.vercel\.app' |
                 tail -n 1 || true
               )"
-          
+
               if [[ -z "$DEPLOYMENT_URL" ]]; then
                 echo "::error::Could not determine the preview deployment URL."
                 exit 1
               fi
-          
+
               echo "Assigning dev preview domain..."
-          
+
               vercel alias set \
                 "$DEPLOYMENT_URL" \
                 dev-tictacduel.vercel.app \
                 --scope="$VERCEL_SCOPE" \
                 --token="$VERCEL_TOKEN"
-          
+
               echo "Dev deployment completed."
               echo "Preview URL: $DEPLOYMENT_URL"
               echo "Stable URL: https://dev-tictacduel.vercel.app/"
               ;;
-          
+
             *)
               echo "::error::Unsupported deployment branch: $TARGET_BRANCH"
               exit 1
