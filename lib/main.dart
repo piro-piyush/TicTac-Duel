@@ -8,13 +8,14 @@ Future<void> main() async {
   final container = ProviderContainer();
   await container.read(audioProvider.notifier).initialize();
   container.read(appRouterProvider);
-  runApp(UncontrolledProviderScope(container: container, child: const MyApp()));
-
+  runApp(
+    UncontrolledProviderScope(
+      container: container,
+      child: const MyApp(),
+    ),
+  );
 }
 
-// =============================================================================
-// APP
-// =============================================================================
 
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});

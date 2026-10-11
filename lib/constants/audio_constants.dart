@@ -15,7 +15,7 @@ class AudioConstants {
 
   // static const String moveSound = 'assets/audio/move.mp3';
 
-  static const double defaultBackgroundVolume = 0.1;
+  static const double defaultBackgroundVolume = 0.3;
   static const double defaultTouchVolume = 1;
   static const double defaultEffectVolume = 1;
 

@@ -1,75 +1,87 @@
-
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <uses-permission android:name="android.permission.INTERNET" />
+<uses-permission android:name="android.permission.INTERNET" />
 
-    <application
-        android:name="${applicationName}"
-        android:allowBackup="false"
-        android:icon="@mipmap/ic_launcher"
-        android:label="Tic Tac Duel">
+<application
+    android:name="${applicationName}"
+    android:allowBackup="false"
+    android:icon="@mipmap/ic_launcher"
+    android:label="Tic Tac Duel">
 
-        <activity
-            android:name=".MainActivity"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
-            android:exported="true"
-            android:hardwareAccelerated="true"
-            android:launchMode="singleTop"
-            android:taskAffinity=""
-            android:theme="@style/LaunchTheme"
-            android:windowSoftInputMode="adjustResize">
+    <activity
+        android:name=".MainActivity"
+        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+        android:exported="true"
+        android:hardwareAccelerated="true"
+        android:launchMode="singleTop"
+        android:taskAffinity=""
+        android:theme="@style/LaunchTheme"
+        android:windowSoftInputMode="adjustResize">
 
-            <meta-data
-                android:name="io.flutter.embedding.android.NormalTheme"
-                android:resource="@style/NormalTheme" />
-
-            <!-- Launcher -->
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-
-            <!-- Production and development HTTPS App Links -->
-            <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data
-                    android:scheme="https"
-                    android:host="tictacduel.vercel.app" />
-
-                <data
-                    android:scheme="https"
-                    android:host="dev-tictacduel.vercel.app" />
-            </intent-filter>
-
-            <!-- Custom app URI scheme -->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data
-                    android:scheme="tictacduel"
-                    android:host="join-room" />
-            </intent-filter>
-
-        </activity>
-
+        <!-- Flutter Normal Theme -->
         <meta-data
-            android:name="flutterEmbedding"
-            android:value="2" />
+            android:name="io.flutter.embedding.android.NormalTheme"
+            android:resource="@style/NormalTheme" />
 
-    </application>
+        <!-- Launcher -->
+        <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
 
-    <queries>
-        <intent>
-            <action android:name="android.intent.action.PROCESS_TEXT" />
-            <data android:mimeType="text/plain" />
-        </intent>
-    </queries>
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
+
+        <!-- Production HTTPS App Links -->
+        <intent-filter android:autoVerify="true">
+            <action android:name="android.intent.action.VIEW" />
+
+            <category android:name="android.intent.category.DEFAULT" />
+            <category android:name="android.intent.category.BROWSABLE" />
+
+            <data
+                android:scheme="https"
+                android:host="tictacduel.vercel.app" />
+        </intent-filter>
+
+        <!-- Development HTTPS App Links -->
+        <intent-filter android:autoVerify="true">
+            <action android:name="android.intent.action.VIEW" />
+
+            <category android:name="android.intent.category.DEFAULT" />
+            <category android:name="android.intent.category.BROWSABLE" />
+
+            <data
+                android:scheme="https"
+                android:host="dev-tictacduel.vercel.app" />
+        </intent-filter>
+
+        <!-- Custom App URI Scheme: tictacduel://join-room -->
+        <intent-filter>
+            <action android:name="android.intent.action.VIEW" />
+
+            <category android:name="android.intent.category.DEFAULT" />
+            <category android:name="android.intent.category.BROWSABLE" />
+
+            <data
+                android:scheme="tictacduel"
+                android:host="join-room" />
+        </intent-filter>
+
+    </activity>
+
+    <!-- Flutter Embedding Version -->
+    <meta-data
+        android:name="flutterEmbedding"
+        android:value="2" />
+
+</application>
+
+<!-- Package Visibility for Text Processing -->
+<queries>
+    <intent>
+        <action android:name="android.intent.action.PROCESS_TEXT" />
+
+        <data android:mimeType="text/plain" />
+    </intent>
+</queries>
 
 </manifest>
