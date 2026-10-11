@@ -76,19 +76,36 @@ jobs:
         run: |
           set -euo pipefail
 
-          test -s build/web/index.html
-          test -s web/.well-known/assetlinks.json
-          test -s web/vercel.json
+          test -s build/web/index.html || {
+            echo "::error::Flutter web index.html is missing."
+            exit 1
+          }
 
-          mkdir -p build/web/.well-known
-
-          cp web/.well-known/assetlinks.json \
-            build/web/.well-known/assetlinks.json
+          test -s web/vercel.json || {
+            echo "::error::web/vercel.json is missing."
+            exit 1
+          }
 
           cp web/vercel.json build/web/vercel.json
 
-          test -s build/web/.well-known/assetlinks.json
+          mkdir -p build/web/.well-known
 
+          if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            echo "Skipping assetlinks.json validation for pull requests."
+          else
+            test -s web/.well-known/assetlinks.json || {
+              echo "::error::Generated assetlinks.json is missing."
+              exit 1
+            }
+
+            cp web/.well-known/assetlinks.json \
+              build/web/.well-known/assetlinks.json
+
+            test -s build/web/.well-known/assetlinks.json || {
+              echo "::error::assetlinks.json copy failed."
+              exit 1
+            }
+          fi
       - name: Upload Build
         if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v7
