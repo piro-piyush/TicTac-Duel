@@ -13,7 +13,8 @@ export 'package:flutter_riverpod/flutter_riverpod.dart';
 export 'package:flutter_secure_storage/flutter_secure_storage.dart';
 export 'package:flutter_svg/flutter_svg.dart';
 export 'package:go_router/go_router.dart';
-export 'package:just_audio/just_audio.dart' hide PlayerState;
+// export 'package:just_audio/just_audio.dart' hide PlayerState;
+export 'package:flutter_soloud/flutter_soloud.dart';
 export 'package:lottie/lottie.dart';
 
 export 'app/app.dart';

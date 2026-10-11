@@ -22,7 +22,7 @@ real-time online gameplay.
 - 📱 **App Links** — Open supported shared links directly in the app.
 - 🏆 **Multi-Round Matches** — Track scores across multiple rounds.
 - 🎨 **Neon Themes** — Classic, Inferno, and Cyber.
-- 🎵 **Audio & Effects** — Music, sound effects, animations, particles, and confetti.
+- 🎵 **Audio & Effects** — Background music and sound effects powered by flutter_soloud, alongside animations, particles, and confetti.
 - 💬 **Game Reactions** — Interact with your opponent during online matches.
 
 ## 🖼️ Screenshots
@@ -61,9 +61,9 @@ real-time online gameplay.
 - [Riverpod](https://riverpod.dev/) for state management
 - [Socket.IO](https://socket.io/) for real-time multiplayer
 - [Flutter Secure Storage](https://pub.dev/packages/flutter_secure_storage) for secure local storage
-- [just_audio](https://pub.dev/packages/just_audio), [Lottie](https://pub.dev/packages/lottie),
-  and [Flutter Confetti](https://pub.dev/packages/flutter_confetti) for audio, animations, and
-  effects
+- [flutter_soloud](https://pub.dev/packages/flutter_soloud) for audio playback
+- [Lottie](https://pub.dev/packages/lottie) for animations
+- [Flutter Confetti](https://pub.dev/packages/flutter_confetti) for confetti effects
 
 ## 🚀 Getting Started
 

@@ -8,14 +8,8 @@ Future<void> main() async {
   final container = ProviderContainer();
   await container.read(audioProvider.notifier).initialize();
   container.read(appRouterProvider);
-  runApp(
-    UncontrolledProviderScope(
-      container: container,
-      child: const MyApp(),
-    ),
-  );
+  runApp(UncontrolledProviderScope(container: container, child: const MyApp()));
 }
-
 
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});
@@ -28,6 +22,7 @@ class MyApp extends ConsumerWidget {
     routerConfig: ref.watch(appRouterProvider),
     scaffoldMessengerKey: AppPages.rootScaffoldMessengerKey,
     builder: (context, child) => Listener(
+      behavior: HitTestBehavior.translucent,
       onPointerDown: (_) => ref.read(audioProvider.notifier).playTouch(),
       child: child ?? const SizedBox.shrink(),
     ),

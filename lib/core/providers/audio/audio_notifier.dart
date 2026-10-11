@@ -1,5 +1,3 @@
-import 'dart:developer' as dev;
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:tictac_duel/lib.dart';
@@ -7,18 +5,16 @@ import 'package:tictac_duel/lib.dart';
 class AudioNotifier extends Notifier<AudioState> {
   AudioNotifier();
 
-  final AudioPlayer _backgroundPlayer = AudioPlayer();
-  final AudioPlayer _touchPlayer = AudioPlayer();
-  final List<AudioPlayer> _effectPlayers = [
-    AudioPlayer(),
-    AudioPlayer(),
-    AudioPlayer(),
-  ];
-  static const String _logName = 'AudioNotifier';
-  bool _webMusicStartAttempted = false;
-  int _musicOperation = 0;
-  int _effectPlayerIndex = 0;
+  final SoLoud _soloud = SoLoud.instance;
+  final Map<String, AudioSource> _sources = {};
+
+  AudioSource? _backgroundSource;
+  SoundHandle? _musicHandle;
+
   bool _disposed = false;
+  bool _ownsEngine = false;
+  bool _initializing = false;
+  int _musicOperation = 0;
 
   bool get isWeb => kIsWeb;
 
@@ -26,369 +22,205 @@ class AudioNotifier extends Notifier<AudioState> {
   AudioState build() {
     ref.onDispose(() {
       _disposed = true;
-      unawaited(_disposePlayers());
+      unawaited(_disposeAudioEngine());
     });
 
     return const AudioState();
   }
 
-  Future<void> initialize() async {
-    if (_disposed || state.isInitialized) {
-      return;
-    }
+  // ---------------------------------------------------------------------------
+  // INITIALIZATION
+  // ---------------------------------------------------------------------------
 
-    final storage = ref.read(localStorageServiceProvider);
+  Future<void> initialize() async {
+    if (_disposed || state.isInitialized || _initializing) return;
+
+    _initializing = true;
 
     try {
-      final isEnabled =
-          await storage.getBool(AudioConstants.musicEnabledKey) ?? true;
+      final storage = ref.read(localStorageServiceProvider);
 
-      final effectsEnabled =
-          await storage.getBool(AudioConstants.effectsEnabledKey) ?? true;
+      final settings = await Future.wait([
+        storage.getBool(AudioConstants.musicEnabledKey),
+        storage.getBool(AudioConstants.effectsEnabledKey),
+        storage.getBool(AudioConstants.vibrationEnabledKey),
+      ]);
 
-      final vibrationEnabled =
-          await storage.getBool(AudioConstants.vibrationEnabledKey) ?? true;
+      if (_disposed) return;
 
-      if (_disposed) {
-        return;
-      }
+      _ownsEngine = !_soloud.isInitialized;
+      if (_ownsEngine) await _soloud.init();
 
-      await _backgroundPlayer.setAsset(AudioConstants.backgroundMusic);
+      _backgroundSource = await _loadSource(AudioConstants.backgroundMusic);
 
-      await _backgroundPlayer.setLoopMode(LoopMode.one);
+      await Future.wait([
+        _loadSource(AudioConstants.touchSound),
+        _loadSource(AudioConstants.confettiSound),
+        _loadSource(AudioConstants.winSound),
+        _loadSource(AudioConstants.loseSound),
+        _loadSource(AudioConstants.comedySound),
+        _loadSource(AudioConstants.swordSound),
+        _loadSource(AudioConstants.roundSound),
+        _loadSource(AudioConstants.joinSound),
+      ]);
 
-      await _backgroundPlayer.setVolume(AudioConstants.defaultBackgroundVolume);
-
-      await _touchPlayer.setAsset(AudioConstants.touchSound);
-
-      await _touchPlayer.setVolume(AudioConstants.defaultTouchVolume);
-
-      for (final player in _effectPlayers) {
-        await player.setVolume(AudioConstants.defaultEffectVolume);
-      }
-
-      if (_disposed) {
-        return;
-      }
+      if (_disposed) return;
 
       state = state.copyWith(
-        isEnabled: isEnabled,
-        effectsEnabled: effectsEnabled,
-        vibrationEnabled: vibrationEnabled,
+        isEnabled: settings[0] ?? true,
+        effectsEnabled: settings[1] ?? true,
+        vibrationEnabled: settings[2] ?? true,
         isInitialized: true,
       );
 
-      if (isEnabled && !isWeb) {
-        unawaited(play());
-      }
+      if (state.isEnabled && !isWeb) unawaited(play());
     } catch (error, stackTrace) {
-      dev.log(
-        'Failed to initialize audio notifier',
-        name: _logName,
-        error: error,
-        stackTrace: stackTrace,
-      );
+      LoggerUtils.error('Failed to initialize audio', error, stackTrace);
 
-      await _disposePlayers();
+      await _disposeAudioEngine();
 
-      if (!_disposed) {
-        rethrow;
-      }
+      if (!_disposed) rethrow;
+    } finally {
+      _initializing = false;
     }
+  }
+
+  Future<AudioSource> _loadSource(String asset) async {
+    final cached = _sources[asset];
+    if (cached != null) return cached;
+
+    final source = await _soloud.loadAsset(asset);
+
+    if (_disposed) {
+      await _soloud.disposeSource(source);
+      throw StateError('AudioNotifier was disposed during initialization.');
+    }
+
+    _sources[asset] = source;
+    return source;
   }
 
   Future<void> play() async {
-    if (_disposed || !state.isInitialized || !state.isEnabled) {
-      return;
-    }
+    if (_disposed || !state.isInitialized || !state.isEnabled) return;
+    _startBackgroundMusic();
+  }
 
-    final operation = ++_musicOperation;
+  void _startBackgroundMusic() {
+    if (_disposed || !state.isInitialized || !state.isEnabled) return;
 
-    if (_backgroundPlayer.playing) {
-      state = state.copyWith(isPlaying: true);
-      return;
-    }
+    final source = _backgroundSource;
+    if (source == null) return;
 
     try {
-      _backgroundPlayer.play();
+      final handle = _musicHandle;
 
-      if (_disposed) {
+      if (handle != null && _soloud.getIsValidVoiceHandle(handle)) {
+        if (!state.isPlaying) _soloud.pauseSwitch(handle);
+
+        state = state.copyWith(isPlaying: true);
         return;
       }
 
-      if (operation != _musicOperation || !state.isEnabled) {
-        _backgroundPlayer.pause();
-
-        if (!_disposed) {
-          state = state.copyWith(isPlaying: false);
-        }
-
-        return;
-      }
-
-      state = state.copyWith(
-        isPlaying: _backgroundPlayer.playing,
+      _musicHandle = _soloud.play(
+        source,
+        looping: true,
+        volume: AudioConstants.defaultBackgroundVolume,
       );
+
+      state = state.copyWith(isPlaying: true);
     } catch (error, stackTrace) {
-      dev.log(
-        'Failed to play music',
-        name: _logName,
-        error: error,
-        stackTrace: stackTrace,
-      );
+      LoggerUtils.error('Failed to play music', error, stackTrace);
     }
   }
 
-  // Future<void> pause() async {
-  //   if (_disposed || !state.isInitialized) {
-  //     return;
-  //   }
-  //
-  //   _musicOperation++;
-  //
-  //   try {
-  //     await _backgroundPlayer.pause();
-  //
-  //     if (!_disposed) {
-  //       state = state.copyWith(isPlaying: false);
-  //     }
-  //   } catch (error, stackTrace) {
-  //     dev.log(
-  //       'Failed to pause music',
-  //       name: _logName,
-  //       error: error,
-  //       stackTrace: stackTrace,
-  //     );
-  //   }
-  // }
-
-  // Future<void> stop() async {
-  //   if (_disposed || !state.isInitialized) {
-  //     return;
-  //   }
-  //
-  //   _musicOperation++;
-  //
-  //   try {
-  //     await _backgroundPlayer.stop();
-  //
-  //     if (!_disposed) {
-  //       state = state.copyWith(isPlaying: false);
-  //     }
-  //   } catch (error, stackTrace) {
-  //     dev.log(
-  //       'Failed to stop music',
-  //       name: _logName,
-  //       error: error,
-  //       stackTrace: stackTrace,
-  //     );
-  //   }
-  // }
-
-  // Future<void> resume() async {
-  //   if (_disposed || !state.isInitialized || !state.isEnabled) {
-  //     return;
-  //   }
-  //
-  //   await play();
-  // }
+  // ---------------------------------------------------------------------------
+  // TOUCH AND SOUND EFFECTS
+  // ---------------------------------------------------------------------------
 
   void playTouch() {
-    if (_disposed || !state.isInitialized) {
-      return;
-    }
+    if (_disposed || !state.isInitialized) return;
 
-    // Web browsers may require a user gesture to start audio.
-    // Attempt automatic startup only on the first interaction.
-    if (isWeb && state.isEnabled && !_webMusicStartAttempted) {
-      _webMusicStartAttempted = true;
-      unawaited(play());
-    }
+    if (isWeb && state.isEnabled) _startBackgroundMusic();
+    if (state.effectsEnabled) _playSound(AudioConstants.touchSound);
 
-    if (state.effectsEnabled) {
-      unawaited(_playTouchSound());
-    }
-
-    if (state.vibrationEnabled) {
+    if (state.vibrationEnabled && !isWeb) {
       unawaited(HapticFeedback.selectionClick());
     }
   }
 
-  Future<void> _playTouchSound() async {
-    if (_disposed || !state.isInitialized || !state.effectsEnabled) {
-      return;
-    }
+  void _playSound(String asset) {
+    if (_disposed || !state.isInitialized || !state.effectsEnabled) return;
+
+    final source = _sources[asset];
+    if (source == null) return;
+
+    final volume = asset == AudioConstants.touchSound
+        ? AudioConstants.defaultTouchVolume
+        : AudioConstants.defaultEffectVolume;
 
     try {
-      await _touchPlayer.seek(Duration.zero);
-      await _touchPlayer.play();
+      _soloud.play(source, volume: volume);
     } catch (error, stackTrace) {
-      dev.log(
-        'Failed to play touch sound',
-        name: _logName,
-        error: error,
-        stackTrace: stackTrace,
-      );
+      LoggerUtils.error('Failed to play sound: $asset', error, stackTrace);
     }
   }
 
-  void playConfetti() {
-    if (_disposed || !state.isInitialized) {
-      return;
-    }
+  void playConfetti() => _playSound(AudioConstants.confettiSound);
 
-    unawaited(_playEffect(AudioConstants.confettiSound));
-  }
+  void playWin() => _playSound(AudioConstants.winSound);
 
-  void playWin() {
-    if (_disposed || !state.isInitialized) {
-      return;
-    }
+  void playLose() => _playSound(AudioConstants.loseSound);
 
-    unawaited(_playEffect(AudioConstants.winSound));
-  }
+  void playSwoosh() => _playSound(AudioConstants.comedySound);
 
-  void playLose() {
-    if (_disposed || !state.isInitialized) {
-      return;
-    }
-
-    unawaited(_playEffect(AudioConstants.loseSound));
-  }
-
-  void playSwoosh() {
-    if (_disposed || !state.isInitialized) {
-      return;
-    }
-
-    unawaited(_playEffect(AudioConstants.comedySound));
-  }
-
-  void playDraw() {
-    if (_disposed || !state.isInitialized) {
-      return;
-    }
-
-    unawaited(_playEffect(AudioConstants.swordSound));
-  }
-
-  // void playMove() {
-  //   if (_disposed || !state.isInitialized) {
-  //     return;
-  //   }
-  //
-  //   unawaited(_playEffect(AudioConstants.moveSound));
-  // }
+  void playDraw() => _playSound(AudioConstants.swordSound);
 
   void playRoundStart() {
-    if (_disposed || !state.isInitialized) {
-      return;
-    }
-
-    unawaited(_playEffect(AudioConstants.roundSound));
-
-    if (state.vibrationEnabled) {
+    _playSound(AudioConstants.roundSound);
+    if (state.vibrationEnabled && !isWeb) {
       unawaited(HapticFeedback.lightImpact());
     }
   }
 
   void playJoin() {
-    if (_disposed || !state.isInitialized) {
-      return;
-    }
-
-    unawaited(_playEffect(AudioConstants.joinSound));
-
-    if (state.vibrationEnabled) {
+    _playSound(AudioConstants.joinSound);
+    if (state.vibrationEnabled && !isWeb) {
       unawaited(HapticFeedback.lightImpact());
     }
   }
 
-  Future<void> _playEffect(String asset) async {
-    if (_disposed || !state.isInitialized || !state.effectsEnabled) {
-      return;
-    }
-
-    final player = _nextEffectPlayer();
-
-    try {
-      await player.stop();
-
-      if (_disposed || !state.effectsEnabled) {
-        return;
-      }
-
-      await player.setAsset(asset);
-
-      if (_disposed || !state.effectsEnabled) {
-        return;
-      }
-
-      await player.seek(Duration.zero);
-
-      if (_disposed || !state.effectsEnabled) {
-        return;
-      }
-
-      await player.play();
-    } catch (error, stackTrace) {
-      if (_disposed) {
-        return;
-      }
-
-      dev.log(
-        'Failed to play sound effect: $asset',
-        name: _logName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-    }
-  }
-
-  AudioPlayer _nextEffectPlayer() {
-    final player = _effectPlayers[_effectPlayerIndex];
-
-    _effectPlayerIndex = (_effectPlayerIndex + 1) % _effectPlayers.length;
-
-    return player;
-  }
-
   Future<void> setEnabled(bool enabled) async {
-    if (_disposed || !state.isInitialized) {
-      return;
-    }
-
-    if (state.isEnabled == enabled) {
+    if (_disposed || !state.isInitialized || state.isEnabled == enabled) {
       return;
     }
 
     final storage = ref.read(localStorageServiceProvider);
+    final operation = ++_musicOperation;
+
+    state = state.copyWith(isEnabled: enabled);
+
+    // Start or pause immediately, before awaiting storage.
+    if (enabled) {
+      _startBackgroundMusic();
+    } else {
+      final handle = _musicHandle;
+
+      if (handle != null && _soloud.getIsValidVoiceHandle(handle)) {
+        _soloud.pauseSwitch(handle);
+      }
+
+      state = state.copyWith(isPlaying: false);
+    }
 
     try {
-      state = state.copyWith(isEnabled: enabled);
-
-      _musicOperation++;
-
       await storage.setBool(AudioConstants.musicEnabledKey, enabled);
 
-      if (_disposed) {
-        return;
-      }
-
-      if (enabled) {
-        await play();
-      } else {
-        _backgroundPlayer.pause();
-        if (!_disposed) {
-          state = state.copyWith(isPlaying: false);
-        }
-      }
+      if (_disposed || operation != _musicOperation) return;
     } catch (error, stackTrace) {
-      dev.log(
+      LoggerUtils.error(
         'Failed to update music setting: $enabled',
-        name: _logName,
-        error: error,
-        stackTrace: stackTrace,
+        error,
+        stackTrace,
       );
 
       rethrow;
@@ -396,37 +228,28 @@ class AudioNotifier extends Notifier<AudioState> {
   }
 
   Future<void> setEffectsEnabled(bool enabled) async {
-    if (_disposed || !state.isInitialized) {
-      return;
-    }
-
-    if (state.effectsEnabled == enabled) {
+    if (_disposed || !state.isInitialized || state.effectsEnabled == enabled) {
       return;
     }
 
     final storage = ref.read(localStorageServiceProvider);
+    state = state.copyWith(effectsEnabled: enabled);
 
     try {
-      state = state.copyWith(effectsEnabled: enabled);
-
       await storage.setBool(AudioConstants.effectsEnabledKey, enabled);
 
-      if (_disposed) {
-        return;
-      }
+      if (_disposed || enabled) return;
 
-      if (!enabled) {
-        await Future.wait([
-          _touchPlayer.stop(),
-          ..._effectPlayers.map((player) => player.stop()),
-        ]);
+      for (final entry in _sources.entries) {
+        if (entry.key != AudioConstants.backgroundMusic) {
+          _soloud.stopAudioSource(entry.value);
+        }
       }
     } catch (error, stackTrace) {
-      dev.log(
+      LoggerUtils.error(
         'Failed to update sound effects setting: $enabled',
-        name: _logName,
-        error: error,
-        stackTrace: stackTrace,
+        error,
+        stackTrace,
       );
 
       rethrow;
@@ -434,26 +257,22 @@ class AudioNotifier extends Notifier<AudioState> {
   }
 
   Future<void> setVibrationEnabled(bool enabled) async {
-    if (_disposed || !state.isInitialized) {
-      return;
-    }
-
-    if (state.vibrationEnabled == enabled) {
+    if (_disposed ||
+        !state.isInitialized ||
+        state.vibrationEnabled == enabled) {
       return;
     }
 
     final storage = ref.read(localStorageServiceProvider);
+    state = state.copyWith(vibrationEnabled: enabled);
 
     try {
-      state = state.copyWith(vibrationEnabled: enabled);
-
       await storage.setBool(AudioConstants.vibrationEnabledKey, enabled);
     } catch (error, stackTrace) {
-      dev.log(
+      LoggerUtils.error(
         'Failed to update vibration setting: $enabled',
-        name: _logName,
-        error: error,
-        stackTrace: stackTrace,
+        error,
+        stackTrace,
       );
 
       rethrow;
@@ -461,96 +280,55 @@ class AudioNotifier extends Notifier<AudioState> {
   }
 
   Future<void> lightVibration() async {
-    if (_disposed || !state.vibrationEnabled) {
-      return;
-    }
+    if (_disposed || !state.vibrationEnabled || isWeb) return;
 
     try {
       await HapticFeedback.lightImpact();
     } catch (error, stackTrace) {
-      dev.log(
-        'Failed to trigger light vibration',
-        name: _logName,
-        error: error,
-        stackTrace: stackTrace,
-      );
+      LoggerUtils.error('Failed to trigger light vibration', error, stackTrace);
     }
   }
 
   Future<void> mediumVibration() async {
-    if (_disposed || !state.vibrationEnabled) {
-      return;
-    }
-
+    if (_disposed || !state.vibrationEnabled || isWeb) return;
     try {
       await HapticFeedback.mediumImpact();
     } catch (error, stackTrace) {
-      dev.log(
+      LoggerUtils.error(
         'Failed to trigger medium vibration',
-        name: _logName,
-        error: error,
-        stackTrace: stackTrace,
+        error,
+        stackTrace,
       );
     }
   }
 
   Future<void> heavyVibration() async {
-    if (_disposed || !state.vibrationEnabled) {
-      return;
-    }
-
+    if (_disposed || !state.vibrationEnabled || isWeb) return;
     try {
       await HapticFeedback.heavyImpact();
     } catch (error, stackTrace) {
-      dev.log(
-        'Failed to trigger heavy vibration',
-        name: _logName,
-        error: error,
-        stackTrace: stackTrace,
-      );
+      LoggerUtils.error('Failed to trigger heavy vibration', error, stackTrace);
     }
   }
 
-  Future<void> setVolume(double volume) async {
-    if (_disposed || !state.isInitialized) {
-      return;
-    }
-
-    final clampedVolume = volume.clamp(0.0, 1.0).toDouble();
-
-    try {
-      await Future.wait([
-        _backgroundPlayer.setVolume(clampedVolume * 0.4),
-        _touchPlayer.setVolume(clampedVolume),
-        ..._effectPlayers.map((player) => player.setVolume(clampedVolume)),
-      ]);
-    } catch (error, stackTrace) {
-      dev.log(
-        'Failed to set audio volume',
-        name: _logName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-
-      rethrow;
-    }
-  }
-
-  Future<void> _disposePlayers() async {
+  Future<void> _disposeAudioEngine() async {
     _musicOperation++;
-
+    if (!_soloud.isInitialized) return;
     try {
-      await Future.wait([
-        _backgroundPlayer.dispose(),
-        _touchPlayer.dispose(),
-        ..._effectPlayers.map((player) => player.dispose()),
-      ]);
+      for (final source in _sources.values.toSet()) {
+        if (_soloud.isInitialized && _soloud.isValidAudioSource(source)) {
+          await _soloud.disposeSource(source);
+        }
+      }
+      _sources.clear();
+      if (_ownsEngine && _soloud.isInitialized) {
+        await _soloud.deinitAsync();
+      }
     } catch (error, stackTrace) {
-      dev.log(
-        'Failed to dispose audio players',
-        name: _logName,
-        error: error,
-        stackTrace: stackTrace,
+      LoggerUtils.error(
+        'Failed to dispose SoLoud resources',
+        error,
+        stackTrace,
       );
     }
   }
