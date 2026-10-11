@@ -12,69 +12,69 @@ class SelectRoomThemeWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isCompact =
+        MediaQuery.sizeOf(context).width < Dimens.smallScreenWidth;
     return Column(
-      spacing: Dimens.sixteen,
+      spacing: Dimens.twelve,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Column(
+        const SectionTitleWidget(title: 'ROOM THEME'),
+        Row(
           spacing: Dimens.eight,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SectionTitleWidget(title: 'ROOM THEME'),
-            Row(
-              spacing: Dimens.ten,
-              children: RoomTheme.values.map(_buildThemeChip).toList(),
-            ),
-          ],
+          children: RoomTheme.values
+              .map(
+                (theme) => Expanded(
+                  child: _buildThemeCard(theme, isCompact: isCompact),
+                ),
+              )
+              .toList(),
         ),
-        _buildThemePreview(),
+        _buildThemePreview(isCompact: isCompact),
       ],
     );
   }
 
-  Widget _buildThemeChip(RoomTheme theme) {
+  Widget _buildThemeCard(RoomTheme theme, {required bool isCompact}) {
     final isSelected = selectedTheme == theme;
 
-    return Expanded(
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => onThemeChanged(theme),
-          borderRadius: Dimens.radius14,
-          splashColor: theme.primary.withValues(alpha: 0.08),
-          highlightColor: theme.primary.withValues(alpha: 0.04),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 180),
-            padding: Dimens.edgeInsets14,
-            decoration: BoxDecoration(
+    return Material(
+      color: Colors.transparent,
+      borderRadius: Dimens.radius12,
+      child: InkWell(
+        onTap: () => onThemeChanged(theme),
+        borderRadius: Dimens.radius12,
+        splashColor: theme.primary.withValues(alpha: 0.08),
+        highlightColor: theme.primary.withValues(alpha: 0.04),
+        child: AnimatedContainer(
+          duration: AnimationConstants.fast,
+          height: isCompact ? 64 : Dimens.fiftySix,
+          padding: EdgeInsets.symmetric(
+            horizontal: isCompact ? Dimens.four : Dimens.eight,
+            vertical: isCompact ? Dimens.eight : 0,
+          ),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? theme.primary.withValues(alpha: 0.08)
+                : AppColors.surface,
+            borderRadius: Dimens.radius14,
+            border: Border.all(
               color: isSelected
-                  ? theme.primary.withValues(alpha: 0.09)
-                  : AppColors.surface,
-              borderRadius: Dimens.radius14,
-              border: Border.all(
-                color: isSelected
-                    ? theme.primary.withValues(alpha: 0.75)
-                    : AppColors.border,
-              ),
-              boxShadow: isSelected
-                  ? [
-                BoxShadow(
-                  color: theme.primary.withValues(alpha: 0.10),
-                  blurRadius: 12,
-                  spreadRadius: 1,
-                ),
-              ]
-                  : null,
+                  ? theme.primary.withValues(alpha: 0.65)
+                  : AppColors.border,
+              width: isSelected ? 1.5 : 1,
             ),
-            child: Column(
-              spacing: Dimens.eight,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+          ),
+          child: isCompact
+              ? Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  spacing: Dimens.four,
                   children: [
-                    Expanded(
+                    Flexible(
                       child: Text(
-                        theme.name,
+                        theme.displayName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
                         style: TextStyle(
                           color: isSelected
                               ? theme.primary
@@ -84,168 +84,176 @@ class SelectRoomThemeWidget extends StatelessWidget {
                         ),
                       ),
                     ),
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 150),
-                      child: isSelected
-                          ? Icon(
-                        Icons.check_circle_rounded,
-                        key: const ValueKey('selected'),
-                        color: theme.primary,
-                        size: Dimens.iconSm,
-                      )
-                          : const SizedBox(
-                        key: ValueKey('unselected'),
-                        width: Dimens.iconSm,
-                        height: Dimens.iconSm,
+                    Icon(
+                      isSelected
+                          ? Icons.check_circle_rounded
+                          : Icons.radio_button_unchecked_rounded,
+                      color: isSelected ? theme.primary : AppColors.disabled,
+                      size: Dimens.iconSm,
+                    ),
+                  ],
+                )
+              : Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        theme.displayName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        softWrap: false,
+                        style: TextStyle(
+                          color: isSelected
+                              ? theme.primary
+                              : AppColors.textPrimary,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
+                    ),
+                    const SizedBox(width: Dimens.four),
+                    Icon(
+                      isSelected
+                          ? Icons.check_circle_rounded
+                          : Icons.radio_button_unchecked_rounded,
+                      color: isSelected ? theme.primary : AppColors.disabled,
+                      size: Dimens.iconSm,
                     ),
                   ],
                 ),
-                Text(
-                  theme.subtitle,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 9,
-                  ),
-                ),
-                Row(
-                  spacing: Dimens.six,
-                  children: [
-                    _buildThemeDot(theme.primary),
-                    _buildThemeDot(theme.secondary),
-                  ],
-                ),
-              ],
-            ),
-          ),
         ),
       ),
     );
   }
 
-  Widget _buildThemePreview() {
+  Widget _buildThemePreview({required bool isCompact}) {
     final theme = selectedTheme;
 
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 220),
-      padding: Dimens.edgeInsets16,
+      duration: AnimationConstants.fast,
+      padding: Dimens.edgeInsets12,
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: Dimens.radius18,
-        border: Border.all(color: theme.primary.withValues(alpha: 0.25)),
+        borderRadius: Dimens.radius16,
+        border: Border.all(color: theme.primary.withValues(alpha: 0.22)),
       ),
-      child: Row(
-        spacing: Dimens.sixteen,
-        children: [
-          _buildMiniBoard(theme),
-          Expanded(
-            child: Column(
-              spacing: Dimens.eight,
-              crossAxisAlignment: CrossAxisAlignment.start,
+      child: isCompact
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              spacing: Dimens.twelve,
               children: [
-                Text(
-                  'YOUR ARENA',
-                  style: TextStyle(
-                    color: theme.primary,
-                    fontSize: 9,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.8,
-                  ),
-                ),
-                Text(
-                  theme.name,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                Text(
-                  theme.subtitle,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 10,
-                  ),
-                ),
-                Row(
-                  spacing: Dimens.six,
-                  children: [
-                    Icon(
-                      Icons.palette_outlined,
-                      size: Dimens.iconXs,
-                      color: theme.secondary,
-                    ),
-                    Text(
-                      'Theme preview',
-                      style: TextStyle(
-                        color: theme.secondary,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
+                Center(child: _buildMiniBoard(theme)),
+                _buildThemeDetails(theme, isCompact: true),
+              ],
+            )
+          : Row(
+              spacing: Dimens.twelve,
+              children: [
+                _buildMiniBoard(theme),
+                Expanded(child: _buildThemeDetails(theme)),
               ],
             ),
+    );
+  }
+
+  Widget _buildThemeDetails(RoomTheme theme, {bool isCompact = false}) =>
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: Dimens.four,
+        children: [
+          Text(
+            theme.displayName,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: theme.primary,
+              fontSize: Dimens.sixteen,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          Text(
+            theme.subtitle,
+            maxLines: isCompact ? 3 : 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: Dimens.twelve,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: Dimens.two),
+          Wrap(
+            spacing: Dimens.twelve,
+            runSpacing: Dimens.eight,
+            children: [
+              _buildThemeColorLabel(theme.primary, 'Primary'),
+              _buildThemeColorLabel(theme.secondary, 'Secondary'),
+            ],
           ),
         ],
-      ),
-    );
-  }
+      );
 
-  Widget _buildMiniBoard(RoomTheme theme) {
-    return SizedBox(
-      width: Dimens.ninetySix,
-      height: Dimens.ninetySix,
-      child: GridView.builder(
-        physics: const NeverScrollableScrollPhysics(),
-        padding: EdgeInsets.zero,
-        itemCount: GameConstants.themePreviewSymbols.length,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: GameConstants.boardSize,
-          crossAxisSpacing: Dimens.four,
-          mainAxisSpacing: Dimens.four,
+  Widget _buildThemeColorLabel(Color color, String label) => Row(
+    mainAxisSize: MainAxisSize.min,
+    spacing: Dimens.six,
+    children: [
+      _buildThemeDot(color),
+      Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: Dimens.twelve,
+          fontWeight: FontWeight.w600,
         ),
-        itemBuilder: (context, index) {
-          final symbol = GameConstants.themePreviewSymbols[index];
+      ),
+    ],
+  );
 
-          return Container(
-            decoration: BoxDecoration(
-              color: AppColors.card,
-              borderRadius: Dimens.radius6,
-              border: Border.all(color: theme.primary.withValues(alpha: 0.07)),
-            ),
-            child: Center(
-              child: symbol == null
-                  ? null
-                  : Text(
-                symbol.value.toString().toUpperCase(),
-                style: TextStyle(
-                  color: symbol == PlayerSymbol.x
-                      ? theme.primary
-                      : theme.secondary,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w800,
+  Widget _buildMiniBoard(RoomTheme theme) => SizedBox(
+    width: Dimens.eightyEight,
+    height: Dimens.eightyEight,
+    child: GridView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.zero,
+      itemCount: GameConstants.themePreviewSymbols.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: GameConstants.boardSize,
+        crossAxisSpacing: Dimens.four,
+        mainAxisSpacing: Dimens.four,
+      ),
+      itemBuilder: (context, index) {
+        final symbol = GameConstants.themePreviewSymbols[index];
+
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            color: AppColors.card,
+            borderRadius: Dimens.radius6,
+            border: Border.all(color: theme.primary.withValues(alpha: 0.08)),
+          ),
+          child: symbol == null
+              ? null
+              : Center(
+                  child: Icon(
+                    symbol.icon,
+                    color: symbol == PlayerSymbol.x
+                        ? theme.primary
+                        : theme.secondary,
+                    size: Dimens.iconMd,
+                  ),
                 ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
+        );
+      },
+    ),
+  );
 
-  Widget _buildThemeDot(Color color) {
-    return Container(
-      width: Dimens.ten,
-      height: Dimens.ten,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color,
-        boxShadow: [
-          BoxShadow(color: color.withValues(alpha: 0.45), blurRadius: 6),
-        ],
-      ),
-    );
-  }
+  Widget _buildThemeDot(Color color) => Container(
+    width: Dimens.eight,
+    height: Dimens.eight,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      color: color,
+      boxShadow: [
+        BoxShadow(color: color.withValues(alpha: 0.35), blurRadius: 5),
+      ],
+    ),
+  );
 }

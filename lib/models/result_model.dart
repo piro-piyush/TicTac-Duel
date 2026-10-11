@@ -1,44 +1,86 @@
 import 'package:tictac_duel/lib.dart';
 
 class ResultModel {
-  const ResultModel.local({
-    required this.playerOne,
-    required this.playerTwo,
-    required this.playerOnePoints,
-    required this.playerTwoPoints,
+  const ResultModel._({
+    required this.host,
+    required this.guest,
+    required this.hostPoints,
+    required this.guestPoints,
     required this.currentRound,
     required this.maxRounds,
+    required this.isOnline,
+    required this.theme,
     this.gameWinner,
     this.hasWon = false,
     this.isDraw = false,
     this.showConfetti = false,
-  }) : isOnline = false;
+    this.dismissReason,
+  });
 
-  ResultModel.online({
-    required OnlinePlayerModel playerOne,
-    required OnlinePlayerModel playerTwo,
-    required this.currentRound,
-    required this.maxRounds,
-    this.gameWinner,
-    this.hasWon = false,
-    this.isDraw = false,
-    this.showConfetti = false,
-  }) : playerOne = playerOne,
-       playerTwo = playerTwo,
-       playerOnePoints = playerOne.points,
-       playerTwoPoints = playerTwo.points,
-       isOnline = true;
+  const ResultModel.completed({
+    required PlayerModel host,
+    required PlayerModel guest,
+    required int hostPoints,
+    required int guestPoints,
+    required int currentRound,
+    required int maxRounds,
+    required bool isOnline,
+    required RoomTheme theme,
+    PlayerModel? gameWinner,
+    bool hasWon = false,
+    bool isDraw = false,
+    bool showConfetti = false,
+  }) : this._(
+         host: host,
+         guest: guest,
+         hostPoints: hostPoints,
+         guestPoints: guestPoints,
+         currentRound: currentRound,
+         maxRounds: maxRounds,
+         isOnline: isOnline,
+         gameWinner: gameWinner,
+         hasWon: hasWon,
+         isDraw: isDraw,
+         showConfetti: showConfetti,
+         theme: theme,
+       );
 
-  final PlayerModel playerOne;
-  final PlayerModel playerTwo;
+  const ResultModel.dismissed({
+    required PlayerModel host,
+    required PlayerModel guest,
+    required int hostPoints,
+    required int guestPoints,
+    required int currentRound,
+    required int maxRounds,
+    required bool isOnline,
+    required RoomTheme theme,
+    required PlayerModel gameWinner,
+    required GameDismissReason dismissReason,
+  }) : this._(
+         host: host,
+         guest: guest,
+         hostPoints: hostPoints,
+         guestPoints: guestPoints,
+         currentRound: currentRound,
+         maxRounds: maxRounds,
+         isOnline: isOnline,
+         gameWinner: gameWinner,
+         hasWon: true,
+         dismissReason: dismissReason,
+         theme: theme,
+       );
 
-  final int playerOnePoints;
-  final int playerTwoPoints;
+  final PlayerModel host;
+  final PlayerModel guest;
+
+  final int hostPoints;
+  final int guestPoints;
 
   final int currentRound;
   final int maxRounds;
 
   final PlayerModel? gameWinner;
+  final RoomTheme theme;
 
   final bool hasWon;
   final bool isDraw;
@@ -46,48 +88,59 @@ class ResultModel {
 
   final bool isOnline;
 
+  final GameDismissReason? dismissReason;
+
   bool get isLocal => !isOnline;
 
+  bool get isDismissed => dismissReason != null;
+
+  bool get isCompleted => dismissReason == null;
+
   ResultModel copyWith({
-    PlayerModel? playerOne,
-    PlayerModel? playerTwo,
-    int? playerOnePoints,
-    int? playerTwoPoints,
+    PlayerModel? host,
+    PlayerModel? guest,
+    int? hostPoints,
+    int? guestPoints,
     int? currentRound,
     int? maxRounds,
     PlayerModel? gameWinner,
     bool? hasWon,
     bool? isDraw,
     bool? showConfetti,
-  }) {
-    if (isOnline) {
-      return ResultModel.online(
-        playerOne: playerOne is OnlinePlayerModel
-            ? playerOne
-            : this.playerOne as OnlinePlayerModel,
-        playerTwo: playerTwo is OnlinePlayerModel
-            ? playerTwo
-            : this.playerTwo as OnlinePlayerModel,
-        currentRound: currentRound ?? this.currentRound,
-        maxRounds: maxRounds ?? this.maxRounds,
-        gameWinner: gameWinner ?? this.gameWinner,
-        hasWon: hasWon ?? this.hasWon,
-        isDraw: isDraw ?? this.isDraw,
-        showConfetti: showConfetti ?? this.showConfetti,
-      );
-    }
+    bool? isOnline,
+    GameDismissReason? dismissReason,
+    RoomTheme? theme,
+  }) => ResultModel._(
+    host: host ?? this.host,
+    guest: guest ?? this.guest,
+    hostPoints: hostPoints ?? this.hostPoints,
+    guestPoints: guestPoints ?? this.guestPoints,
+    currentRound: currentRound ?? this.currentRound,
+    maxRounds: maxRounds ?? this.maxRounds,
+    isOnline: isOnline ?? this.isOnline,
+    gameWinner: gameWinner ?? this.gameWinner,
+    hasWon: hasWon ?? this.hasWon,
+    isDraw: isDraw ?? this.isDraw,
+    showConfetti: showConfetti ?? this.showConfetti,
+    dismissReason: dismissReason ?? this.dismissReason,
+    theme: theme ?? this.theme,
+  );
 
-    return ResultModel.local(
-      playerOne: playerOne ?? this.playerOne,
-      playerTwo: playerTwo ?? this.playerTwo,
-      playerOnePoints: playerOnePoints ?? this.playerOnePoints,
-      playerTwoPoints: playerTwoPoints ?? this.playerTwoPoints,
-      currentRound: currentRound ?? this.currentRound,
-      maxRounds: maxRounds ?? this.maxRounds,
-      gameWinner: gameWinner ?? this.gameWinner,
-      hasWon: hasWon ?? this.hasWon,
-      isDraw: isDraw ?? this.isDraw,
-      showConfetti: showConfetti ?? this.showConfetti,
-    );
-  }
+  @override
+  String toString() =>
+      'ResultModel('
+      'host: ${host.id} (${host.name}), '
+      'guest: ${guest.id} (${guest.name}), '
+      'hostPoints: $hostPoints, '
+      'guestPoints: $guestPoints, '
+      'currentRound: $currentRound, '
+      'maxRounds: $maxRounds, '
+      'gameWinner: ${gameWinner?.id} (${gameWinner?.name}), '
+      'hasWon: $hasWon, '
+      'isDraw: $isDraw, '
+      'showConfetti: $showConfetti, '
+      'isOnline: $isOnline, '
+      'dismissReason: $dismissReason, '
+      'theme: $theme'
+      ')';
 }

@@ -1,52 +1,53 @@
 import 'package:tictac_duel/lib.dart';
 
-class LocalGameModel {
+class LocalGameModel extends GameModel {
   const LocalGameModel.friend({
-    required this.playerOne,
-    required this.playerTwo,
-    required this.theme,
-    required this.maxRounds,
-  })  : gameType = LocalGameType.friend,
-        difficulty = null;
+    required super.host,
+    required this.guest,
+    required super.theme,
+    required super.maxRounds,
+    super.boardSize = GameConstants.boardSize,
+  }) : gameType = LocalGameType.friend,
+       difficulty = null,
+       super();
 
   factory LocalGameModel.computer({
-    required LocalPlayerModel playerOne,
+    required PlayerModel playerOne,
     required RoomTheme theme,
     required int maxRounds,
     required CpuDifficulty difficulty,
+    int boardSize = GameConstants.boardSize,
   }) {
     final cpuSymbol = playerOne.symbol == PlayerSymbol.x
         ? PlayerSymbol.o
         : PlayerSymbol.x;
 
     return LocalGameModel._(
-      playerOne: playerOne,
-      playerTwo: LocalPlayerModel(
+      host: playerOne,
+      guest: PlayerModel(
         id: GameConstants.localCpuId,
         name: GameConstants.localCpuName,
         symbol: cpuSymbol,
       ),
       theme: theme,
       maxRounds: maxRounds,
+      boardSize: boardSize,
       gameType: LocalGameType.computer,
       difficulty: difficulty,
     );
   }
 
   const LocalGameModel._({
-    required this.playerOne,
-    required this.playerTwo,
-    required this.theme,
-    required this.maxRounds,
+    required super.host,
+    required this.guest,
+    required super.theme,
+    required super.maxRounds,
+    required super.boardSize,
     required this.gameType,
     required this.difficulty,
-  });
+  }) : super();
 
-  final LocalPlayerModel playerOne;
-  final LocalPlayerModel playerTwo;
-
-  final RoomTheme theme;
-  final int maxRounds;
+  final PlayerModel guest;
 
   final LocalGameType gameType;
   final CpuDifficulty? difficulty;

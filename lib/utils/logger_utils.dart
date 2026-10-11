@@ -15,11 +15,7 @@ class LoggerUtils {
     _log('WARNING', message, data);
   }
 
-  static void error(
-      String message, [
-        Object? error,
-        StackTrace? stackTrace,
-      ]) {
+  static void error(String message, [Object? error, StackTrace? stackTrace]) {
     _log('ERROR', message, error);
 
     if (stackTrace != null && kDebugMode) {
@@ -35,11 +31,7 @@ class LoggerUtils {
     _log('DEBUG', message, data);
   }
 
-  static void _log(
-      String level,
-      String message,
-      Object? data,
-      ) {
+  static void _log(String level, String message, Object? data) {
     final timestamp = DateTime.now().toIso8601String();
 
     final buffer = StringBuffer()

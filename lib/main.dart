@@ -1,49 +1,30 @@
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:tictac_duel/lib.dart';
 
 Future<void> main() async {
-  final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
-
-  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-
-  await _initCore();
-
-
-  FlutterNativeSplash.remove();
-
-  runApp(const MyApp());
-}
-
-// =============================================================================
-// CORE INITIALIZATION
-// =============================================================================
-
-Future<void> _initCore() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  usePathUrlStrategy();
   await dotenv.load();
+  final container = ProviderContainer();
+  await container.read(audioProvider.notifier).initialize();
+  container.read(appRouterProvider);
+  runApp(UncontrolledProviderScope(container: container, child: const MyApp()));
 }
 
-// =============================================================================
-// APP
-// =============================================================================
-
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return GetMaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: GameConstants.appName,
-      theme: AppTheme.darkTheme,
-      initialBinding: GlobalBindings(),
-      initialRoute: AppRoutes.home,
-
-      getPages: AppPages.routes,
-      builder: (context, child) {
-        return Listener(
-          onPointerDown: (_) => Get.find<MusicController>().playTouch(),
-          child: child ?? const SizedBox.shrink(),
-        );
-      },
-    );
-  }
+  Widget build(BuildContext context, WidgetRef ref) => MaterialApp.router(
+    title: GameConstants.appName,
+    debugShowCheckedModeBanner: false,
+    theme: AppTheme.darkTheme,
+    routerConfig: ref.watch(appRouterProvider),
+    scaffoldMessengerKey: AppPages.rootScaffoldMessengerKey,
+    builder: (context, child) => Listener(
+      behavior: HitTestBehavior.translucent,
+      onPointerDown: (_) => ref.read(audioProvider.notifier).playTouch(),
+      child: child ?? const SizedBox.shrink(),
+    ),
+  );
 }

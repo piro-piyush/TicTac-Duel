@@ -43,6 +43,7 @@ abstract final class Dimens {
   static const double seventyTwo = 72;
   static const double seventyFive = 75;
   static const double eighty = 80;
+  static const double eightyEight = 88;
   static const double eightySix = 86;
   static const double ninety = 90;
   static const double ninetySix = 96;
@@ -131,7 +132,10 @@ abstract final class Dimens {
   static const EdgeInsets edgeInsets24_0 = EdgeInsets.symmetric(
     horizontal: twentyFour,
   );
-
+  static const EdgeInsets edgeInsets24_12 = EdgeInsets.symmetric(
+    horizontal: twentyFour,
+    vertical: 12,
+  );
   static const EdgeInsets edgeInsets30_0 = EdgeInsets.symmetric(
     horizontal: thirty,
   );
@@ -454,4 +458,17 @@ abstract final class Dimens {
 
   static const double dividerHeight = one;
   static const double elevatedButtonHeight = sixtyFour;
+
+  // =============================================================================
+  // RESPONSIVE LAYOUT
+  // =============================================================================
+
+  static const double mobileBreakpoint = 600;
+  static const double tabletBreakpoint = 1024;
+
+  static const double mobileMaxContentWidth = 460;
+  static const double tabletMaxContentWidth = 500;
+  static const double desktopMaxContentWidth = 640;
+
+  static const double smallScreenWidth = 280;
 }

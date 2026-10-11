@@ -9,20 +9,34 @@ class NeonBackgroundWidget extends StatefulWidget {
     this.title,
     this.actions,
     this.padding,
+    this.bottom,
     this.bottomNavigationBar,
     this.showGrid = true,
     this.showParticles = true,
     this.needScroll = true,
+    this.keyboardAware = false,
+    this.showTapEffects = true,
+    this.showVignette = true,
+    this.maxWidth,
+    this.floatingActionButton,
   });
 
   final Widget child;
-  final EdgeInsets? padding;
+  final PreferredSizeWidget? bottom;
   final String? title;
-  final bool showGrid;
-  final bool needScroll;
-  final bool showParticles;
   final List<Widget>? actions;
+  final EdgeInsets? padding;
   final Widget? bottomNavigationBar;
+  final Widget? floatingActionButton;
+
+  final bool showGrid;
+  final bool showParticles;
+  final bool needScroll;
+  final bool keyboardAware;
+  final bool showTapEffects;
+  final bool showVignette;
+
+  final double? maxWidth;
 
   @override
   State<NeonBackgroundWidget> createState() => _NeonBackgroundWidgetState();
@@ -30,17 +44,43 @@ class NeonBackgroundWidget extends StatefulWidget {
 
 class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
     with TickerProviderStateMixin {
-  final List<_TapEffect> _tapEffects = [];
+  // ===========================================================================
+  // CONFIG
+  // ===========================================================================
 
-  void _handleTap(PointerDownEvent event) {
+  static const int _maxTapEffects = 8;
+
+  static const Duration _tapEffectDuration = Duration(milliseconds: 650);
+
+  static const double _gridSpacing = Dimens.fortyTwo;
+
+  // ===========================================================================
+  // STATE
+  // ===========================================================================
+
+  final List<TapEffect> _tapEffects = <TapEffect>[];
+
+  final math.Random _random = math.Random();
+
+  // ===========================================================================
+  // TAP EFFECT
+  // ===========================================================================
+
+  void _handlePointerDown(PointerDownEvent event) {
+    if (!mounted || !widget.showTapEffects) {
+      return;
+    }
+
+    _removeOldestTapEffectIfNeeded();
+
     final controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 650),
+      duration: _tapEffectDuration,
     );
 
-    final effect = _TapEffect(
+    final effect = TapEffect(
       position: event.localPosition,
-      color: _randomNeonColor(),
+      color: _randomNeonColor,
       controller: controller,
     );
 
@@ -49,316 +89,444 @@ class _NeonBackgroundWidgetState extends State<NeonBackgroundWidget>
     });
 
     controller.forward().whenCompleteOrCancel(() {
-      if (!mounted) {
-        return;
-      }
-      if (!_tapEffects.contains(effect)) {
-        return;
-      }
-      setState(() {
-        _tapEffects.remove(effect);
-      });
-      controller.dispose();
+      _removeTapEffect(effect);
     });
   }
 
-  Color _randomNeonColor() {
-    final colors = [
-      AppColors.neonCyan,
-      AppColors.neonPink,
-      AppColors.neonPurple,
-    ];
+  void _removeOldestTapEffectIfNeeded() {
+    if (_tapEffects.length < _maxTapEffects) {
+      return;
+    }
 
-    return colors[math.Random().nextInt(colors.length)];
+    final oldestEffect = _tapEffects.removeAt(0);
+
+    oldestEffect.controller.dispose();
+  }
+
+  void _removeTapEffect(TapEffect effect) {
+    // If the effect was already removed, its controller has already
+    // been disposed. Do nothing.
+    if (!_tapEffects.remove(effect)) {
+      return;
+    }
+
+    effect.controller.dispose();
+
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  Color get _randomNeonColor {
+    const colors = AppColors.neonColors;
+
+    if (colors.isEmpty) {
+      return AppColors.neonCyan;
+    }
+
+    return colors[_random.nextInt(colors.length)];
   }
 
   @override
   void dispose() {
-    for (final effect in List<_TapEffect>.from(_tapEffects)) {
+    for (final effect in _tapEffects) {
       effect.controller.dispose();
     }
+
     _tapEffects.clear();
+
     super.dispose();
+  }
+
+  // ===========================================================================
+  // BUILD
+  // ===========================================================================
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    backgroundColor: AppColors.background,
+    resizeToAvoidBottomInset: true,
+    floatingActionButton: widget.floatingActionButton,
+    body: Listener(
+      behavior: HitTestBehavior.translucent,
+      onPointerDown: _handlePointerDown,
+      child: SizedBox.expand(
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            const _BackgroundBase(),
+            const _AmbientGlows(),
+
+            if (widget.showGrid) const _GridLayer(),
+            if (widget.showParticles) const _ParticleLayer(),
+
+            if (widget.showTapEffects && _tapEffects.isNotEmpty)
+              _TapEffectsLayer(effects: _tapEffects),
+
+            if (widget.showVignette) const _VignetteLayer(),
+
+            _ForegroundLayer(
+              title: widget.title,
+              bottom: widget.bottom,
+              actions: widget.actions,
+              padding: widget.padding,
+              bottomNavigationBar: widget.bottomNavigationBar,
+              needScroll: widget.needScroll,
+              keyboardAware: widget.keyboardAware,
+              maxWidth: widget.maxWidth,
+              child: widget.child,
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+// =============================================================================
+// BACKGROUND BASE
+// =============================================================================
+
+class _BackgroundBase extends StatelessWidget {
+  const _BackgroundBase();
+
+  @override
+  Widget build(BuildContext context) =>
+      const ColoredBox(color: AppColors.background);
+}
+
+// =============================================================================
+// AMBIENT GLOWS
+// =============================================================================
+
+class _AmbientGlows extends StatelessWidget {
+  const _AmbientGlows();
+
+  @override
+  Widget build(BuildContext context) => const Stack(
+    fit: StackFit.expand,
+    children: [
+      Positioned(
+        top: -150,
+        right: -110,
+        child: NeonGlowWidget(
+          color: AppColors.neonPurple,
+          size: 320,
+          opacity: 0.075,
+          blurRadius: 130,
+        ),
+      ),
+      Positioned(
+        bottom: -170,
+        left: -130,
+        child: NeonGlowWidget(
+          color: AppColors.neonCyan,
+          size: 340,
+          opacity: 0.065,
+          blurRadius: 140,
+        ),
+      ),
+      Positioned(
+        top: 250,
+        left: -190,
+        child: NeonGlowWidget(
+          color: AppColors.neonPink,
+          size: 280,
+          opacity: 0.025,
+        ),
+      ),
+    ],
+  );
+}
+
+// =============================================================================
+// GRID
+// =============================================================================
+
+class _GridLayer extends StatelessWidget {
+  const _GridLayer();
+
+  @override
+  Widget build(BuildContext context) => Positioned.fill(
+    child: IgnorePointer(
+      child: RepaintBoundary(
+        child: CustomPaint(
+          painter: NeonGridPainter(
+            spacing: _NeonBackgroundWidgetState._gridSpacing,
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+// =============================================================================
+// PARTICLES
+// =============================================================================
+
+class _ParticleLayer extends StatelessWidget {
+  const _ParticleLayer();
+
+  @override
+  Widget build(BuildContext context) => Positioned.fill(
+    child: IgnorePointer(
+      child: RepaintBoundary(
+        child: CustomPaint(
+          painter: NeonParticlePainter(colors: AppColors.neonColors),
+        ),
+      ),
+    ),
+  );
+}
+
+// =============================================================================
+// TAP EFFECTS
+// =============================================================================
+
+class _TapEffectsLayer extends StatelessWidget {
+  const _TapEffectsLayer({required this.effects});
+
+  final List<TapEffect> effects;
+
+  @override
+  Widget build(BuildContext context) => Positioned.fill(
+    child: IgnorePointer(
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          for (final effect in effects)
+            TapEffectWidget(key: ObjectKey(effect), effect: effect),
+        ],
+      ),
+    ),
+  );
+}
+
+// =============================================================================
+// VIGNETTE
+// =============================================================================
+
+class _VignetteLayer extends StatelessWidget {
+  const _VignetteLayer();
+
+  @override
+  Widget build(BuildContext context) => const Positioned.fill(
+    child: IgnorePointer(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: RadialGradient(
+            radius: 0.9,
+            colors: [Colors.transparent, Color(0x18000000), Color(0x52000000)],
+            stops: [0.45, 0.76, 1.0],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+// =============================================================================
+// FOREGROUND
+// =============================================================================
+
+class _ForegroundLayer extends StatelessWidget {
+  const _ForegroundLayer({
+    required this.child,
+    required this.title,
+    required this.actions,
+    required this.padding,
+    required this.bottom,
+    required this.bottomNavigationBar,
+    required this.needScroll,
+    required this.keyboardAware,
+    required this.maxWidth,
+  });
+
+  final Widget child;
+  final String? title;
+  final List<Widget>? actions;
+  final EdgeInsets? padding;
+  final PreferredSizeWidget? bottom;
+  final Widget? bottomNavigationBar;
+  final bool needScroll;
+  final bool keyboardAware;
+  final double? maxWidth;
+
+  double _getMaxWidth(double screenWidth) {
+    if (maxWidth != null) {
+      return maxWidth!;
+    }
+
+    if (screenWidth < Dimens.mobileBreakpoint) {
+      return screenWidth;
+    }
+
+    if (screenWidth < Dimens.tabletBreakpoint) {
+      return Dimens.tabletMaxContentWidth;
+    }
+
+    return Dimens.desktopMaxContentWidth;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Listener(
-        behavior: HitTestBehavior.translucent,
-        onPointerDown: _handleTap,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            // Base background
-            const ColoredBox(color: AppColors.background),
+    final screenSize = MediaQuery.sizeOf(context);
+    final contentMaxWidth = _getMaxWidth(screenSize.width);
 
-            // Ambient neon glows
-            const Positioned(
-              top: -140,
-              right: -100,
-              child: _NeonGlow(color: AppColors.neonPurple, size: 300),
-            ),
-
-            const Positioned(
-              bottom: -150,
-              left: -120,
-              child: _NeonGlow(color: AppColors.neonCyan, size: 320),
-            ),
-
-            const Positioned(
-              top: 260,
-              left: -180,
-              child: _NeonGlow(
-                color: AppColors.neonPink,
-                size: 260,
-                opacity: 0.025,
-              ),
-            ),
-
-            // Grid
-            if (widget.showGrid)
-              const Positioned.fill(
-                child: IgnorePointer(
-                  child: CustomPaint(painter: _NeonGridPainter()),
-                ),
-              ),
-
-            // Particles
-            if (widget.showParticles)
-              const Positioned.fill(
-                child: IgnorePointer(
-                  child: CustomPaint(painter: _NeonParticlePainter()),
-                ),
-              ),
-
-            // Tap effects
-            Positioned.fill(
-              child: IgnorePointer(
-                child: Stack(
+    return Positioned.fill(
+      child: SafeArea(
+        left: false,
+        right: false,
+        child: LayoutBuilder(
+          builder: (context, constraints) => Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: contentMaxWidth),
+              child: SizedBox(
+                width: double.infinity,
+                height: constraints.maxHeight,
+                child: Column(
                   children: [
-                    for (final effect in _tapEffects)
-                      _TapEffectWidget(effect: effect),
+                    _NeonAppBar(title: title, bottom: bottom, actions: actions),
+                    Expanded(
+                      child: _NeonContent(
+                        padding: padding,
+                        needScroll: needScroll,
+                        keyboardAware: keyboardAware,
+                        child: child,
+                      ),
+                    ),
+                    if (bottomNavigationBar != null)
+                      _NeonBottomNavigation(
+                        navigationBar: bottomNavigationBar!,
+                        padding: padding,
+                      ),
                   ],
                 ),
               ),
             ),
-
-            // Vignette
-            const Positioned.fill(
-              child: IgnorePointer(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: RadialGradient(
-                      radius: 0.85,
-                      colors: [
-                        Colors.transparent,
-                        Color(0x22000000),
-                        Color(0x66000000),
-                      ],
-                      stops: [0.45, 0.78, 1.0],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-            // Foreground
-            Positioned.fill(
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    maxWidth: Dimens.fourHundredSixty,
-                  ),
-                  child: SafeArea(
-                    child: Column(
-                      children: [
-                        if (widget.title != null) _buildAppBar(context),
-
-                        Expanded(
-                          child: widget.needScroll
-                              ? CustomScrollView(
-                            slivers: [
-                              SliverPadding(
-                                padding: widget.padding ?? Dimens.defaultPadding,
-                                sliver: SliverToBoxAdapter(
-                                  child: widget.child,
-                                ),
-                              ),
-                            ],
-                          )
-                              : Padding(
-                            padding: widget.padding ?? Dimens.defaultPadding,
-                            child: Center(
-                              child: widget.child,
-                            ),
-                          ),
-                        ),
-
-                        if (widget.bottomNavigationBar != null)
-                          Padding(
-                            padding: (widget.padding ?? Dimens.defaultPadding)
-                                .copyWith(top: 0, bottom: Dimens.eight),
-                            child: widget.bottomNavigationBar!,
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAppBar(BuildContext context) => widget.title == null
-      ? const SizedBox.shrink()
-      : AppBar(title: Text(widget.title!), actions: widget.actions);
-}
-
-class _TapEffect {
-  _TapEffect({
-    required this.position,
-    required this.color,
-    required this.controller,
-  });
-
-  final Offset position;
-  final Color color;
-  final AnimationController controller;
-}
-
-class _TapEffectWidget extends StatelessWidget {
-  const _TapEffectWidget({required this.effect});
-
-  final _TapEffect effect;
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: effect.controller,
-      builder: (context, child) {
-        final progress = Curves.easeOutCubic.transform(effect.controller.value);
-
-        final radius = 8.0 + (progress * 55.0);
-
-        final opacity = (1.0 - progress).clamp(0.0, 1.0);
-
-        return Positioned(
-          left: effect.position.dx - radius,
-          top: effect.position.dy - radius,
-          child: IgnorePointer(
-            child: Container(
-              width: radius * 2,
-              height: radius * 2,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: effect.color.withValues(alpha: opacity * 0.65),
-                  width: 1.5,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: effect.color.withValues(alpha: opacity * 0.35),
-                    blurRadius: 18,
-                    spreadRadius: 3,
-                  ),
-                ],
-              ),
-            ),
           ),
-        );
-      },
-    );
-  }
-}
-
-class _NeonGlow extends StatelessWidget {
-  const _NeonGlow({
-    required this.color,
-    required this.size,
-    this.opacity = 0.07,
-  });
-
-  final Color color;
-  final double size;
-  final double opacity;
-
-  @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: color.withValues(alpha: opacity),
-          boxShadow: [
-            BoxShadow(
-              color: color.withValues(alpha: opacity),
-              blurRadius: 120,
-              spreadRadius: 45,
-            ),
-          ],
         ),
       ),
     );
   }
 }
+// =============================================================================
+// APP BAR
+// =============================================================================
 
-class _NeonGridPainter extends CustomPainter {
-  const _NeonGridPainter();
+class _NeonAppBar extends StatelessWidget {
+  const _NeonAppBar({required this.title, required this.actions, this.bottom});
 
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = AppColors.neonCyan.withValues(alpha: 0.025)
-      ..strokeWidth = 1;
-
-    const spacing = 42.0;
-
-    for (double x = 0; x <= size.width; x += spacing) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
-    }
-
-    for (double y = 0; y <= size.height; y += spacing) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
-    }
-  }
+  final String? title;
+  final List<Widget>? actions;
+  final PreferredSizeWidget? bottom;
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  Widget build(BuildContext context) =>
+      SizedBox(
+            height: kToolbarHeight + (bottom?.preferredSize.height ?? 0),
+            child: AppBar(
+              title: title != null
+                  ? Text(title!, maxLines: 1, overflow: TextOverflow.ellipsis)
+                  : null,
+              actions: actions,
+              bottom: bottom,
+            ),
+          )
+          .animate()
+          .fadeIn(
+            duration: AnimationConstants.medium,
+            curve: AnimationConstants.entranceCurve,
+          )
+          .slideY(
+            begin: -AnimationConstants.slideSmall,
+            end: 0,
+            duration: AnimationConstants.medium,
+            curve: AnimationConstants.entranceCurve,
+          );
 }
+// =============================================================================
+// CONTENT
+// =============================================================================
 
-class _NeonParticlePainter extends CustomPainter {
-  const _NeonParticlePainter();
+class _NeonContent extends StatelessWidget {
+  const _NeonContent({
+    required this.child,
+    required this.padding,
+    required this.needScroll,
+    required this.keyboardAware,
+  });
+
+  final Widget child;
+  final EdgeInsets? padding;
+  final bool needScroll;
+  final bool keyboardAware;
+
+  EdgeInsets get _contentPadding => padding ?? Dimens.defaultPadding;
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final random = math.Random(42);
-
-    final colors = [
-      AppColors.neonCyan,
-      AppColors.neonPurple,
-      AppColors.neonPink,
-    ];
-
-    for (var i = 0; i < 35; i++) {
-      final x = random.nextDouble() * size.width;
-      final y = random.nextDouble() * size.height;
-      final radius = 0.5 + random.nextDouble() * 1.2;
-      final color = colors[i % colors.length];
-
-      final paint = Paint()
-        ..color = color.withValues(alpha: 0.08 + random.nextDouble() * 0.12);
-
-      canvas.drawCircle(Offset(x, y), radius, paint);
+  Widget build(BuildContext context) {
+    if (needScroll) {
+      return _buildScrollableContent();
     }
+
+    if (!keyboardAware) {
+      return Padding(padding: _contentPadding, child: child);
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        physics: const BouncingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
+        ),
+        padding: _contentPadding,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: constraints.maxHeight - _contentPadding.vertical,
+          ),
+          child: child,
+        ),
+      ),
+    );
   }
 
+  Widget _buildScrollableContent() => SingleChildScrollView(
+    keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+    physics: const BouncingScrollPhysics(
+      parent: AlwaysScrollableScrollPhysics(),
+    ),
+    padding: _contentPadding,
+    child: child,
+  );
+}
+// =============================================================================
+// BOTTOM NAVIGATION
+// =============================================================================
+
+class _NeonBottomNavigation extends StatelessWidget {
+  const _NeonBottomNavigation({
+    required this.navigationBar,
+    required this.padding,
+  });
+
+  final Widget navigationBar;
+  final EdgeInsets? padding;
+
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  Widget build(BuildContext context) {
+    final contentPadding = padding ?? Dimens.defaultPadding;
+
+    return SizedBox(
+      width: double.infinity,
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: contentPadding.left,
+          right: contentPadding.right,
+          bottom: contentPadding.bottom / 2,
+        ),
+        child: navigationBar,
+      ),
+    );
+  }
 }
