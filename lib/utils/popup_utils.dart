@@ -60,36 +60,45 @@ class PopupUtils {
   // ===========================================================================
 
   static void showToast(String message) {
-    final context = Get.context;
+    final messenger = AppPages.rootScaffoldMessengerKey.currentState;
+
+    if (messenger == null) {
+      return;
+    }
+
+    final context = AppPages.rootNavigatorKey.currentContext;
 
     if (context == null) {
       return;
     }
 
-    final messenger = ScaffoldMessenger.of(context);
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-    messenger.hideCurrentSnackBar();
-
-    messenger.showSnackBar(
-      SnackBar(
-        elevation: 0,
-        duration: const Duration(seconds: 3),
-        backgroundColor: Colors.transparent,
-        content: Container(
-          padding: Dimens.edgeInsets12,
-          margin: Dimens.edgeInsets30_0,
-          decoration: BoxDecoration(
-            borderRadius: Dimens.radius6,
-            color: Get.isDarkMode
-                ? AppColors.darkerGrey.withValues(alpha: 0.9)
-                : AppColors.grey.withValues(alpha: 0.9),
-          ),
-          child: Center(
-            child: Text(message, style: Theme.of(context).textTheme.labelLarge),
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          elevation: 0,
+          duration: const Duration(seconds: 3),
+          backgroundColor: Colors.transparent,
+          content: Container(
+            padding: Dimens.edgeInsets12,
+            margin: Dimens.edgeInsets30_0,
+            decoration: BoxDecoration(
+              borderRadius: Dimens.radius6,
+              color: isDarkMode
+                  ? AppColors.darkerGrey.withValues(alpha: 0.9)
+                  : AppColors.grey.withValues(alpha: 0.9),
+            ),
+            child: Center(
+              child: Text(
+                message,
+                style: Theme.of(context).textTheme.labelLarge,
+              ),
+            ),
           ),
         ),
-      ),
-    );
+      );
   }
 
   // ===========================================================================
@@ -97,7 +106,7 @@ class PopupUtils {
   // ===========================================================================
 
   static void hide() {
-    Get.closeCurrentSnackbar();
+    AppPages.rootScaffoldMessengerKey.currentState?.hideCurrentSnackBar();
   }
 
   // ===========================================================================
@@ -110,36 +119,60 @@ class PopupUtils {
     required Color color,
     required IconData icon,
   }) {
-    Get.closeCurrentSnackbar();
+    final messenger = AppPages.rootScaffoldMessengerKey.currentState;
 
-    Get.snackbar(
-      title,
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: AppColors.surface,
-      colorText: AppColors.textPrimary,
-      margin: Dimens.edgeInsets8.copyWith(bottom: 12),
-      borderRadius: 12,
-      isDismissible: true,
-      dismissDirection: DismissDirection.horizontal,
-      showProgressIndicator: false,
-      icon: Icon(icon, color: color),
-      titleText: Text(
-        title,
-        style: const TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
+    if (messenger == null) {
+      return;
+    }
+
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          elevation: 0,
+          duration: const Duration(seconds: 3),
+          backgroundColor: Colors.transparent,
+          behavior: SnackBarBehavior.floating,
+          margin: Dimens.edgeInsets8.copyWith(bottom: 12),
+          content: Container(
+            padding: Dimens.edgeInsets12,
+            decoration: const BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: Dimens.radius12,
+            ),
+            child: Row(
+              children: [
+                Icon(icon, color: color),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        message,
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-      ),
-      messageText: Text(
-        message,
-        style: const TextStyle(
-          color: AppColors.textSecondary,
-          fontSize: 13,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    );
+      );
   }
 }

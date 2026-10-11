@@ -101,9 +101,8 @@ class GameLogicUtils {
     return true;
   }
 
-  static GameResult _resultFor(PlayerSymbol symbol) {
-    return symbol == PlayerSymbol.x ? GameResult.xWins : GameResult.oWins;
-  }
+  static GameResult _resultFor(PlayerSymbol symbol) =>
+      symbol == PlayerSymbol.x ? GameResult.xWins : GameResult.oWins;
 
   // ─────────────────────────────────────────────────────────────
   // Winning Cells
@@ -220,9 +219,8 @@ class GameLogicUtils {
   // Easy CPU
   // ─────────────────────────────────────────────────────────────
 
-  static int _getRandomMove(List<int> availableMoves) {
-    return availableMoves[_random.nextInt(availableMoves.length)];
-  }
+  static int _getRandomMove(List<int> availableMoves) =>
+      availableMoves[_random.nextInt(availableMoves.length)];
 
   // ─────────────────────────────────────────────────────────────
   // Medium CPU

@@ -4,84 +4,76 @@ class GameBoardCellWidget extends StatelessWidget {
   const GameBoardCellWidget({
     super.key,
     required this.index,
+    required this.symbol,
     required this.isMyTurn,
     required this.theme,
-    required this.values,
     this.onCellTap,
   });
 
   final int index;
-  final RoomTheme theme;
-  final List<PlayerSymbol?> values;
+  final PlayerSymbol? symbol;
   final bool isMyTurn;
+  final RoomTheme theme;
   final ValueChanged<int>? onCellTap;
 
   @override
   Widget build(BuildContext context) {
-    final symbol = values[index];
-
-    final color = switch (symbol) {
-      PlayerSymbol.x => theme.primary,
-      PlayerSymbol.o => theme.secondary,
-      null => AppColors.textSecondary,
-    };
+    final isEmpty = symbol == null;
+    final isInteractive = isMyTurn && isEmpty;
+    final symbolColor = PlayerSymbolX.color(symbol, theme);
 
     return GestureDetector(
-      onTap: () {
-        if (isMyTurn && symbol == null) {
-          onCellTap?.call(index);
-        }
-        LoggerUtils.debug('Tapped');
-      },
+      behavior: HitTestBehavior.opaque,
+      onTap: isInteractive ? () => onCellTap?.call(index) : null,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOut,
         decoration: BoxDecoration(
-          color: symbol == null ? AppColors.card : color.withValues(alpha: 0.07),
-          borderRadius: BorderRadius.circular(12),
+          color: isEmpty ? AppColors.card : symbolColor.withValues(alpha: 0.07),
+          borderRadius: Dimens.radius12,
           border: Border.all(
-            color: symbol == null
+            color: isEmpty
                 ? theme.primary.withValues(alpha: 0.08)
-                : color.withValues(alpha: 0.45),
+                : symbolColor.withValues(alpha: 0.45),
           ),
           boxShadow: [
             BoxShadow(
-              color: color.withValues(alpha: symbol == null ? 0.03 : 0.10),
-              blurRadius: symbol == null ? 8 : 14,
-              spreadRadius: symbol == null ? 0 : 1,
+              color: symbolColor.withValues(alpha: isEmpty ? 0.03 : 0.10),
+              blurRadius: isEmpty ? 8 : 14,
+              spreadRadius: isEmpty ? 0 : 1,
             ),
           ],
         ),
         child: Center(
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 200),
-            transitionBuilder: (child, animation) {
-              return ScaleTransition(
-                scale: CurvedAnimation(
-                  parent: animation,
-                  curve: Curves.easeOutBack,
-                ),
-                child: FadeTransition(opacity: animation, child: child),
-              );
-            },
-            child: symbol == null
+            switchInCurve: Curves.easeOutBack,
+            switchOutCurve: Curves.easeIn,
+            transitionBuilder: (child, animation) => ScaleTransition(
+              scale: animation,
+              child: FadeTransition(opacity: animation, child: child),
+            ),
+            child: isEmpty
                 ? const SizedBox.shrink()
-                : _buildSymbol(symbol, color),
+                : Icon(
+                    symbol!.icon,
+                    key: ValueKey(symbol),
+                    color: symbolColor,
+                    size: Dimens.icon3Xl,
+                    shadows: [
+                      Shadow(
+                        color: symbolColor.withValues(alpha: 0.80),
+                        blurRadius: 18,
+                      ),
+                      Shadow(
+                        color: symbolColor.withValues(alpha: 0.35),
+                        blurRadius: 32,
+                      ),
+                    ],
+                  ),
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildSymbol(PlayerSymbol symbol, Color color) {
-    return Icon(
-      symbol == PlayerSymbol.x ? Icons.close_rounded : Icons.circle_outlined,
-      key: ValueKey(symbol),
-      color: color,
-      size: 48,
-      shadows: [
-        Shadow(color: color.withValues(alpha: 0.8), blurRadius: 18),
-        Shadow(color: color.withValues(alpha: 0.35), blurRadius: 32),
-      ],
     );
   }
 }

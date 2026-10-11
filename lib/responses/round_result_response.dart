@@ -2,60 +2,47 @@ import 'package:tictac_duel/lib.dart';
 
 class RoundResultResponse {
   const RoundResultResponse({
-    required this.room,
-    required this.winnerPlayerId,
+    required this.winnerId,
+    required this.status,
     required this.winningIndexes,
-    required this.completedRound,
     required this.gameFinished,
   });
 
-  final RoomModel room;
-  final String? winnerPlayerId;
+  final String? winnerId;
+  final RoomStatus status;
   final List<int> winningIndexes;
-  final int completedRound;
   final bool gameFinished;
 
-  factory RoundResultResponse.fromJson(dynamic json) {
-    if (json is! Map) {
-      throw const FormatException('Invalid round result response');
+  factory RoundResultResponse.fromSocket(dynamic json) {
+    try {
+      if (json is! Map) {
+        throw const FormatException('Invalid round result response');
+      }
+      final winnerId = json['winnerId'];
+      final status = json['status'];
+      final winningIndexes = json['winningIndexes'];
+      final gameFinished = json['gameFinished'];
+      if (winnerId != null && winnerId is! String) {
+        throw const FormatException('Invalid winner ID');
+      }
+      if (status != null && status is! String) {
+        throw const FormatException('Invalid round status');
+      }
+      if (winningIndexes is! List ||
+          winningIndexes.any((index) => index is! int)) {
+        throw const FormatException('Invalid winning indexes');
+      }
+      if (gameFinished is! bool) {
+        throw const FormatException('Invalid game finished value');
+      }
+      return RoundResultResponse(
+        winnerId: winnerId as String?,
+        status: RoomStatus.values.byName(status),
+        winningIndexes: List<int>.from(winningIndexes),
+        gameFinished: gameFinished,
+      );
+    } catch (e) {
+      rethrow;
     }
-
-    final roomData = json['room'];
-    final winnerPlayerId = json['winnerPlayerId'];
-    final winningIndexesData = json['winningIndexes'];
-    final completedRound = json['completedRound'];
-    final gameFinished = json['gameFinished'];
-
-    if (roomData is! Map) {
-      throw const FormatException('Invalid room data');
-    }
-
-    if (winnerPlayerId != null && winnerPlayerId is! String) {
-      throw const FormatException('Invalid winner player ID');
-    }
-
-    if (winningIndexesData is! List) {
-      throw const FormatException('Invalid winning indexes');
-    }
-
-    if (winningIndexesData.any((index) => index is! int)) {
-      throw const FormatException('Winning indexes must contain only integers');
-    }
-
-    if (completedRound is! int) {
-      throw const FormatException('Invalid completed round');
-    }
-
-    if (gameFinished is! bool) {
-      throw const FormatException('Invalid game finished value');
-    }
-
-    return RoundResultResponse(
-      room: RoomModel.fromJson(Map<String, dynamic>.from(roomData)),
-      winnerPlayerId: winnerPlayerId as String?,
-      winningIndexes: List<int>.from(winningIndexesData),
-      completedRound: completedRound,
-      gameFinished: gameFinished,
-    );
   }
 }

@@ -13,27 +13,25 @@ class SectionTitleAndOptionsWidget extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      spacing: Dimens.ten,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SectionTitleWidget(title: title),
-        Card(
-          color: AppColors.surface,
-          clipBehavior: Clip.antiAlias,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            spacing: Dimens.ten,
-            children: List.generate(
-              children.length * 2 - 1,
-              (index) =>
-                  index.isOdd ? const DividerWidget() : children[index ~/ 2],
-            ),
+  Widget build(BuildContext context) => Column(
+    spacing: Dimens.ten,
+    crossAxisAlignment: CrossAxisAlignment.start,
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      SectionTitleWidget(title: title),
+      Card(
+        color: AppColors.surface,
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          spacing: Dimens.ten,
+          children: List.generate(
+            children.length * 2 - 1,
+            (index) =>
+                index.isOdd ? const DividerWidget() : children[index ~/ 2],
           ),
         ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
 }

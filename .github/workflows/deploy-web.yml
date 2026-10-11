@@ -1,0 +1,391 @@
+name: Deploy Flutter Web
+
+on:
+  pull_request:
+    branches: [dev, main]
+  push:
+    branches: [dev, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-web-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and Validate Web
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.7'
+          channel: stable
+          cache: true
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Configure Environment
+        env:
+          BASE_URL: ${{ secrets.BASE_URL }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          
+          if [[ "$GITHUB_EVENT_NAME" != "pull_request" ]]; then
+            test -n "$BASE_URL" || {
+              echo "::error::BASE_URL secret is missing."
+              exit 1
+            }
+          fi
+          
+          printf 'BASE_URL=%s\n' \
+            "${BASE_URL:-https://example.invalid}" > .env
+
+      # Generate the correct certificate statement for each branch.
+      - name: Generate Development Asset Links
+        if: github.event_name != 'pull_request' && github.ref_name == 'dev'
+        env:
+          ANDROID_SHA256: ${{ secrets.DEV_ANDROID_SHA256 }}
+        run: node web/scripts/generate-assetlinks.mjs
+
+      - name: Generate Production Asset Links
+        if: github.event_name != 'pull_request' && github.ref_name == 'main'
+        env:
+          ANDROID_SHA256: ${{ secrets.PROD_ANDROID_SHA256 }}
+        run: node web/scripts/generate-assetlinks.mjs
+
+      - name: Analyze and Build
+        shell: bash
+        run: |
+          set -euo pipefail
+          flutter analyze
+          flutter build web --release
+      - name: Prepare Web Files
+        shell: bash
+        env:
+          DEV_ANDROID_SHA256: ${{ secrets.DEV_ANDROID_SHA256 }}
+          PROD_ANDROID_SHA256: ${{ secrets.PROD_ANDROID_SHA256 }}
+          TARGET_BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          
+          test -s build/web/index.html || {
+            echo "::error::Flutter web index.html is missing."
+            exit 1
+          }
+          
+          test -s web/vercel.json || {
+            echo "::error::web/vercel.json is missing."
+            exit 1
+          }
+          
+          cp web/vercel.json build/web/vercel.json
+          
+          if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            echo "Skipping deployment-only asset links validation."
+            exit 0
+          fi
+          
+          case "$TARGET_BRANCH" in
+            dev)
+              EXPECTED_SHA256="$DEV_ANDROID_SHA256"
+              ;;
+            main)
+              EXPECTED_SHA256="$PROD_ANDROID_SHA256"
+              ;;
+            *)
+              echo "::error::Unsupported deployment branch: $TARGET_BRANCH"
+              exit 1
+              ;;
+          esac
+          
+          test -n "$EXPECTED_SHA256" || {
+            echo "::error::Expected Android SHA-256 secret is missing."
+            exit 1
+          }
+          
+          test -s web/.well-known/assetlinks.json || {
+            echo "::error::Generated assetlinks.json is missing."
+            exit 1
+          }
+          
+          # Validate the generated JSON and its expected certificate(s).
+          export EXPECTED_SHA256
+          
+          node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+          
+          const file = JSON.parse(
+            readFileSync('web/.well-known/assetlinks.json', 'utf8')
+          );
+          
+          const expected = process.env.EXPECTED_SHA256
+            .split(',')
+            .map(value => value.trim().toUpperCase());
+          
+          const statements = file.filter(
+            item =>
+              item.target?.namespace === 'android_app' &&
+              item.target?.package_name === 'com.piyush.tictacduel' &&
+              item.relation?.includes(
+                'delegate_permission/common.handle_all_urls'
+              )
+          );
+          
+          const actual = statements.flatMap(
+            item => item.target.sha256_cert_fingerprints ?? []
+          ).map(value => value.toUpperCase());
+          
+          if (statements.length === 0) {
+            throw new Error(
+              'No matching Android App Links statement was generated.'
+            );
+          }
+          
+          for (const fingerprint of expected) {
+            if (!actual.includes(fingerprint)) {
+              throw new Error(
+                `Expected fingerprint missing from assetlinks.json: ${fingerprint}`
+              );
+            }
+          }
+          
+          console.log('Asset Links JSON and fingerprints validated.');
+          NODE
+          
+          mkdir -p build/web/.well-known
+          
+          cp web/.well-known/assetlinks.json \
+            build/web/.well-known/assetlinks.json
+          
+          cmp web/.well-known/assetlinks.json \
+            build/web/.well-known/assetlinks.json
+          
+          echo "Asset Links copied and verified."
+
+      - name: Upload Build
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v7
+        with:
+          name: flutter-web-build
+          path: build/web/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 1
+
+  deploy:
+    name: Deploy Web
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    environment:
+      name: ${{ github.ref_name == 'main' && 'Production' || 'Preview' }}
+      url: ${{ github.ref_name == 'main' && 'https://tictacduel.vercel.app/' || 'https://dev-tictacduel.vercel.app/' }}
+
+    steps:
+      - name: Download Build
+        uses: actions/download-artifact@v8
+        with:
+          name: flutter-web-build
+          path: build/web
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          check-latest: true
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel
+
+      - name: Verify Vercel Authentication
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          
+          if [[ -z "$VERCEL_TOKEN" ]]; then
+            echo "::error::VERCEL_TOKEN secret is missing or unavailable."
+            exit 1
+          fi
+          
+          vercel whoami --token="$VERCEL_TOKEN"
+
+      - name: Check Vercel Configuration
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_SCOPE: ${{ secrets.VERCEL_SCOPE }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          
+          for name in \
+            VERCEL_TOKEN \
+            VERCEL_ORG_ID \
+            VERCEL_PROJECT_ID \
+            VERCEL_SCOPE
+          do
+            if [[ -z "${!name}" ]]; then
+              echo "::error::$name secret is missing or unavailable."
+              exit 1
+            fi
+          done
+
+      - name: Verify Downloaded Build
+        shell: bash
+        env:
+          TARGET_BRANCH: ${{ github.ref_name }}
+          DEV_ANDROID_SHA256: ${{ secrets.DEV_ANDROID_SHA256 }}
+          PROD_ANDROID_SHA256: ${{ secrets.PROD_ANDROID_SHA256 }}
+        run: |
+          set -euo pipefail
+          
+          test -s build/web/index.html || {
+            echo "::error::Flutter web index.html is missing."
+            exit 1
+          }
+          
+          test -s build/web/vercel.json || {
+            echo "::error::Vercel configuration is missing."
+            exit 1
+          }
+          
+          test -s build/web/.well-known/assetlinks.json || {
+            echo "::error::Asset Links file is missing."
+            exit 1
+          }
+          
+          case "$TARGET_BRANCH" in
+            dev) EXPECTED_SHA256="$DEV_ANDROID_SHA256" ;;
+            main) EXPECTED_SHA256="$PROD_ANDROID_SHA256" ;;
+            *)
+              echo "::error::Unsupported deployment branch: $TARGET_BRANCH"
+              exit 1
+              ;;
+          esac
+          
+          export EXPECTED_SHA256
+          
+          node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+          
+          const statements = JSON.parse(
+            readFileSync('build/web/.well-known/assetlinks.json', 'utf8')
+          );
+          
+          const expected = process.env.EXPECTED_SHA256
+            .split(',')
+            .map(value => value.trim().toUpperCase());
+          
+          const actual = statements
+            .filter(item =>
+              item.target?.namespace === 'android_app' &&
+              item.target?.package_name === 'com.piyush.tictacduel' &&
+              item.relation?.includes(
+                'delegate_permission/common.handle_all_urls'
+              )
+            )
+            .flatMap(item => item.target.sha256_cert_fingerprints ?? [])
+            .map(value => value.toUpperCase());
+          
+          if (!expected.every(value => actual.includes(value))) {
+            throw new Error(
+              'Downloaded assetlinks.json does not match the branch certificate configuration.'
+            );
+          }
+          
+          console.log('Downloaded build certificate validation passed.');
+          NODE
+
+      - name: Deploy to Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_SCOPE: ${{ secrets.VERCEL_SCOPE }}
+          TARGET_BRANCH: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          
+          mkdir -p build/web/.vercel
+          
+          printf '{"orgId":"%s","projectId":"%s"}\n' \
+            "$VERCEL_ORG_ID" \
+            "$VERCEL_PROJECT_ID" \
+            > build/web/.vercel/project.json
+          
+          case "$TARGET_BRANCH" in
+            main)
+              echo "Deploying main to production..."
+          
+              vercel deploy \
+                --cwd build/web \
+                --prod \
+                --yes \
+                --scope="$VERCEL_SCOPE" \
+                --token="$VERCEL_TOKEN"
+              ;;
+          
+            dev)
+              echo "Deploying dev to preview..."
+          
+              if DEPLOY_OUTPUT="$(
+                vercel deploy \
+                  --cwd build/web \
+                  --yes \
+                  --scope="$VERCEL_SCOPE" \
+                  --token="$VERCEL_TOKEN" \
+                  --debug 2>&1
+              )"; then
+                printf '%s\n' "$DEPLOY_OUTPUT"
+              else
+                DEPLOY_STATUS=$?
+                printf '%s\n' "$DEPLOY_OUTPUT"
+                echo "::error::Vercel preview deployment failed."
+                exit "$DEPLOY_STATUS"
+              fi
+          
+              DEPLOYMENT_URL="$(
+                printf '%s\n' "$DEPLOY_OUTPUT" |
+                  grep -Eo 'https://[^[:space:]]+\.vercel\.app' |
+                  tail -n 1 || true
+              )"
+          
+              if [[ -z "$DEPLOYMENT_URL" ]]; then
+                echo "::error::Could not determine the preview deployment URL."
+                exit 1
+              fi
+          
+              echo "Assigning development domain..."
+          
+              vercel alias set \
+                "$DEPLOYMENT_URL" \
+                dev-tictacduel.vercel.app \
+                --scope="$VERCEL_SCOPE" \
+                --token="$VERCEL_TOKEN"
+          
+              echo "Development deployment completed."
+              echo "Preview URL: $DEPLOYMENT_URL"
+              ;;
+          
+            *)
+              echo "::error::Unsupported deployment branch: $TARGET_BRANCH"
+              exit 1
+              ;;
+          esac

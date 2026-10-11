@@ -1,107 +1,79 @@
 # 🎮 Tic Tac Duel
 
-> A futuristic neon Tic Tac Toe game built with Flutter.
+**YOUR MOVE. YOUR GLORY.**
 
-<div style="text-align: center;">
-  <img
-    src="./assets/screens/header_new.png"
-    alt="Tic Tac Duel — Your Move. Your Glory."
-    width="1280"
-  />
+A futuristic neon Tic Tac Toe game built with Flutter, featuring local multiplayer, CPU battles, and
+real-time online gameplay.
+
+<div align="center">
+
+<img src="./assets/screens/header_new.png" alt="Tic Tac Duel — Your Move. Your Glory." width="100%">
+
+**🌐 [Play Tic Tac Duel — Live Dev Demo](https://tictacduel.vercel.app)**
+
 </div>
-
-## 📱 About
-
-Tic Tac Duel is a modern Tic Tac Toe experience featuring a futuristic neon interface, local multiplayer gameplay, and CPU challenges.
-
-The game combines classic Tic Tac Toe mechanics with a polished arcade-inspired visual style.
 
 ## ✨ Features
 
-* 🎮 Classic Tic Tac Toe gameplay
-* 👥 Play against a friend
-* 🤖 Challenge the CPU
-* ⚡ Multiple CPU difficulty levels
-* 🏆 Multi-round gameplay
-* 🎨 Multiple visual themes
-* 🎵 Background music and sound effects
-* ✨ Neon animations and effects
-* 📱 Responsive mobile interface
-* 🌌 Futuristic cyberpunk-inspired UI
+- 👥 **Local Multiplayer** — Play with a friend on the same device.
+- 🤖 **CPU Battles** — Challenge the computer with multiple difficulty levels.
+- 🌐 **Online Multiplayer** — Create or join rooms and play in real time.
+- 🔗 **Room Sharing** — Share room links to invite other players.
+- 📱 **App Links** — Open supported shared links directly in the app.
+- 🏆 **Multi-Round Matches** — Track scores across multiple rounds.
+- 🎨 **Neon Themes** — Classic, Inferno, and Cyber.
+- 🎵 **Audio & Effects** — Background music and sound effects powered by flutter_soloud, alongside animations, particles, and confetti.
+- 💬 **Game Reactions** — Interact with your opponent during online matches.
 
-## 🎮 Game Modes
+## 🖼️ Screenshots
 
-### 👥 Friend Mode
+<div align="center">
 
-Play Tic Tac Toe against another player on the same device.
+<img src="./assets/screens/splash.png" height="300" alt="Splash Screen">
+<img src="./assets/screens/home.png" height="300" alt="Home Screen">
+<img src="./assets/screens/settings.png" height="300" alt="Settings">
+<img src="./assets/screens/help.png" height="300" alt="Help">
 
-### 🤖 CPU Mode
+<img src="./assets/screens/friend_mode.png" height="300" alt="Friend Mode">
+<img src="./assets/screens/cpu_mode.png" height="300" alt="CPU Mode">
+<img src="./assets/screens/create_room.png" height="300" alt="Create Room">
+<img src="./assets/screens/join_room.png" height="300" alt="Join Room">
 
-Challenge the CPU with different difficulty levels and test your skills.
+<img src="./assets/screens/public_room.png" height="300" alt="Public Rooms">
+<img src="./assets/screens/host_waiting.png" height="300" alt="Host Waiting Room">
+<img src="./assets/screens/guest_waiting.png" height="300" alt="Guest Waiting Room">
+<img src="./assets/screens/waiting_room_close.png" height="300" alt="Close Waiting Room">
 
-## 🎨 Themes
+<img src="./assets/screens/game_board_with_friend.png" height="300" alt="Local Multiplayer Gameplay">
+<img src="./assets/screens/game_board_with_cpu.png" height="300" alt="CPU Gameplay">
+<img src="./assets/screens/reaction.png" height="300" alt="In-Game Reaction">
+<img src="./assets/screens/game_reactions.png" height="300" alt="Game Reactions">
 
-Tic Tac Duel includes multiple neon-inspired themes designed to give each game a distinct visual atmosphere.
+<img src="./assets/screens/win.png" height="300" alt="Win Result">
+<img src="./assets/screens/lose.png" height="300" alt="Lose Result">
+<img src="./assets/screens/draw.png" height="300" alt="Draw Result">
 
-* 💜 **Classic**
-* 🔥 **Inferno**
-* 💚 **Cyber**
-
-## 🕹️ Gameplay
-
-Choose your game mode, configure your match, and take turns placing your symbol on the board.
-
-The objective is simple:
-
-> Get three of your symbols in a row before your opponent does.
-
-Play across multiple rounds and keep track of your progress throughout the match.
+</div>
 
 ## 🛠️ Built With
 
-* **Flutter**
-* **Dart**
-* **GetX**
-* **Flutter Secure Storage**
-* **just_audio**
-* **Lottie**
-* **Flutter Confetti**
+- [Flutter](https://flutter.dev/) & Dart
+- [Riverpod](https://riverpod.dev/) for state management
+- [Socket.IO](https://socket.io/) for real-time multiplayer
+- [Flutter Secure Storage](https://pub.dev/packages/flutter_secure_storage) for secure local storage
+- [flutter_soloud](https://pub.dev/packages/flutter_soloud) for audio playback
+- [Lottie](https://pub.dev/packages/lottie) for animations
+- [Flutter Confetti](https://pub.dev/packages/flutter_confetti) for confetti effects
 
 ## 🚀 Getting Started
 
-### Prerequisites
-
-Make sure Flutter is installed and configured on your system.
-
-Check your Flutter installation:
-
-```bash
-flutter doctor
-```
-
-### Installation
-
-Clone the repository:
+**Prerequisites:** Flutter SDK and a configured development environment.
 
 ```bash
 git clone https://github.com/piro-piyush/TicTac-Duel.git
-```
-
-Navigate to the project:
-
-```bash
 cd TicTac-Duel
-```
-
-Install dependencies:
-
-```bash
 flutter pub get
 ```
-
-## ⚙️ Environment Setup
-
-Tic Tac Duel uses environment variables for app configuration.
 
 Create a `.env` file in the project root:
 
@@ -109,89 +81,42 @@ Create a `.env` file in the project root:
 BASE_URL=YOUR_BASE_URL
 ```
 
-Replace `YOUR_BASE_URL` with the appropriate URL for your environment.
-
-> **Note:** The `.env` file contains environment-specific configuration and should not be committed to the repository.
-
-Make sure the `.env` file is available before running or building the application.
-
-### Run the Application
+Replace `YOUR_BASE_URL` with your backend URL, then run:
 
 ```bash
 flutter run
 ```
 
-## 🖼️ Screenshots
+Check the project before submitting changes:
 
-### 🏠 Main Navigation
-
-|                Home                |                  Settings                  |                Help                |
-|:----------------------------------:|:------------------------------------------:|:----------------------------------:|
-| ![Home](./assets/screens/home.png) | ![Settings](./assets/screens/settings.png) | ![Help](./assets/screens/help.png) |
-
-### 🕹️ Game Setup Modes
-
-|                Friend Mode Setup                 |               CPU Mode Setup               |
-|:------------------------------------------------:|:------------------------------------------:|
-| ![Friend Mode](./assets/screens/friend_mode.png) | ![CPU Mode](./assets/screens/cpu_mode.png) |
-
-### 🎮 Active Gameplay Boards
-
-|                         Friend Game Board                         |                       CPU Game Board                        |
-|:-----------------------------------------------------------------:|:-----------------------------------------------------------:|
-| ![Friend Game Board](./assets/screens/game_board_with_friend.png) | ![CPU Game Board](./assets/screens/game_board_with_cpu.png) |
-
-### 🏆 Match Results
-
-|               Win Result                |                Lose Result                |                Draw Result                |
-|:---------------------------------------:|:-----------------------------------------:|:-----------------------------------------:|
-| ![Win Result](./assets/screens/win.png) | ![Lose Result](./assets/screens/lose.png) | ![Draw Result](./assets/screens/draw.png) |
-
----
-## 📦 Release
-
-### v2.0.0
-
-The **v2.0.0** release introduces the latest Tic Tac Duel gameplay experience, including local multiplayer, CPU gameplay, multiple rounds, themes, and the updated neon interface.
-
-**Version:** `2.0.0+1`
-
-### 📱 Which APK Should I Download?
-
-The Android release includes APKs for different CPU architectures.
-
-| APK                           | Architecture | Recommended For                        |
-|-------------------------------|--------------|----------------------------------------|
-| `app-arm64-v8a-release.apk`   | ARM64        | Most modern Android phones and tablets |
-| `app-armeabi-v7a-release.apk` | ARM32        | Older Android devices                  |
-| `app-x86_64-release.apk`      | x86_64       | Android emulators and x86 devices      |
-
-### ⭐ Most Android Phones
-
-Most modern Android phones use **ARM64**.
-
-If you are using a modern Android phone or tablet, download:
-
-```text
-app-arm64-v8a-release.apk
+```bash
+flutter analyze
+flutter test
 ```
 
-If you're using an Android emulator, check its configured CPU architecture and download the matching APK.
+## 📦 Release — v2.0.0
 
-> **Note:** Install only the APK that matches your device's CPU architecture.
+Version **2.0.0** brings online multiplayer alongside local and CPU gameplay, with room sharing, app
+link handling, animations, and enhanced game interactions.
 
-### 📦 Google Play
+**Downloads:** [Tic Tac Duel v2.0.0 — GitHub Release](https://github.com/piro-piyush/TicTac-Duel/releases/tag/v2.0.0)
 
-For Google Play distribution, use the **AAB (`app-release.aab`)**.
+| File                          | Intended use                            |
+|-------------------------------|-----------------------------------------|
+| `app-arm64-v8a-release.apk`   | Most modern Android phones              |
+| `app-armeabi-v7a-release.apk` | Compatible 32-bit ARM devices           |
+| `app-x86_64-release.apk`      | Compatible x86-64 devices and emulators |
+| `app-release.aab`             | Google Play distribution                |
 
-Google Play automatically generates optimized APKs for supported devices.
-
-### ⬇️ Download
-
-[Download Tic Tac Duel v2.0.0](https://github.com/piro-piyush/TicTac-Duel/releases/tag/v2.0.0)
+For most modern Android phones, choose `app-arm64-v8a-release.apk`.
 
 ## 👨‍💻 Developer
 
 **Piyush Vishwakarma**
 
-Built with Flutter and a passion for creating clean, modern mobile experiences.
+If you like Tic Tac Duel, consider giving the repository a ⭐
+on [GitHub](https://github.com/piro-piyush/TicTac-Duel).
+
+---
+
+**Tic Tac Duel — YOUR MOVE. YOUR GLORY.**
